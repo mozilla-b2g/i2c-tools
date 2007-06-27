@@ -15,7 +15,7 @@
  ***************************************************************************/
 #ifndef _24CXX_H_
 #define _24CXX_H_
-#include "i2c-dev.h"
+#include <linux/i2c-dev.h>
 
 #define EEPROM_TYPE_UNKNOWN	0
 #define EEPROM_TYPE_8BIT_ADDR	1
