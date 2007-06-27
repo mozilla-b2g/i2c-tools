@@ -1,0 +1,21 @@
+This directory contains scripts to decode the data exposed by the eeprom
+Linux kernel driver.
+
+* decode-dimms.pl (perl script)
+  Decode the information found in memory module SPD EEPROMs.
+
+* decode-vaio.pl (perl script)
+  Decode the information found in Sony Vaio laptop identification EEPROMs.
+
+* ddcmon (perl script)
+  decode-edid.pl (perl script)
+  Decode the information found in monitor EEPROMs. Both scripts require
+  an access to the DDC channel of the monitor. This is typically provided
+  by framebuffer drivers. decode-edid.pl additionally requires parse-edid,
+  which is part of the read-edid package. ddcmon prints general
+  information, while decode-edid.pl prints timing information for
+  inclusion into your X11 configuration file.
+
+* decode-xeon.pl (perl script)
+  ID ROM data decoding for Xeon processors. Support for sysfs is still
+  missing, so this script doesn't work with 2.6 kernels yet.
