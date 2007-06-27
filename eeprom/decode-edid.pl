@@ -32,10 +32,10 @@
 # displays, such as manufacturer, serial number, physical dimensions and
 # allowed horizontal and vertical refresh rates.
 #
-# Using the LM Sensors modules and tools, you have two possibilities to
+# Using the eeprom kernel driver, you have two possibilities to
 # make use of these data:
-#  1* Use the ddcmon driver and run sensors.
-#  2* Use the eeprom driver and run this script.
+#  1* The ddcmon script.
+#  2* This script.
 # Both solutions will return a different kind of information. The first
 # method will report user-interesting information, such as the model number
 # or the year of manufacturing. The second method will report video-card-

@@ -73,8 +73,8 @@
 #
 # EEPROM data decoding for SDRAM DIMM modules. 
 #
-# Two assumptions: lm_sensors-2.x installed,
-# and Perl is at /usr/bin/perl
+# The eeprom driver must be loaded. For kernels older than 2.6.0, the
+# eeprom driver can be found in the lm-sensors package.
 #
 # use the following command line switches
 #  -f, --format            print nice html output

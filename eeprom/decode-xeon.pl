@@ -17,8 +17,8 @@
 # See ../eeprom/decode-dimms.pl to decode those devices.
 #
 #
-# Two assumptions: lm_sensors-2.3.1 or greater installed,
-# and Perl is at /usr/bin/perl
+# The eeprom driver must be loaded. For kernels older than 2.6.0, the
+# eeprom driver can be found in the lm-sensors package.
 #
 # To do:
 #	Calculate and check checksums for each section

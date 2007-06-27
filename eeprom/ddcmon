@@ -6,7 +6,7 @@
 # Copyright (C) 2003-2004  Jean Delvare <khali@linux-fr.org>
 #
 # Parts inspired from the ddcmon driver and sensors' print_ddcmon function.
-# Copyright (C) 1998-2004  The LM Sensors Group
+# Copyright (C) 1998-2004  Mark D. Studebaker
 #
 # Parts inspired from the fbmon driver (Linux 2.6.10).
 # Copyright (C) 2002  James Simmons <jsimmons@users.sf.net>

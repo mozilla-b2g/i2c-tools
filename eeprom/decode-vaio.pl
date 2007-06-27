@@ -46,8 +46,8 @@
 #
 # EEPROM data decoding for Sony Vaio laptops. 
 #
-# Two assumptions: lm_sensors-2.6.3 or greater installed,
-# and Perl is at /usr/bin/perl
+# The eeprom driver must be loaded. For kernels older than 2.6.0, the
+# eeprom driver can be found in the lm-sensors package.
 #
 # Please note that this is a guess-only work.  Sony support refused to help
 # me, so if someone can provide information, please contact me.
