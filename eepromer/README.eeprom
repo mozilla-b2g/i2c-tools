@@ -1,5 +1,5 @@
 You can use this program to read/write to i2c-eeproms
-like the popular 24C16, 24C08, 24C04,.. In contrast to lm_sensor's eeprommer
+like the popular 24C16, 24C08, 24C04,.. In contrast to eeprommer
 which supports 24C256-type eeproms 24C16ss use 1-byte addresses!
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Warning !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
