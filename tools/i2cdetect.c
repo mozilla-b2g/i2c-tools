@@ -152,7 +152,7 @@ static const struct func all_func[] = {
 	  .name = "I2C Block Write" },
 	{ .value = I2C_FUNC_SMBUS_READ_I2C_BLOCK,
 	  .name = "I2C Block Read" },
-	{ }
+	{ .value = 0, .name = "" }
 };
 
 void print_functionality(unsigned long funcs)

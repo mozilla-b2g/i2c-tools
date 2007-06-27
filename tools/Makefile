@@ -5,7 +5,9 @@
 # Licensed under the GNU Public License.
 
 CC	= gcc
-CFLAGS	= -Wall -I../include
+CFLAGS	= -Wall -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual \
+	  -Wcast-align -Wwrite-strings -Wnested-externs -Winline -W \
+	  -I../include
 
 CFLAGS	+= -O2
 # When debugging, use the following instead
