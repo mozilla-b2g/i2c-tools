@@ -24,9 +24,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "../dump/i2cbusses.h"
-#include "i2c-dev.h"
-#include "version.h"
+#include "i2cbusses.h"
+#include <linux/i2c-dev.h>
+#include "../version.h"
 
 #define MODE_AUTO	0
 #define MODE_QUICK	1
@@ -220,7 +220,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (version) {
-		fprintf(stderr, "i2cdetect version %s\n", LM_VERSION);
+		fprintf(stderr, "i2cdetect version %s\n", VERSION);
 		exit(0);
 	}
 

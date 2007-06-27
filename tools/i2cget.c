@@ -29,8 +29,8 @@
 #include <unistd.h>
 #include "util.h"
 #include "i2cbusses.h"
-#include "i2c-dev.h"
-#include "version.h"
+#include <linux/i2c-dev.h>
+#include "../version.h"
 
 void help(void) __attribute__ ((noreturn));
 
@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (version) {
-		fprintf(stderr, "i2cget version %s\n", LM_VERSION);
+		fprintf(stderr, "i2cget version %s\n", VERSION);
 		exit(0);
 	}
 
