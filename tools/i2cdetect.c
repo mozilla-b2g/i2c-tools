@@ -33,7 +33,7 @@
 #define MODE_READ	2
 #define MODE_FUNC	3
 
-void help(void)
+static void help(void)
 {
 	fprintf(stderr,
 	        "Syntax: i2cdetect [-y] [-a] [-q|-r] I2CBUS [FIRST LAST]\n"
@@ -51,7 +51,7 @@ void help(void)
 	print_i2c_busses(0);
 }
 
-int scan_i2c_bus(int file, const int mode, const int first, const int last)
+static int scan_i2c_bus(int file, int mode, int first, int last)
 {
 	int i, j;
 	int res;
@@ -155,7 +155,7 @@ static const struct func all_func[] = {
 	{ .value = 0, .name = "" }
 };
 
-void print_functionality(unsigned long funcs)
+static void print_functionality(unsigned long funcs)
 {
 	int i;
 	

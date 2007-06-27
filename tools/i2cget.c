@@ -32,9 +32,9 @@
 #include <linux/i2c-dev.h>
 #include "../version.h"
 
-void help(void) __attribute__ ((noreturn));
+static void help(void) __attribute__ ((noreturn));
 
-void help(void)
+static void help(void)
 {
 	fprintf(stderr, "Syntax: i2cget [-f] [-y] I2CBUS CHIP-ADDRESS "
 	        "[DATA-ADDRESS [MODE]]\n"
@@ -50,7 +50,7 @@ void help(void)
 	exit(1);
 }
 
-int check_funcs(int file, int i2cbus, int size, int daddress, int pec)
+static int check_funcs(int file, int i2cbus, int size, int daddress, int pec)
 {
 	unsigned long funcs;
 
@@ -102,7 +102,8 @@ int check_funcs(int file, int i2cbus, int size, int daddress, int pec)
 	return 0;
 }
 
-int confirm(const char *filename, int address, int size, int daddress, int pec)
+static int confirm(const char *filename, int address, int size, int daddress,
+		   int pec)
 {
 	int dont = 0;
 

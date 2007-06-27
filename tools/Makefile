@@ -7,7 +7,7 @@
 CC	= gcc
 CFLAGS	= -Wall -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual \
 	  -Wcast-align -Wwrite-strings -Wnested-externs -Winline -W \
-	  -I../include
+	  -Wundef -Wmissing-prototypes -I../include
 
 CFLAGS	+= -O2
 # When debugging, use the following instead

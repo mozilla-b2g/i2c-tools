@@ -29,7 +29,7 @@
 #include <linux/i2c-dev.h>
 #include "../version.h"
 
-void help(void)
+static void help(void)
 {
 	fprintf(stderr, "Syntax: i2cdump [-f] [-y] I2CBUS ADDRESS [MODE] "
 	        "[BANK [BANKREG]]\n"

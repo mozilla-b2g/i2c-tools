@@ -29,9 +29,9 @@
 #include <linux/i2c-dev.h>
 #include "../version.h"
 
-void help(void) __attribute__ ((noreturn));
+static void help(void) __attribute__ ((noreturn));
 
-void help(void)
+static void help(void)
 {
 	fprintf(stderr, "Syntax: i2cset [-f] [-y] I2CBUS CHIP-ADDRESS DATA-ADDRESS "
 	        "VALUE [MODE] [MASK]\n"
