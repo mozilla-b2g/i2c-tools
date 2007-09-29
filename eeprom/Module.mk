@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2007  Jean Delvare <khali@linux-fr.org>
 #
-# Licensed under the GNU Public License.
+# Licensed under the GNU General Public License.
 
 EEPROM_DIR	:= eeprom
 
