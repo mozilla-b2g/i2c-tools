@@ -4,100 +4,81 @@
 #
 # Licensed under the GNU Public License.
 
-CC	= gcc
-CFLAGS	= -Wall -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual \
-	  -Wcast-align -Wwrite-strings -Wnested-externs -Winline -W \
-	  -Wundef -Wmissing-prototypes -I../include
+TOOLS_DIR	:= tools
 
-CFLAGS	+= -O2
-# When debugging, use the following instead
-#CFLAGS	+= -O -g
+TOOLS_CFLAGS	:= -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual \
+		   -Wcast-align -Wwrite-strings -Wnested-externs -Winline \
+		   -W -Wundef -Wmissing-prototypes -I../include
 
-# Pass linker flags here
-LDFLAGS	=
-
-DESTDIR	=
-prefix	= /usr/local
-sbindir	= $(prefix)/sbin
-mandir	= $(prefix)/share/man
-man8dir	= $(mandir)/man8
-
-INSTALL		:= install
-INSTALL_DATA	:= $(INSTALL) -m 644
-INSTALL_DIR	:= $(INSTALL) -m 755 -d
-INSTALL_PROGRAM	:= $(INSTALL) -m 755
-RM		:= rm -f
-
-PROGRAMS	:= i2cdetect i2cdump i2cset i2cget
-
-all : $(PROGRAMS)
+TOOLS_TARGETS	:= i2cdetect i2cdump i2cset i2cget
 
 #
 # Programs
 #
 
-i2cdetect : i2cdetect.o i2cbusses.o
+$(TOOLS_DIR)/i2cdetect: $(TOOLS_DIR)/i2cdetect.o $(TOOLS_DIR)/i2cbusses.o
 	$(CC) $(LDFLAGS) -o $@ $^
 
-i2cdump : i2cdump.o i2cbusses.o util.o
+$(TOOLS_DIR)/i2cdump: $(TOOLS_DIR)/i2cdump.o $(TOOLS_DIR)/i2cbusses.o $(TOOLS_DIR)/util.o
 	$(CC) $(LDFLAGS) -o $@ $^
 
-i2cset : i2cget.o i2cbusses.o util.o
+$(TOOLS_DIR)/i2cset: $(TOOLS_DIR)/i2cget.o $(TOOLS_DIR)/i2cbusses.o $(TOOLS_DIR)/util.o
 	$(CC) $(LDFLAGS) -o $@ $^
 
-i2cget : i2cset.o i2cbusses.o util.o
+$(TOOLS_DIR)/i2cget: $(TOOLS_DIR)/i2cset.o $(TOOLS_DIR)/i2cbusses.o $(TOOLS_DIR)/util.o
 	$(CC) $(LDFLAGS) -o $@ $^
 
 #
 # Objects
 #
 
-i2cdetect.o : i2cdetect.c i2cbusses.h
-	$(CC) $(CFLAGS) -c $< -o $@
+$(TOOLS_DIR)/i2cdetect.o: $(TOOLS_DIR)/i2cdetect.c $(TOOLS_DIR)/i2cbusses.h
+	$(CC) $(CFLAGS) $(TOOLS_CFLAGS) -c $< -o $@
 
-i2cdump.o : i2cdump.c i2cbusses.h util.h
-	$(CC) $(CFLAGS) -c $< -o $@
+$(TOOLS_DIR)/i2cdump.o: $(TOOLS_DIR)/i2cdump.c $(TOOLS_DIR)/i2cbusses.h $(TOOLS_DIR)/util.h
+	$(CC) $(CFLAGS) $(TOOLS_CFLAGS) -c $< -o $@
 
-i2cset.o : i2cset.c i2cbusses.h util.h
-	$(CC) $(CFLAGS) -c $< -o $@
+$(TOOLS_DIR)/i2cset.o: $(TOOLS_DIR)/i2cset.c $(TOOLS_DIR)/i2cbusses.h $(TOOLS_DIR)/util.h
+	$(CC) $(CFLAGS) $(TOOLS_CFLAGS) -c $< -o $@
 
-i2cget.o : i2cget.c i2cbusses.h util.h
-	$(CC) $(CFLAGS) -c $< -o $@
+$(TOOLS_DIR)/i2cget.o: $(TOOLS_DIR)/i2cget.c $(TOOLS_DIR)/i2cbusses.h $(TOOLS_DIR)/util.h
+	$(CC) $(CFLAGS) $(TOOLS_CFLAGS) -c $< -o $@
 
-i2cbusses.o : i2cbusses.c i2cbusses.h
-	$(CC) $(CFLAGS) -c $< -o $@
+$(TOOLS_DIR)/i2cbusses.o: $(TOOLS_DIR)/i2cbusses.c $(TOOLS_DIR)/i2cbusses.h
+	$(CC) $(CFLAGS) $(TOOLS_CFLAGS) -c $< -o $@
 
-util.o : util.c util.h
-	$(CC) $(CFLAGS) -c $< -o $@
+$(TOOLS_DIR)/util.o: $(TOOLS_DIR)/util.c $(TOOLS_DIR)/util.h
+	$(CC) $(CFLAGS) $(TOOLS_CFLAGS) -c $< -o $@
 
 #
 # Commands
 #
 
-strip : $(PROGRAMS)
-	strip $(PROGRAMS)
+all-tools: $(addprefix $(TOOLS_DIR)/,$(TOOLS_TARGETS))
 
-install : install-bin install-man
+strip-tools: $(addprefix $(TOOLS_DIR)/,$(TOOLS_TARGETS))
+	strip $(addprefix $(TOOLS_DIR)/,$(TOOLS_TARGETS))
 
-uninstall : uninstall-bin uninstall-man
+clean-tools:
+	$(RM) $(addprefix $(TOOLS_DIR)/,*.o $(TOOLS_TARGETS))
 
-install-bin : $(PROGRAMS)
-	$(INSTALL_DIR) $(DESTDIR)$(sbindir)
-	for program in $(PROGRAMS) ; do \
-	$(INSTALL_PROGRAM) $$program $(DESTDIR)$(sbindir) ; done
+install-tools: $(addprefix $(TOOLS_DIR)/,$(TOOLS_TARGETS))
+	$(INSTALL_DIR) $(DESTDIR)$(sbindir) $(DESTDIR)$(man8dir)
+	for program in $(TOOLS_TARGETS) ; do \
+	$(INSTALL_PROGRAM) $(TOOLS_DIR)/$$program $(DESTDIR)$(sbindir) ; \
+	$(INSTALL_DATA) $(TOOLS_DIR)/$$program.8 $(DESTDIR)$(man8dir) ; done
 
-uninstall-bin :
-	for program in $(PROGRAMS) ; do \
-	$(RM) $(DESTDIR)$(sbindir)/$$program ; done
-
-install-man :
-	$(INSTALL_DIR) $(DESTDIR)$(man8dir)
-	for program in $(PROGRAMS) ; do \
-	$(INSTALL_DATA) $$program.8 $(DESTDIR)$(man8dir) ; done
-
-uninstall-man :
-	for program in $(PROGRAMS) ; do \
+uninstall-tools:
+	for program in $(TOOLS_TARGETS) ; do \
+	$(RM) $(DESTDIR)$(sbindir)/$$program ; \
 	$(RM) $(DESTDIR)$(man8dir)/$$program.8 ; done
 
-clean :
-	$(RM) *.o $(PROGRAMS) core
+all: all-tools
+
+strip: strip-tools
+
+clean: clean-tools
+
+install: install-tools
+
+uninstall: uninstall-tools

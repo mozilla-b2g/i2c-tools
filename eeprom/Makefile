@@ -4,35 +4,24 @@
 #
 # Licensed under the GNU Public License.
 
-DESTDIR	=
-prefix	= /usr/local
-bindir	= $(prefix)/bin
+EEPROM_DIR	:= eeprom
 
-INSTALL		:= install
-INSTALL_DIR	:= $(INSTALL) -m 755 -d
-INSTALL_PROGRAM	:= $(INSTALL) -m 755
-RM		:= rm -f
-
-PROGRAMS	:= decode-dimms.pl decode-vaio.pl ddcmon decode-edid.pl \
+EEPROM_TARGETS	:= decode-dimms.pl decode-vaio.pl ddcmon decode-edid.pl \
 		   decode-xeon.pl
-
-all : $(PROGRAMS)
 
 #
 # Commands
 #
 
-install : install-bin
-
-uninstall : uninstall-bin
-
-install-bin : $(PROGRAMS)
+install-eeprom: $(addprefix $(EEPROM_DIR)/,$(EEPROM_TARGETS))
 	$(INSTALL_DIR) $(DESTDIR)$(bindir)
-	for program in $(PROGRAMS) ; do \
-	$(INSTALL_PROGRAM) $$program $(DESTDIR)$(bindir) ; done
+	for program in $(EEPROM_TARGETS) ; do \
+	$(INSTALL_PROGRAM) $(EEPROM_DIR)/$$program $(DESTDIR)$(bindir) ; done
 
-uninstall-bin :
-	for program in $(PROGRAMS) ; do \
+uninstall-eeprom:
+	for program in $(EEPROM_TARGETS) ; do \
 	$(RM) $(DESTDIR)$(bindir)/$$program ; done
 
-clean :
+install: install-eeprom
+
+uninstall: uninstall-eeprom
