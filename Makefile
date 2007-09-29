@@ -24,6 +24,8 @@ CFLAGS	+= -O2
 # When debugging, use the following instead
 #CFLAGS	+= -O -g
 
+KERNELVERSION	:= $(shell uname -r)
+
 .PHONY: all strip clean install uninstall
 
 all:

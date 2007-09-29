@@ -6,8 +6,12 @@
 
 EEPROM_DIR	:= eeprom
 
-EEPROM_TARGETS	:= decode-dimms.pl decode-vaio.pl ddcmon decode-edid.pl \
-		   decode-xeon.pl
+EEPROM_TARGETS	:= decode-dimms.pl decode-vaio.pl ddcmon decode-edid.pl
+
+# decode-xeon.pl was not yet ported to the Linux 2.6 sysfs interface
+ifeq (,$(findstring /2.6., /$(KERNELVERSION)))
+EEPROM_TARGETS	+= decode-xeon.pl
+endif
 
 #
 # Commands
