@@ -10,6 +10,7 @@ bindir	= $(prefix)/bin
 sbindir	= $(prefix)/sbin
 mandir	= $(prefix)/share/man
 man8dir	= $(mandir)/man8
+incdir	= $(prefix)/include
 
 INSTALL		:= install
 INSTALL_DATA	:= $(INSTALL) -m 644
@@ -31,4 +32,5 @@ KERNELVERSION	:= $(shell uname -r)
 all:
 
 include eeprom/Module.mk
+include include/Module.mk
 include tools/Module.mk
