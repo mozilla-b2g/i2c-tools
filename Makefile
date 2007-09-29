@@ -28,5 +28,5 @@ CFLAGS	+= -O2
 
 all:
 
-include eeprom/Makefile
-include tools/Makefile
+include eeprom/Module.mk
+include tools/Module.mk
