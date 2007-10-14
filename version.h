@@ -1,1 +1,1 @@
-#define VERSION "3.0.0-pre"
+#define VERSION "3.0.0"
