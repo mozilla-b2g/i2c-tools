@@ -12,10 +12,10 @@ STUB_DIR	:= stub
 
 install-stub: $(STUB_DIR)/i2c-stub-from-dump
 	$(INSTALL_DIR) $(DESTDIR)$(bindir)
-	$(INSTALL_PROGRAM) $(STUB_DIR)/i2c-stub-from-dump $(DESTDIR)$(bindir)
+	$(INSTALL_PROGRAM) $(STUB_DIR)/i2c-stub-from-dump $(DESTDIR)$(sbindir)
 
 uninstall-stub:
-	$(RM) $(DESTDIR)$(bindir)/i2c-stub-from-dump
+	$(RM) $(DESTDIR)$(sbindir)/i2c-stub-from-dump
 
 install: install-stub
 
