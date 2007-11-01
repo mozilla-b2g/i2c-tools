@@ -27,6 +27,10 @@ category has its own sub-directory:
 * py-smbus
   Python wrapper for SMBus access over i2c-dev. Not installed by default.
 
+* stub
+  A helper script to use with the i2c-stub kernel driver. Installed by
+  default.
+
 * tools
   I2C device detection and register dump tools. These tools rely on the
   "i2c-dev" kernel driver. They are installed by default.

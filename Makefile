@@ -33,4 +33,5 @@ all:
 
 include eeprom/Module.mk
 include include/Module.mk
+include stub/Module.mk
 include tools/Module.mk
