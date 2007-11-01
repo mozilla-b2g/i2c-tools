@@ -48,7 +48,6 @@ int main(int argc, char *argv[])
 	char *end;
 	int res, i2cbus, address, size, file;
 	int value, daddress, vmask = 0;
-	int e1;
 	char filename[20];
 	unsigned long funcs;
 	int pec = 0;
@@ -232,6 +231,7 @@ int main(int argc, char *argv[])
 		if (ioctl(file, I2C_PEC, 1) < 0) {
 			fprintf(stderr, "Error: Could not set PEC: %s\n",
 			        strerror(errno));
+			close(file);
 			exit(1);
 		}
 		if (!(funcs & (I2C_FUNC_SMBUS_PEC | I2C_FUNC_I2C))) {
@@ -240,15 +240,15 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	e1 = 0;
 	if (size == I2C_SMBUS_WORD_DATA) {
 		res = i2c_smbus_write_word_data(file, daddress, value);
 	} else {
 		res = i2c_smbus_write_byte_data(file, daddress, value);
 	}
 	if (res < 0) {
-		fprintf(stderr, "Warning - write failed\n");
-		e1++;
+		fprintf(stderr, "Error: Write failed\n");
+		close(file);
+		exit(1);
 	}
 
 	if (pec) {
@@ -256,7 +256,7 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "Error: Could not clear PEC: %s\n",
 				strerror(errno));
 			close(file);
-			exit(e1);
+			exit(1);
 		}
 	}
 
@@ -268,19 +268,17 @@ int main(int argc, char *argv[])
 	close(file);
 
 	if (res < 0) {
-		fprintf(stderr, "Warning - readback failed\n");
-		e1++;
+		printf("Warning - readback failed\n");
 	} else
 	if (res != value) {
-		e1++;
-		fprintf(stderr, "Warning - data mismatch - wrote "
-		        "0x%0*x, read back 0x%0*x\n",
-		        size == I2C_SMBUS_WORD_DATA ? 4 : 2, value,
-		        size == I2C_SMBUS_WORD_DATA ? 4 : 2, res);
+		printf("Warning - data mismatch - wrote "
+		       "0x%0*x, read back 0x%0*x\n",
+		       size == I2C_SMBUS_WORD_DATA ? 4 : 2, value,
+		       size == I2C_SMBUS_WORD_DATA ? 4 : 2, res);
 	} else {
-		fprintf(stderr, "Value 0x%0*x written, readback matched\n",
-		        size == I2C_SMBUS_WORD_DATA ? 4 : 2, value);
+		printf("Value 0x%0*x written, readback matched\n",
+		       size == I2C_SMBUS_WORD_DATA ? 4 : 2, value);
 	}
 
-	exit(e1);
+	exit(0);
 }

@@ -1,5 +1,9 @@
 i2c-tools CHANGES
 -----------------
 
+SVN
+  i2cset: Final status messages go to stdout
+          Return success even when readback fails or doesn't match
+
 3.0.0 (2007-10-14)
   Initial release
