@@ -3,6 +3,7 @@ i2c-tools CHANGES
 
 SVN
   decode-dimms: Fix DDR2 SDRAM module speed decoding
+                Update manufacturer IDs.
   i2cset: Final status messages go to stdout
           Return success even when readback fails or doesn't match
   i2c-stub-from-dump: New helper script to use with i2c-stub
