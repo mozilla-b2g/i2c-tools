@@ -7,6 +7,7 @@ SVN
   decode-vaio: Private data might not be readable by non-root users
                Print the asset tag
                Fix the timestamp decoding
+  i2cdump: Fix I2C block mode error code
   i2cset: Final status messages go to stdout
           Return success even when readback fails or doesn't match
   i2c-stub-from-dump: New helper script to use with i2c-stub
