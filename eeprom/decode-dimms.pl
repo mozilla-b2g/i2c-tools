@@ -1111,6 +1111,14 @@ for my $i ( 0 .. $#dimm_list ) {
 	$_=$dimm_list[$i];
 	if (($use_sysfs && /^\d+-\d+$/)
 	 || (!$use_sysfs && /^eeprom-/)) {
+		my @bytes = readspd64(0, $dimm_list[$i]);
+		my $dimm_checksum = 0;
+		$dimm_checksum += $bytes[$_] foreach (0 .. 62);
+		$dimm_checksum &= 0xff;
+
+		next unless $bytes[63] == $dimm_checksum || $opt_igncheck;
+		$dimm_count++;
+
 		print "<b><u>" if $opt_html;
 		printl2 "\n\nDecoding EEPROM", ($use_sysfs ?
 			"/sys/bus/i2c/drivers/eeprom/$dimm_list[$i]" :
@@ -1126,23 +1134,12 @@ for my $i ( 0 .. $#dimm_list ) {
 # Decode first 3 bytes (0-2)
 		prints "SPD EEPROM Information";
 
-		my @bytes = readspd64(0, $dimm_list[$i]);
-		my $dimm_checksum = 0;
-		$dimm_checksum += $bytes[$_] foreach (0 .. 62);
-		$dimm_checksum &= 0xff;
-
 		my $l = "EEPROM Checksum of bytes 0-62";
 		printl $l, ($bytes[63] == $dimm_checksum ?
 			sprintf("OK (0x%.2X)", $bytes[63]):
 			sprintf("Bad\n(found 0x%.2X, calculated 0x%.2X)\n",
 				$bytes[63], $dimm_checksum));
 
-		unless ($bytes[63] == $dimm_checksum or $opt_igncheck) {
-			print "</table>\n" if $opt_html;
-			next;
-		}
-		
-		$dimm_count++;
 		# Simple heuristic to detect Rambus
 		my $is_rambus = $bytes[0] < 4;
 		my $temp;
