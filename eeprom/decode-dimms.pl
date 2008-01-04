@@ -1,8 +1,11 @@
 #!/usr/bin/perl -w
 #
+# EEPROM data decoder for SDRAM DIMM modules
+#
 # Copyright 1998, 1999 Philip Edelbrock <phil@netroedge.com>
 # modified by Christian Zuckschwerdt <zany@triq.net>
 # modified by Burkart Lingner <burkart@bollchen.de>
+# Copyright (C) 2005-2008  Jean Delvare <khali@linux-fr.org>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -18,62 +21,6 @@
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #
-# Version 0.4  1999  Philip Edelbrock <phil@netroedge.com>
-# Version 0.5  2000-03-30  Christian Zuckschwerdt <zany@triq.net>
-#  html output (selectable by commandline switches)
-# Version 0.6  2000-09-16  Christian Zuckschwerdt <zany@triq.net>
-#  updated according to SPD Spec Rev 1.2B
-#  see http://developer.intel.com/technology/memory/pc133sdram/spec/Spdsd12b.htm
-# Version 0.7  2002-11-08  Jean Delvare <khali@linux-fr.org>
-#  pass -w and use strict
-#  valid HTML 3.2 output (--format mode)
-#  miscellaneous formatting enhancements and bug fixes
-#  clearer HTML output (original patch by Nick Kurshev <nickols_k@mail.ru>)
-#  stop decoding on checksum error by default (--checksum option forces)
-# Version 0.8  2005-06-20  Burkart Lingner <burkart@bollchen.de>
-#  adapted to Kernel 2.6's /sys filesystem
-# Version 0.9  2005-07-15  Jean Delvare <khali@linux-fr.org>
-#  fix perl warning
-#  fix typo
-#  refactor some code
-# Version 1.0  2005-09-18  Jean Delvare <khali@linux-fr.org>
-#  add large lookup tables for manufacturer names, based on data
-#  provided by Rudolf Marek, taken from:
-#  http://www.jedec.org/download/search/JEP106r.pdf
-# Version 1.1  2006-01-22  Jean Delvare <khali@linux-fr.org>
-#  improve the text output, making it hopefully clearer
-#  read eeprom by 64-byte blocks, this allows some code cleanups
-#  use sysopen/sysread instead of open/read for better performance
-#  verify checksum before decoding anything
-# Version 1.2  2006-05-15  Jean Delvare <khali@linux-fr.org>
-#  implement per-memory-type decoding
-#  don't decode revision code, manufacturing date and assembly serial
-#  number where not set
-#  decode the manufacturing date to an ISO8601 date
-# Version 1.3  2006-05-21  Jean Delvare <khali@linux-fr.org>
-#  detect undefined manufacturer code and handle it properly
-#  round up timing data
-#  minor display adjustments
-#  group cycle and access times, display the CAS value for each (SDRAM)
-#  refactor some bitfield tests into loops (SDRAM)
-#  display latencies and burst length on a single line (SDRAM)
-#  don't display manufacturing location when undefined
-#  check that the manufacturing date is proper BCD, else fall back to
-#  hexadecimal display
-# Version 1.4  2006-05-26  Jean Delvare <khali@linux-fr.org>
-#  fix latencies decoding (SDRAM)
-#  fix CAS latency decoding (DDR SDRAM)
-#  decode latencies, timings and module height (DDR SDRAM)
-#  decode size (Direct Rambus, Rambus)
-#  decode latencies and timings (DDR2 SDRAM)
-#  SPD revision decoding depends on memory type
-#  use more user-friendly labels
-#  fix HTML formatted output on checksum error
-# Version 1.5  2007-11-08  Jean Delvare <khali@linux-fr.org>
-#  fix module speed (DDR2 SDRAM)
-#
-#
-# EEPROM data decoding for SDRAM DIMM modules. 
 #
 # The eeprom driver must be loaded. For kernels older than 2.6.0, the
 # eeprom driver can be found in the lm-sensors package.
