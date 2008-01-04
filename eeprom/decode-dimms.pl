@@ -47,7 +47,11 @@ use strict;
 use POSIX;
 use Fcntl qw(:DEFAULT :seek);
 use vars qw($opt_html $opt_body $opt_bodyonly $opt_igncheck $use_sysfs
-	    @vendors %decode_callback);
+	    @vendors %decode_callback $revision);
+
+$revision = '$Revision$ ($Date$)';
+$revision =~ s/\$\w+: (.*?) \$/$1/g;
+$revision =~ s/ \([^()]*\)//;
 
 @vendors = (
 ["AMD", "AMI", "Fairchild", "Fujitsu",
@@ -386,6 +390,19 @@ sub printh ($$) # print header w/ given text
 		print "<p>$sub</p>\n";
 	} else {
 		print "\n$header\n$sub\n";
+	}
+}
+
+sub printc ($) # print comment
+{
+	my ($comment) = @_;
+	if ($opt_html) {
+		$comment =~ s/</\&lt;/sg;
+		$comment =~ s/>/\&gt;/sg;
+		$comment =~ s/\n/<br>\n/sg;
+		print "<!-- $comment -->\n";
+	} else {
+		print "# $comment\n";
 	}
 }
 
@@ -1036,10 +1053,10 @@ if ($opt_body)
 		  "</head><body>\n";
 }
 
+printc "$0 version $revision";
 printh 'Memory Serial Presence Detect Decoder',
 'By Philip Edelbrock, Christian Zuckschwerdt, Burkart Lingner,
-Jean Delvare and others
-Version 2.10.2';
+Jean Delvare and others';
 
 
 my $dimm_count=0;
