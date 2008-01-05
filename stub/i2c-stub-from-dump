@@ -24,6 +24,27 @@
 use strict;
 use vars qw($bus_nr $addr $count);
 
+# Kernel version detection code by Mark M. Hoffman,
+# copied from sensors-detect.
+use vars qw(@kernel_version);
+
+sub initialize_kernel_version
+{
+	`uname -r` =~ /(\d+)\.(\d+)\.(\d+)(.*)/;
+	@kernel_version = ($1, $2, $3, $4);
+}
+
+sub kernel_version_at_least
+{
+	my ($vers, $plvl, $slvl) = @_;
+	return 1 if ($kernel_version[0]  > $vers ||
+	              ($kernel_version[0] == $vers && 
+	                ($kernel_version[1]  > $plvl || 
+	                  ($kernel_version[1] == $plvl && 
+	                    ($kernel_version[2] >= $slvl)))));
+	return 0;
+}
+
 # Find out the i2c bus number of i2c-stub
 sub get_i2c_stub_bus_number
 {
@@ -62,9 +83,15 @@ if ($addr !~ m/^0x[0-7][0-9a-f]$/i) {
 	exit 1;
 }
 
+initialize_kernel_version();
+
 # Load the required kernel drivers if needed
 system("/sbin/modprobe", "i2c-dev") == 0 || exit 1;
-system("/sbin/modprobe", "i2c-stub", "chip_addr=$addr") == 0 || exit 1;
+if (kernel_version_at_least(2, 6, 19)) {
+	system("/sbin/modprobe", "i2c-stub", "chip_addr=$addr") == 0 || exit 1;
+} else {
+	system("/sbin/modprobe", "i2c-stub") == 0 || exit 1;
+}
 sleep(1); # udev may take some time to create the device node
 
 $bus_nr = get_i2c_stub_bus_number();
