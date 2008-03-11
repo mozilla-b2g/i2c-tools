@@ -1,4 +1,4 @@
-.TH I2CDUMP 8 "June 2007"
+.TH I2CDUMP 8 "March 2008"
 .SH NAME
 i2cdump \- examine I2C registers
 
@@ -65,9 +65,9 @@ starts with WRITING a byte to the chip. On most chips it will be stored in the
 address pointer register, which is OK, but some chips with a single register
 or no (visible) register at all will most likely see this as a real WRITE,
 resulting in possible misbehavior or corruption. Do not use i2cdump
-on random addresses. Anyway, it is of little use unless you have an idea of
-what you are looking for and have some general knowledge about hardware
-monitoring chips internals.
+on random addresses. Anyway, it is of little use unless you have good
+knowledge of the chip you're working with and an idea of what you are looking
+for.
 
 .SH SEE ALSO
 i2cset(8), i2cdetect(8), isadump(8)
