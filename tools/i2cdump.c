@@ -2,7 +2,7 @@
     i2cdump.c - a user-space program to dump I2C registers
     Copyright (C) 2002-2003  Frodo Looijaard <frodol@dds.nl>, and
                              Mark D. Studebaker <mdsxyz123@yahoo.com>
-    Copyright (C) 2004-2007  Jean Delvare <khali@linux-fr.org>
+    Copyright (C) 2004-2008  Jean Delvare <khali@linux-fr.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,8 +31,8 @@
 
 static void help(void)
 {
-	fprintf(stderr, "Syntax: i2cdump [-f] [-y] I2CBUS ADDRESS [MODE] "
-	        "[BANK [BANKREG]]\n"
+	fprintf(stderr, "Syntax: i2cdump [-f] [-r first-last] [-y] I2CBUS "
+	        "ADDRESS [MODE] [BANK [BANKREG]]\n"
 	        "        i2cdump -V\n"
 	        "  MODE is one of:\n"
 		"    b (byte, default)\n"
@@ -61,12 +61,15 @@ int main(int argc, char *argv[])
 	int pec = 0, even = 0;
 	int flags = 0;
 	int force = 0, yes = 0, version = 0;
+	const char *range = NULL;
+	int first = 0x00, last = 0xff;
 
 	/* handle (optional) flags first */
 	while (1+flags < argc && argv[1+flags][0] == '-') {
 		switch (argv[1+flags][1]) {
 		case 'V': version = 1; break;
 		case 'f': force = 1; break;
+		case 'r': range = argv[1+(++flags)]; break;
 		case 'y': yes = 1; break;
 		default:
 			fprintf(stderr, "Warning: Unsupported flag "
@@ -179,6 +182,39 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	/* Parse optional range string */
+	if (range) {
+		char *dash;
+
+		first = strtol(range, &dash, 0);
+		if (dash == range || *dash != '-'
+		 || first < 0 || first > 0xff) {
+			fprintf(stderr, "Error: Invalid range parameter!\n");
+			exit(1);
+		}
+		last = strtol(++dash, &end, 0);
+		if (end == dash || *end != '\0'
+		 || last < first || last > 0xff) {
+			fprintf(stderr, "Error: Invalid range parameter!\n");
+			exit(1);
+		}
+
+		/* Check mode constraints */
+		switch (size) {
+		case I2C_SMBUS_BYTE:
+		case I2C_SMBUS_BYTE_DATA:
+			break;
+		case I2C_SMBUS_WORD_DATA:
+			if (!even || (!(first%2) && last%2))
+				break;
+			/* Fall through */
+		default:
+			fprintf(stderr,
+			        "Error: Range parameter not compatible with selected mode!\n");
+			exit(1);
+		}
+	}
+
 	file = open_i2c_dev(i2cbus, filename, 0);
 	if (file < 0) {
 		exit(1);
@@ -273,6 +309,11 @@ int main(int argc, char *argv[])
 				fprintf(stderr, "Probing bank %d using bank "
 				        "register 0x%02x.\n", bank, bankreg);
 		}
+		if (range) {
+			fprintf(stderr,
+			        "Probe range limited to 0x%02x-0x%02x.\n",
+			        first, last);
+		}
 
 		fprintf(stderr, "Continue? [Y/n] ");
 		fflush(stderr);
@@ -334,7 +375,7 @@ int main(int argc, char *argv[])
 		}
 
 		if (size == I2C_SMBUS_BYTE) {
-			res = i2c_smbus_write_byte(file, 0);
+			res = i2c_smbus_write_byte(file, first);
 			if(res != 0) {
 				fprintf(stderr, "Error: Write start address "
 				        "failed, return code %d\n", res);
@@ -347,9 +388,24 @@ int main(int argc, char *argv[])
 		for (i = 0; i < 256; i+=16) {
 			if (size == I2C_SMBUS_BLOCK_DATA && i >= s_length)
 				break;
+			if (i/16 < first/16)
+				continue;
+			if (i/16 > last/16)
+				break;
+
 			printf("%02x: ", i);
 			for (j = 0; j < 16; j++) {
 				fflush(stdout);
+				/* Skip unwanted registers */
+				if (i+j < first || i+j > last) {
+					printf("   ");
+					if (size == I2C_SMBUS_WORD_DATA) {
+						printf("   ");
+						j++;
+					}
+					continue;
+				}
+
 				if (size == I2C_SMBUS_BYTE_DATA) {
 					block[i+j] = res =
 					  i2c_smbus_read_byte_data(file, i+j);
@@ -390,6 +446,11 @@ int main(int argc, char *argv[])
 				if (size == I2C_SMBUS_BLOCK_DATA
 				 && i+j >= s_length)
 					break;
+				/* Skip unwanted registers */
+				if (i+j < first || i+j > last) {
+					printf(" ");
+					continue;
+				}
 
 				res = block[i+j];
 				if (res < 0)
@@ -410,8 +471,19 @@ int main(int argc, char *argv[])
 	} else {
 		printf("     0,8  1,9  2,a  3,b  4,c  5,d  6,e  7,f\n");
 		for (i = 0; i < 256; i+=8) {
+			if (i/8 < first/8)
+				continue;
+			if (i/8 > last/8)
+				break;
+
 			printf("%02x: ", i);
 			for (j = 0; j < 8; j++) {
+				/* Skip unwanted registers */
+				if (i+j < first || i+j > last) {
+					printf("     ");
+					continue;
+				}
+
 				res = i2c_smbus_read_word_data(file, i+j);
 				if (res < 0)
 					printf("XXXX ");

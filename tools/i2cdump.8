@@ -5,6 +5,7 @@ i2cdump \- examine I2C registers
 .SH SYNOPSIS
 .B i2cdump
 .RB [ -f ]
+.RB [ "-r first-last" ]
 .RB [ -y ]
 .I i2cbus
 .I address
@@ -29,6 +30,11 @@ will refuse to access a device which is already under the control of a
 kernel driver. Using this flag is dangerous, it can seriously confuse the
 kernel driver in question. It can also cause i2cdump to return invalid
 results. So use at your own risk and only if you know what you're doing.
+.TP
+.B -r first-last
+Limit the range of registers being accessed. This option is only available
+with modes \fBb\fP, \fBw\fP, \fBc\fP and \fBW\fP. For mode \fBW\fP,
+\fBfirst\fR must be even and \fBlast\fR must be odd.
 .TP
 .B -y
 Disable interactive mode. By default, i2cdump will wait for a confirmation
