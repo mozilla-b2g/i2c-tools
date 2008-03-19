@@ -1053,7 +1053,7 @@ if ($opt_body)
 		  "</head><body>\n";
 }
 
-printc "$0 version $revision";
+printc "decode-dimms version $revision";
 printh 'Memory Serial Presence Detect Decoder',
 'By Philip Edelbrock, Christian Zuckschwerdt, Burkart Lingner,
 Jean Delvare and others';
