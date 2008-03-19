@@ -1,4 +1,4 @@
-.TH I2C-STUB-FROM-DUMP 8 "November 2007"
+.TH I2C-STUB-FROM-DUMP 8 "March 2008"
 .SH NAME
 i2c-stub-from-dump \- feed i2c-stub with a dump file
 
@@ -26,7 +26,9 @@ chip in question lives at address 0x4c on I2C bus 0, you would run:
         i2cdump -y 0 0x4c b > chip.dump
 
 Adjust the bus number and chip address for your case. i2cdetect can help
-you find out their values.
+you find out their values. If the device uses word (16-bit) register
+access instead of the traditional byte (8-bit) access, use mode \fBw\fR
+instead of \fBb\fR.
 
 Copy the dump file to system B.
 
@@ -40,14 +42,11 @@ Again, adjust the address as needed.
 
 .SH LIMITATIONS
 There are some limitations to the kind of devices that can be handled:
-.IP \(bu "\w'\(bu'u+1n"
-Device must only use byte register access. i2c-stub supports word
-access but i2c-stub-from-dump doesn't (yet).
 .IP \(bu
 Device must not have banks (as most Winbond devices do).
 
 .SH SEE ALSO
- i2cdump(8), i2cdetect(8), i2cset(8)
+i2cdump(8), i2cdetect(8), i2cset(8)
 
 .SH AUTHOR
 Jean Delvare
