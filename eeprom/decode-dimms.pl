@@ -32,9 +32,9 @@
 #  -c, --checksum          decode completely even if checksum fails
 #  -h, --help              display this usage summary
 #
-# References: 
-# PC SDRAM Serial Presence 
-# Detect (SPD) Specification, Intel, 
+# References:
+# PC SDRAM Serial Presence
+# Detect (SPD) Specification, Intel,
 # 1997,1999, Rev 1.2B
 #
 # Jedec Standards 4.1.x & 4.5.x
@@ -231,9 +231,9 @@ $revision =~ s/ \([^()]*\)//;
  "uNav Microelectronics", "Tarari, Inc.", "Ambric, Inc.", "Newport Media, Inc.", "VMTS",
  "Enuclia Semiconductor, Inc.", "Virtium Technology Inc.", "Solid State System Co., Ltd.", "Kian Tech LLC",
  "Artimi", "Power Quotient International", "Avago Technologies", "ADTechnology", "Sigma Designs",
- "SiCortex, Inc.", "Ventura Technology Group", "eASIC", "M.H.S. SAS", "Micro Star International", 
- "Rapport Inc.", "Makway International", "Broad Reach Engineering Co.", 
- "Semiconductor Mfg Intl Corp", "SiConnect", "FCI USA Inc.", "Validity Sensors", 
+ "SiCortex, Inc.", "Ventura Technology Group", "eASIC", "M.H.S. SAS", "Micro Star International",
+ "Rapport Inc.", "Makway International", "Broad Reach Engineering Co.",
+ "Semiconductor Mfg Intl Corp", "SiConnect", "FCI USA Inc.", "Validity Sensors",
  "Coney Technology Co. Ltd.", "Spans Logic", "Neterion Inc.", "Qimonda",
  "New Japan Radio Co. Ltd.", "Velogix", "Montalvo Systems", "iVivity Inc.", "Walton Chaintech",
  "AENEON", "Lorom Industrial Co. Ltd.", "Radiospire Networks", "Sensio Technologies, Inc.",
@@ -262,7 +262,7 @@ sub spd_written(@)
 {
 	my $all_00 = 1;
 	my $all_ff = 1;
-	
+
 	foreach my $b (@_) {
 		$all_00 = 0 unless $b == 0x00;
 		$all_ff = 0 unless $b == 0xff;
@@ -292,7 +292,7 @@ sub manufacturer(@)
 	my $first;
 
 	return ("Undefined", []) unless spd_written(@bytes);
-	
+
 	while (defined($first = shift(@bytes)) && $first == 0x7F) {
 		$ai++;
 	}
@@ -426,15 +426,15 @@ sub decode_sdr_sdram($)
 
 	my $k=0;
 	my $ii=0;
-	
+
 	$ii = ($bytes->[3] & 0x0f) + ($bytes->[4] & 0x0f) - 17;
 	if (($bytes->[5] <= 8) && ($bytes->[17] <= 8)) {
 		 $k = $bytes->[5] * $bytes->[17];
 	}
-	
-	if($ii > 0 && $ii <= 12 && $k > 0) {
-		printl "Size", ((1 << $ii) * $k) . " MB"; }
-	else { 
+
+	if ($ii > 0 && $ii <= 12 && $k > 0) {
+		printl "Size", ((1 << $ii) * $k) . " MB";
+	} else {
 		printl "INVALID SIZE", $bytes->[3] . "," . $bytes->[4] . "," .
 				       $bytes->[5] . "," . $bytes->[17];
 	}
@@ -722,15 +722,15 @@ sub decode_ddr_sdram($)
 #size computation
 	my $k=0;
 	my $ii=0;
-	
+
 	$ii = ($bytes->[3] & 0x0f) + ($bytes->[4] & 0x0f) - 17;
 	if (($bytes->[5] <= 8) && ($bytes->[17] <= 8)) {
 		 $k = $bytes->[5] * $bytes->[17];
 	}
-	
-	if($ii > 0 && $ii <= 12 && $k > 0) {
-		printl "Size", ((1 << $ii) * $k) . " MB"; }
-	else { 
+
+	if ($ii > 0 && $ii <= 12 && $k > 0) {
+		printl "Size", ((1 << $ii) * $k) . " MB";
+	} else {
 		printl "INVALID SIZE", $bytes->[3] . ", " . $bytes->[4] . ", " .
 				       $bytes->[5] . ", " . $bytes->[17];
 	}
@@ -818,7 +818,7 @@ sub ddr2_sdram_ctime($)
 {
 	my $byte = shift;
 	my $ctime;
-	
+
 	$ctime = $byte >> 4;
 	if (($byte & 0xf) <= 9) { $ctime += ($byte & 0xf) * 0.1; }
 	elsif (($byte & 0xf) == 10) { $ctime += 0.25; }
@@ -833,7 +833,7 @@ sub ddr2_sdram_atime($)
 {
 	my $byte = shift;
 	my $atime;
-	
+
 	$atime = ($byte >> 4) * 0.1 + ($byte & 0xf) * 0.01;
 
 	return $atime;
@@ -907,9 +907,9 @@ sub decode_ddr2_sdram($)
 
 	$ii = ($bytes->[3] & 0x0f) + ($bytes->[4] & 0x0f) - 17;
 	$k = (($bytes->[5] & 0x7) + 1) * $bytes->[17];
-	
+
 	if($ii > 0 && $ii <= 12 && $k > 0) {
-		printl "Size", ((1 << $ii) * $k) . " MB"; 
+		printl "Size", ((1 << $ii) * $k) . " MB";
 	} else {
 		printl "INVALID SIZE", $bytes->[3] . "," . $bytes->[4] . "," .
 				       $bytes->[5] . "," . $bytes->[17];
@@ -953,7 +953,7 @@ sub decode_ddr2_sdram($)
 	my $trcd;
 	my $trp;
 	my $tras;
-	
+
 	$trcd =($bytes->[29] >> 2)+(($bytes->[29] & 3)*0.25);
 	$trp =($bytes->[27] >> 2)+(($bytes->[27] & 3)*0.25);
 	$tras =$bytes->[30];
@@ -1032,7 +1032,7 @@ sub decode_direct_rambus($)
 	my $ii;
 
 	$ii = ($bytes->[4] & 0x0f) + ($bytes->[4] >> 4) + ($bytes->[5] & 0x07) - 13;
-	
+
 	if ($ii > 0 && $ii < 16) {
 		printl "Size", (1 << $ii) . " MB";
 	} else {
@@ -1050,9 +1050,9 @@ sub decode_rambus($)
 	prints "Memory Characteristics";
 
 	my $ii;
-	
+
 	$ii = ($bytes->[3] & 0x0f) + ($bytes->[3] >> 4) + ($bytes->[5] & 0x07) - 13;
-	
+
 	if ($ii > 0 && $ii < 16) {
 		printl "Size", (1 << $ii) . " MB";
 	} else {
@@ -1217,7 +1217,7 @@ for my $i ( 0 .. $#dimm_list ) {
 		if ($bytes[1] <= 14) {
 			printl $l, 2**$bytes[1];
 		} elsif ($bytes[1] == 0) {
-			printl $l, "RFU"; 
+			printl $l, "RFU";
 		} else { printl $l, "ERROR!"; }
 
 		$l = "Fundamental Memory type";
@@ -1245,7 +1245,7 @@ for my $i ( 0 .. $#dimm_list ) {
 		prints "Manufacturing Information";
 
 		@bytes = readspd64(64, $dimm_list[$i]);
-		
+
 		$l = "Manufacturer";
 		# $extra is a reference to an array containing up to
 		# 7 extra bytes from the Manufacturer field. Sometimes
@@ -1255,7 +1255,7 @@ for my $i ( 0 .. $#dimm_list ) {
 		$l = "Custom Manufacturer Data";
 		$temp = manufacturer_data(@{$extra});
 		printl $l, $temp if defined $temp;
-		
+
 		if (spd_written($bytes[8])) {
 			# Try the location code as ASCII first, as earlier specifications
 			# suggested this. As newer specifications don't mention it anymore,
@@ -1265,17 +1265,17 @@ for my $i ( 0 .. $#dimm_list ) {
 			      : sprintf("0x%.2X", $bytes[8]);
 			printl $l, $temp;
 		}
-		
+
 		$l = "Part Number";
 		$temp = part_number(@bytes[9..26]);
 		printl $l, $temp;
-		
+
 		if (spd_written(@bytes[27..28])) {
 			$l = "Revision Code";
 			$temp = sprintf("0x%02X%02X\n", @bytes[27..28]);
 			printl $l, $temp;
 		}
-		
+
 		if (spd_written(@bytes[29..30])) {
 			$l = "Manufacturing Date";
 			# In theory the year and week are in BCD format, but
@@ -1294,7 +1294,7 @@ for my $i ( 0 .. $#dimm_list ) {
 			}
 			printl $l, $temp;
 		}
-		
+
 		if (spd_written(@bytes[31..34])) {
 			$l = "Assembly Serial Number";
 			$temp = sprintf("0x%02X%02X%02X%02X\n",
@@ -1308,7 +1308,7 @@ for my $i ( 0 .. $#dimm_list ) {
 		if ($type eq "SDR SDRAM") {
 			decode_intel_spec_freq(\@bytes);
 		}
-		
+
 		print "</table>\n" if $opt_html;
 	}
 }
