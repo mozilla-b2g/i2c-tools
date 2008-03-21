@@ -3,8 +3,9 @@ i2c-tools CHANGES
 
 SVN
   decode-dimms: Fix DDR2 SDRAM module speed decoding
-                Update manufacturer IDs.
+                Update manufacturer IDs
                 Don't print anything by default if checksum fails
+                Decode all DDR2 SDRAM timing information
   decode-vaio: Private data might not be readable by non-root users
                Print the asset tag
                Fix the timestamp decoding

@@ -406,6 +406,11 @@ sub printc ($) # print comment
 	}
 }
 
+sub tns($) # print a time in ns
+{
+	return sprintf("%3.2f ns", $_[0]);
+}
+
 # Parameter: bytes 0-63
 sub decode_sdr_sdram($)
 {
@@ -834,6 +839,41 @@ sub ddr2_sdram_atime($)
 	return $atime;
 }
 
+# Base, high-bit, 3-bit fraction code
+sub ddr2_sdram_rtime($$$)
+{
+	my ($rtime, $msb, $ext) = @_;
+	my @table = (0, .25, .33, .50, .66, .75);
+
+	return $rtime + $msb * 256 + $table[$ext];
+}
+
+sub ddr2_module_types($)
+{
+	my $byte = shift;
+	my @types = qw(RDIMM UDIMM SO-DIMM Micro-DIMM Mini-RDIMM Mini-UDIMM);
+	my @widths = (133.35, 133.25, 67.6, 45.5, 82.0, 82.0);
+	my @suptypes;
+	local $_;
+
+	foreach (0..5) {
+		push @suptypes, "$types[$_] ($widths[$_] mm)"
+			if ($byte & (1 << $_));
+	}
+
+	return @suptypes;
+}
+
+sub ddr2_refresh_rate($)
+{
+	my $byte = shift;
+	my @refresh = qw(Normal Reduced Reduced Extended Extended Extended);
+	my @refresht = (15.625, 3.9, 7.8, 31.3, 62.5, 125);
+
+	return "$refresh[$byte & 0x7f] ($refresht[$byte & 0x7f] us)".
+	       ($byte & 0x80 ? " - Self Refresh" : "");
+}
+
 # Parameter: bytes 0-63
 sub decode_ddr2_sdram($)
 {
@@ -875,6 +915,32 @@ sub decode_ddr2_sdram($)
 				       $bytes->[5] . "," . $bytes->[17];
 	}
 
+	printl "Banks x Rows x Columns x Bits",
+	       join(' x ', $bytes->[17], $bytes->[3], $bytes->[4], $bytes->[6]);
+	printl "Ranks", ($bytes->[5] & 7) + 1;
+
+	printl "SDRAM Device Width", $bytes->[13]." bits";
+
+	my @heights = ('< 25.4', '25.4', '25.4 - 30.0', '30.0', '30.5', '> 30.5');
+	printl "Module Height", $heights[$bytes->[5] >> 5]." mm";
+
+	my @suptypes = ddr2_module_types($bytes->[20]);
+	printl "Module Type".(@suptypes > 1 ? 's' : ''), join(', ', @suptypes);
+
+	printl "DRAM Package", $bytes->[5] & 0x10 ? "Stack" : "Planar";
+
+	my @volts = ("TTL (5V Tolerant)", "LVTTL", "HSTL 1.5V",
+		     "SSTL 3.3V", "SSTL 2.5V", "SSTL 1.8V", "TBD");
+	printl "Voltage Interface Level", $volts[$bytes->[8]];
+
+	printl "Refresh Rate", ddr2_refresh_rate($bytes->[12]);
+
+	my @burst;
+	push @burst, 4 if ($bytes->[16] & 4);
+	push @burst, 8 if ($bytes->[16] & 8);
+	$burst[0] = 'None' if !@burst;
+	printl "Supported Burst Lengths", join(', ', @burst);
+
 	my $highestCAS = 0;
 	my %cas;
 	for ($ii = 2; $ii < 7; $ii++) {
@@ -899,31 +965,60 @@ sub decode_ddr2_sdram($)
 		ceil($tras/$ctime);
 
 # latencies
-	if (keys %cas) { $temp = join ', ', sort { $b <=> $a } keys %cas; }
+	if (keys %cas) { $temp = join ', ', map("${_}T", sort { $b <=> $a } keys %cas); }
 	else { $temp = "None"; }
-	printl "Supported CAS Latencies", $temp;
+	printl "Supported CAS Latencies (tCL)", $temp;
 
 # timings
 	if (exists $cas{$highestCAS}) {
-		printl "Minimum Cycle Time (CAS $highestCAS)",
-		       "$ctime ns";
-		printl "Maximum Access Time (CAS $highestCAS)",
-		       ddr2_sdram_atime($bytes->[10]) . " ns";
+		printl "Minimum Cycle Time at CAS $highestCAS (tCK min)",
+		       tns($ctime);
+		printl "Maximum Access Time at CAS $highestCAS (tAC)",
+		       tns(ddr2_sdram_atime($bytes->[10]));
 	}
 
 	if (exists $cas{$highestCAS-1} && spd_written(@$bytes[23..24])) {
-		printl "Minimum Cycle Time (CAS ".($highestCAS-1).")",
-		       ddr2_sdram_ctime($bytes->[23]) . " ns";
-		printl "Maximum Access Time (CAS ".($highestCAS-1).")",
-		       ddr2_sdram_atime($bytes->[24]) . " ns";
+		printl "Minimum Cycle Time at CAS ".($highestCAS-1),
+		       tns(ddr2_sdram_ctime($bytes->[23]));
+		printl "Maximum Access Time at CAS ".($highestCAS-1),
+		       tns(ddr2_sdram_atime($bytes->[24]));
 	}
 
 	if (exists $cas{$highestCAS-2} && spd_written(@$bytes[25..26])) {
-		printl "Minimum Cycle Time (CAS ".($highestCAS-2).")",
-		       ddr2_sdram_ctime($bytes->[25]) . " ns";
-		printl "Maximum Access Time (CAS ".($highestCAS-2).")",
-		       ddr2_sdram_atime($bytes->[26]) . " ns";
+		printl "Minimum Cycle Time at CAS ".($highestCAS-2),
+		       tns(ddr2_sdram_ctime($bytes->[25]));
+		printl "Maximum Access Time at CAS ".($highestCAS-2),
+		       tns(ddr2_sdram_atime($bytes->[26]));
 	}
+	printl "Maximum Cycle Time (tCK max)",
+	       tns(ddr2_sdram_ctime($bytes->[43]));
+
+# more timing information
+	prints("Timing Parameters");
+	printl "Address/Command Setup Time Before Clock (tIS)",
+	       tns(ddr2_sdram_atime($bytes->[32]));
+	printl "Address/Command Hold Time After Clock (tIH)",
+	       tns(ddr2_sdram_atime($bytes->[33]));
+	printl "Data Input Setup Time Before Strobe (tDS)",
+	       tns(ddr2_sdram_atime($bytes->[34]));
+	printl "Data Input Hold Time After Strobe (tDH)",
+	       tns(ddr2_sdram_atime($bytes->[35]));
+	printl "Minimum Row Precharge Delay (tRP)", tns($trp);
+	printl "Minimum Row Active to Row Active Delay (tRRD)",
+	       tns($bytes->[28]/4);
+	printl "Minimum RAS# to CAS# Delay (tRCD)", tns($trcd);
+	printl "Minimum RAS# Pulse Width (tRAS)", tns($tras);
+	printl "Write Recovery Time (tWR)", tns($bytes->[36]/4);
+	printl "Minimum Write to Read CMD Delay (tWTR)", tns($bytes->[37]/4);
+	printl "Minimum Read to Pre-charge CMD Delay (tRTP)", tns($bytes->[38]/4);
+	printl "Minimum Active to Auto-refresh Delay (tRC)",
+	       tns(ddr2_sdram_rtime($bytes->[41], 0, ($bytes->[40] >> 4) & 7));
+	printl "Minimum Recovery Delay (tRFC)",
+	       tns(ddr2_sdram_rtime($bytes->[42], $bytes->[40] & 1,
+				    ($bytes->[40] >> 1) & 7));
+	printl "Maximum DQS to DQ Skew (tDQSQ)", tns($bytes->[44]/100);
+	printl "Maximum Read Data Hold Skew (tQHS)", tns($bytes->[45]/100);
+	printl "PLL Relock Time", $bytes->[46] . " us" if ($bytes->[46]);
 }
 
 # Parameter: bytes 0-63
