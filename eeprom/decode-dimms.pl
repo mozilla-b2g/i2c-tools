@@ -430,8 +430,8 @@ sub decode_sdr_sdram($)
 
 	prints "Memory Characteristics";
 
-	my $k=0;
-	my $ii=0;
+	my $k = 0;
+	my $ii = 0;
 
 	$ii = ($bytes->[3] & 0x0f) + ($bytes->[4] & 0x0f) - 17;
 	if (($bytes->[5] <= 8) && ($bytes->[17] <= 8)) {
@@ -455,9 +455,9 @@ sub decode_sdr_sdram($)
 	my $tras;
 	my $ctime = ($bytes->[9] >> 4) + ($bytes->[9] & 0xf) * 0.1;
 
-	$trcd =$bytes->[29];
-	$trp =$bytes->[27];;
-	$tras =$bytes->[30];
+	$trcd = $bytes->[29];
+	$trp = $bytes->[27];;
+	$tras = $bytes->[30];
 
 	printl "tCL-tRCD-tRP-tRAS",
 		$cas[$#cas] . "-" .
@@ -591,7 +591,7 @@ sub decode_sdr_sdram($)
 		$temp = $bytes->[23] >> 4;
 		if ($temp == 0) { printl $l, "Undefined!"; }
 		else {
-			if ($temp < 4 ) { $temp=$temp + 15; }
+			if ($temp < 4 ) { $temp += 15; }
 			printl $l, $temp + (($bytes->[23] & 0xf) * 0.1) . " ns";
 		}
 
@@ -599,7 +599,7 @@ sub decode_sdr_sdram($)
 		$temp = $bytes->[24] >> 4;
 		if ($temp == 0) { printl $l, "Undefined!"; }
 		else {
-			if ($temp < 4 ) { $temp=$temp + 15; }
+			if ($temp < 4 ) { $temp += 15; }
 			printl $l, $temp + (($bytes->[24] & 0xf) * 0.1) . " ns";
 		}
 	}
@@ -724,8 +724,8 @@ sub decode_ddr_sdram($)
 	printl $l, "${ddrclk}MHz (PC${pcclk})";
 
 #size computation
-	my $k=0;
-	my $ii=0;
+	my $k = 0;
+	my $ii = 0;
 
 	$ii = ($bytes->[3] & 0x0f) + ($bytes->[4] & 0x0f) - 17;
 	if (($bytes->[5] <= 8) && ($bytes->[17] <= 8)) {
@@ -753,8 +753,8 @@ sub decode_ddr_sdram($)
 	my $tras;
 	my $ctime = ($bytes->[9] >> 4) + ($bytes->[9] & 0xf) * 0.1;
 
-	$trcd =($bytes->[29] >> 2)+(($bytes->[29] & 3)*0.25);
-	$trp =($bytes->[27] >> 2)+(($bytes->[27] & 3)*0.25);
+	$trcd = ($bytes->[29] >> 2) + (($bytes->[29] & 3) * 0.25);
+	$trp = ($bytes->[27] >> 2) + (($bytes->[27] & 3) * 0.25);
 	$tras = $bytes->[30];
 
 	printl "tCL-tRCD-tRP-tRAS",
@@ -904,8 +904,8 @@ sub decode_ddr2_sdram($)
 	printl $l, "${ddrclk}MHz (PC2-${pcclk})";
 
 #size computation
-	my $k=0;
-	my $ii=0;
+	my $k = 0;
+	my $ii = 0;
 
 	$ii = ($bytes->[3] & 0x0f) + ($bytes->[4] & 0x0f) - 17;
 	$k = (($bytes->[5] & 0x7) + 1) * $bytes->[17];
@@ -956,9 +956,9 @@ sub decode_ddr2_sdram($)
 	my $trp;
 	my $tras;
 
-	$trcd =($bytes->[29] >> 2)+(($bytes->[29] & 3)*0.25);
-	$trp =($bytes->[27] >> 2)+(($bytes->[27] & 3)*0.25);
-	$tras =$bytes->[30];
+	$trcd = ($bytes->[29] >> 2) + (($bytes->[29] & 3) * 0.25);
+	$trp = ($bytes->[27] >> 2) + (($bytes->[27] & 3) * 0.25);
+	$tras = $bytes->[30];
 
 	printl "tCL-tRCD-tRP-tRAS",
 		$highestCAS . "-" .
@@ -1085,7 +1085,7 @@ sub decode_intel_spec_freq($)
 	printl $l, $temp;
 
 	$l = "Details for 100MHz Support";
-	$temp="";
+	$temp = "";
 	if ($bytes->[63] & 1) { $temp .= "Intel Concurrent Auto-precharge\n"; }
 	if ($bytes->[63] & 2) { $temp .= "CAS Latency = 2\n"; }
 	if ($bytes->[63] & 4) { $temp .= "CAS Latency = 3\n"; }
@@ -1154,7 +1154,7 @@ printh 'Memory Serial Presence Detect Decoder',
 Jean Delvare and others';
 
 
-my $dimm_count=0;
+my $dimm_count = 0;
 my @dimm_list;
 my $dir;
 if ($use_sysfs) { $dir = '/sys/bus/i2c/drivers/eeprom'; }
@@ -1167,7 +1167,7 @@ if (-d $dir) {
 }
 
 for my $i ( 0 .. $#dimm_list ) {
-	$_=$dimm_list[$i];
+	$_ = $dimm_list[$i];
 	if (($use_sysfs && /^\d+-\d+$/)
 	 || (!$use_sysfs && /^eeprom-/)) {
 		my @bytes = readspd64(0, $dimm_list[$i]);
@@ -1186,7 +1186,7 @@ for my $i ( 0 .. $#dimm_list ) {
 		print "<table border=1>\n" if $opt_html;
 		if (($use_sysfs && /^[^-]+-([^-]+)$/)
 		 || (!$use_sysfs && /^[^-]+-[^-]+-[^-]+-([^-]+)$/)) {
-			my $dimm_num=$1 - 49;
+			my $dimm_num = $1 - 49;
 			printl "Guessing DIMM is in", "bank $dimm_num";
 		}
 
