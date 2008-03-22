@@ -542,7 +542,7 @@ sub decode_sdr_sdram($)
 	if ($bytes->[15] == 0) { printl $l, "Undefined!"; }
 	else { printl $l, $bytes->[15]; }
 
-	$l = "Burst lengths supported";
+	$l = "Supported Burst Lengths";
 	my @array;
 	for ($ii = 0; $ii < 4; $ii++) {
 		push(@array, 1 << $ii) if ($bytes->[16] & (1 << $ii));
@@ -578,16 +578,16 @@ sub decode_sdr_sdram($)
 	printl $l, $temp;
 
 	if (@cas >= 1) {
-		$l = "Cycle Time (CAS ".$cas[$#cas].")";
+		$l = "Cycle Time at CAS ".$cas[$#cas];
 		printl $l, "$ctime ns";
 
-		$l = "Access Time (CAS ".$cas[$#cas].")";
+		$l = "Access Time at CAS ".$cas[$#cas];
 		$temp = ($bytes->[10] >> 4) + ($bytes->[10] & 0xf) * 0.1;
 		printl $l, "$temp ns";
 	}
 
 	if (@cas >= 2 && spd_written(@$bytes[23..24])) {
-		$l = "Cycle Time (CAS ".$cas[$#cas-1].")";
+		$l = "Cycle Time at CAS ".$cas[$#cas-1];
 		$temp = $bytes->[23] >> 4;
 		if ($temp == 0) { printl $l, "Undefined!"; }
 		else {
@@ -595,7 +595,7 @@ sub decode_sdr_sdram($)
 			printl $l, $temp + (($bytes->[23] & 0xf) * 0.1) . " ns";
 		}
 
-		$l = "Access Time (CAS ".$cas[$#cas-1].")";
+		$l = "Access Time at CAS ".$cas[$#cas-1];
 		$temp = $bytes->[24] >> 4;
 		if ($temp == 0) { printl $l, "Undefined!"; }
 		else {
@@ -605,12 +605,12 @@ sub decode_sdr_sdram($)
 	}
 
 	if (@cas >= 3 && spd_written(@$bytes[25..26])) {
-		$l = "Cycle Time (CAS ".$cas[$#cas-2].")";
+		$l = "Cycle Time at CAS ".$cas[$#cas-2];
 		$temp = $bytes->[25] >> 2;
 		if ($temp == 0) { printl $l, "Undefined!"; }
 		else { printl $l, $temp + ($bytes->[25] & 0x3) * 0.25 . " ns"; }
 
-		$l = "Access Time (CAS ".$cas[$#cas-2].")";
+		$l = "Access Time at CAS ".$cas[$#cas-2];
 		$temp = $bytes->[26] >> 2;
 		if ($temp == 0) { printl $l, "Undefined!"; }
 		else { printl $l, $temp + ($bytes->[26] & 0x3) * 0.25 . " ns"; }
@@ -784,26 +784,26 @@ sub decode_ddr_sdram($)
 
 # timings
 	if (exists $cas{$highestCAS}) {
-		printl "Minimum Cycle Time (CAS $highestCAS)",
+		printl "Minimum Cycle Time at CAS $highestCAS",
 		       "$ctime ns";
 
-		printl "Maximum Access Time (CAS $highestCAS)",
+		printl "Maximum Access Time at CAS $highestCAS",
 		       (($bytes->[10] >> 4) * 0.1 + ($bytes->[10] & 0xf) * 0.01) . " ns";
 	}
 
 	if (exists $cas{$highestCAS-0.5} && spd_written(@$bytes[23..24])) {
-		printl "Minimum Cycle Time (CAS ".($highestCAS-0.5).")",
+		printl "Minimum Cycle Time at CAS ".($highestCAS-0.5),
 		       (($bytes->[23] >> 4) + ($bytes->[23] & 0xf) * 0.1) . " ns";
 
-		printl "Maximum Access Time (CAS ".($highestCAS-0.5).")",
+		printl "Maximum Access Time at CAS ".($highestCAS-0.5),
 		       (($bytes->[24] >> 4) * 0.1 + ($bytes->[24] & 0xf) * 0.01) . " ns";
 	}
 
 	if (exists $cas{$highestCAS-1} && spd_written(@$bytes[25..26])) {
-		printl "Minimum Cycle Time (CAS ".($highestCAS-1).")",
+		printl "Minimum Cycle Time at CAS ".($highestCAS-1),
 		       (($bytes->[25] >> 4) + ($bytes->[25] & 0xf) * 0.1) . " ns";
 
-		printl "Maximum Access Time (CAS ".($highestCAS-1).")",
+		printl "Maximum Access Time at CAS ".($highestCAS-1),
 		       (($bytes->[26] >> 4) * 0.1 + ($bytes->[26] & 0xf) * 0.01) . " ns";
 	}
 
