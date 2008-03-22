@@ -331,6 +331,12 @@ sub part_number(@)
 	return ($asc eq "") ? "Undefined" : $asc;
 }
 
+sub cas_latencies(@)
+{
+	return "None" unless @_;
+	return join ', ', map("${_}T", sort { $b <=> $a } @_);
+}
+
 sub printl ($$) # print a line w/ label and value
 {
 	my ($label, $value) = @_;
@@ -551,9 +557,7 @@ sub decode_sdr_sdram($)
 	else { printl $l, $bytes->[17]; }
 
 	$l = "Supported CAS Latencies";
-	if (@cas) { $temp = join ', ', @cas; }
-	else { $temp = "None"; }
-	printl $l, $temp;
+	printl $l, cas_latencies(@cas);
 
 	$l = "Supported CS Latencies";
 	@array = ();
@@ -760,9 +764,7 @@ sub decode_ddr_sdram($)
 		ceil($tras/$ctime);
 
 # latencies
-	if (keys %cas) { $temp = join ', ', sort { $b <=> $a } keys %cas; }
-	else { $temp = "None"; }
-	printl "Supported CAS Latencies", $temp;
+	printl "Supported CAS Latencies", cas_latencies(keys %cas);
 
 	my @array;
 	for ($ii = 0; $ii < 7; $ii++) {
@@ -965,9 +967,7 @@ sub decode_ddr2_sdram($)
 		ceil($tras/$ctime);
 
 # latencies
-	if (keys %cas) { $temp = join ', ', map("${_}T", sort { $b <=> $a } keys %cas); }
-	else { $temp = "None"; }
-	printl "Supported CAS Latencies (tCL)", $temp;
+	printl "Supported CAS Latencies (tCL)", cas_latencies(keys %cas);
 
 # timings
 	if (exists $cas{$highestCAS}) {
