@@ -22,15 +22,8 @@
 #    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #
 #
-# The eeprom driver must be loaded. For kernels older than 2.6.0, the
-# eeprom driver can be found in the lm-sensors package.
-#
-# use the following command line switches
-#  -f, --format            print nice html output
-#  -b, --bodyonly          don't print html header
-#                          (useful for postprocessing the output)
-#  -c, --checksum          decode completely even if checksum fails
-#  -h, --help              display this usage summary
+# The eeprom driver must be loaded (unless option -x is used). For kernels
+# older than 2.6.0, the eeprom driver can be found in the lm-sensors package.
 #
 # References:
 # PC SDRAM Serial Presence
@@ -46,7 +39,7 @@ require 5.004;
 use strict;
 use POSIX;
 use Fcntl qw(:DEFAULT :seek);
-use vars qw($opt_html $opt_body $opt_bodyonly $opt_igncheck $use_sysfs $use_hexdump
+use vars qw($opt_html $opt_bodyonly $opt_igncheck $use_sysfs $use_hexdump
 	    @vendors %decode_callback $revision @dimm_list);
 
 $revision = '$Revision$ ($Date$)';
@@ -1220,9 +1213,8 @@ EOF
 
 	push @dimm_list, $_ if $use_hexdump;
 }
-$opt_body = $opt_html && ! $opt_bodyonly;
 
-if ($opt_body) {
+if ($opt_html && !$opt_bodyonly) {
 	print "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\n",
 	      "<html><head>\n",
 		  "\t<meta HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=iso-8859-1\">\n",
@@ -1233,7 +1225,7 @@ if ($opt_body) {
 printc "decode-dimms version $revision";
 printh 'Memory Serial Presence Detect Decoder',
 'By Philip Edelbrock, Christian Zuckschwerdt, Burkart Lingner,
-Jean Delvare and others';
+Jean Delvare, Trent Piepho and others';
 
 
 my $dimm_count = 0;
@@ -1401,4 +1393,4 @@ for my $i ( 0 .. $#dimm_list ) {
 }
 printl2 "\n\nNumber of SDRAM DIMMs detected and decoded", $dimm_count;
 
-print "</body></html>\n" if $opt_body;
+print "</body></html>\n" if ($opt_html && !$opt_bodyonly);
