@@ -14,7 +14,7 @@
 # The scratch EEPROMs have no prescribed format.
 # If the output of this program makes no sense for a particular device,
 # it is probably decoding a DIMM Serial Presence Detect (SPD) EEPROM.
-# See ../eeprom/decode-dimms.pl to decode those devices.
+# See decode-dimms to decode those devices.
 #
 #
 # The eeprom driver must be loaded. For kernels older than 2.6.0, the

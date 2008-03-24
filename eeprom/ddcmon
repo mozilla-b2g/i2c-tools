@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2004-2005  Jean Delvare <khali@linux-fr.org>
 #
-# Parts inspired from decode-edid.pl.
+# Parts inspired from decode-edid.
 # Copyright (C) 2003-2004  Jean Delvare <khali@linux-fr.org>
 #
 # Parts inspired from the ddcmon driver and sensors' print_ddcmon function.

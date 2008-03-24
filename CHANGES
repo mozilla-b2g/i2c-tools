@@ -2,6 +2,7 @@ i2c-tools CHANGES
 -----------------
 
 SVN
+  Drop the trailing .pl from all perl script names
   decode-dimms: Fix DDR2 SDRAM module speed decoding
                 Update manufacturer IDs
                 Don't print anything by default if checksum fails

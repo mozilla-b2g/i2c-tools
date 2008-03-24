@@ -1,16 +1,16 @@
 # EEPROM decoding scripts for the Linux eeprom driver
 #
-# Copyright (C) 2007  Jean Delvare <khali@linux-fr.org>
+# Copyright (C) 2007-2008  Jean Delvare <khali@linux-fr.org>
 #
 # Licensed under the GNU General Public License.
 
 EEPROM_DIR	:= eeprom
 
-EEPROM_TARGETS	:= decode-dimms.pl decode-vaio.pl ddcmon decode-edid.pl
+EEPROM_TARGETS	:= decode-dimms decode-vaio ddcmon decode-edid
 
-# decode-xeon.pl was not yet ported to the Linux 2.6 sysfs interface
+# decode-xeon was not yet ported to the Linux 2.6 sysfs interface
 ifeq (,$(findstring /2.6., /$(KERNELVERSION)))
-EEPROM_TARGETS	+= decode-xeon.pl
+EEPROM_TARGETS	+= decode-xeon
 endif
 
 #
