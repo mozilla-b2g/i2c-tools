@@ -40,7 +40,7 @@ use strict;
 use POSIX;
 use Fcntl qw(:DEFAULT :seek);
 use vars qw($opt_html $opt_bodyonly $opt_igncheck $use_sysfs $use_hexdump
-	    @vendors %decode_callback $revision @dimm_list);
+	    @vendors %decode_callback $revision @dimm_list %hexdump_cache);
 
 $revision = '$Revision$ ($Date$)';
 $revision =~ s/\$\w+: (.*?) \$/$1/g;
@@ -1104,6 +1104,9 @@ sub read_hexdump($)
 	my $header = 1;
 	my $word = 0;
 
+	# Look in the cache first
+	return @{$hexdump_cache{$_[0]}} if exists $hexdump_cache{$_[0]};
+
 	open F, '<', $_[0] or die "Unable to open: $_[0]";
 	while (<F>) {
 		chomp;
@@ -1138,6 +1141,9 @@ sub read_hexdump($)
 	close F;
 	$header and die "Unable to parse any data from hexdump '$_[0]'";
 	$word and printc "Warning: Assuming big-endian order 16-bit hex dump";
+
+	# Cache the data for later use
+	$hexdump_cache{$_[0]} = \@bytes;
 	return @bytes;
 }
 
