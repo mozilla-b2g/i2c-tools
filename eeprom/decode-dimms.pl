@@ -337,7 +337,7 @@ sub cas_latencies(@)
 	return join ', ', map("${_}T", sort { $b <=> $a } @_);
 }
 
-sub printl ($$) # print a line w/ label and value
+sub printl($$) # print a line w/ label and value
 {
 	my ($label, $value) = @_;
 	if ($opt_html) {
@@ -355,7 +355,7 @@ sub printl ($$) # print a line w/ label and value
 	}
 }
 
-sub printl2 ($$) # print a line w/ label and value (outside a table)
+sub printl2($$) # print a line w/ label and value (outside a table)
 {
 	my ($label, $value) = @_;
 	if ($opt_html) {
@@ -369,7 +369,7 @@ sub printl2 ($$) # print a line w/ label and value (outside a table)
 	print "$label: $value\n";
 }
 
-sub prints ($) # print seperator w/ given text
+sub prints($) # print seperator w/ given text
 {
 	my ($label) = @_;
 	if ($opt_html) {
@@ -382,7 +382,7 @@ sub prints ($) # print seperator w/ given text
 	}
 }
 
-sub printh ($$) # print header w/ given text
+sub printh($$) # print header w/ given text
 {
 	my ($header, $sub) = @_;
 	if ($opt_html) {
@@ -399,7 +399,7 @@ sub printh ($$) # print header w/ given text
 	}
 }
 
-sub printc ($) # print comment
+sub printc($) # print comment
 {
 	my ($comment) = @_;
 	if ($opt_html) {
@@ -1103,7 +1103,7 @@ sub decode_intel_spec_freq($)
 # Read various hex dump style formats: hexdump, hexdump -C, i2cdump, eeprog
 # note that normal 'hexdump' format on a little-endian system byte-swaps
 # words, using hexdump -C is better.
-sub read_hexdump ($)
+sub read_hexdump($)
 {
 	my $addr = 0;
 	my $repstart = 0;
@@ -1148,7 +1148,8 @@ sub read_hexdump ($)
 	return @bytes;
 }
 
-sub readspd64 ($$) { # reads 64 bytes from SPD-EEPROM
+sub readspd64($$) # reads 64 bytes from SPD-EEPROM
+{
 	my ($offset, $dimm_i) = @_;
 	my @bytes;
 	if ($use_hexdump) {
@@ -1174,7 +1175,7 @@ sub readspd64 ($$) { # reads 64 bytes from SPD-EEPROM
 }
 
 for (@ARGV) {
-    if (/^-?-h/) {
+	if (/^-?-h/) {
 		print "Usage: $0 [-c] [-f [-b]] [-x file [files..]]\n",
 			"       $0 -h\n\n",
 			"  -f, --format            print nice html output\n",
@@ -1192,17 +1193,16 @@ systems and will therefore not be parsed correctly.  It is better to use
 "hexdump -C", which is not ambiguous.
 EOF
 		exit;
-    }
-    $opt_html = 1 if (/^-?-f/);
-    $opt_bodyonly = 1 if (/^-?-b/);
-    $opt_igncheck = 1 if (/^-?-c/);
-    $use_hexdump = 1 if (/^-x/);
-    push @dimm_list, $_ if ($use_hexdump && !/^-/);
+	}
+	$opt_html = 1 if (/^-?-f/);
+	$opt_bodyonly = 1 if (/^-?-b/);
+	$opt_igncheck = 1 if (/^-?-c/);
+	$use_hexdump = 1 if (/^-x/);
+	push @dimm_list, $_ if ($use_hexdump && !/^-/);
 }
 $opt_body = $opt_html && ! $opt_bodyonly;
 
-if ($opt_body)
-{
+if ($opt_body) {
 	print "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\n",
 	      "<html><head>\n",
 		  "\t<meta HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=iso-8859-1\">\n",
