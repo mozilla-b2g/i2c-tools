@@ -46,8 +46,8 @@ require 5.004;
 use strict;
 use POSIX;
 use Fcntl qw(:DEFAULT :seek);
-use vars qw($opt_html $opt_body $opt_bodyonly $opt_igncheck $use_sysfs
-	    @vendors %decode_callback $revision);
+use vars qw($opt_html $opt_body $opt_bodyonly $opt_igncheck $use_sysfs $use_hexdump
+	    @vendors %decode_callback $revision @dimm_list);
 
 $revision = '$Revision$ ($Date$)';
 $revision =~ s/\$\w+: (.*?) \$/$1/g;
@@ -1100,10 +1100,61 @@ sub decode_intel_spec_freq($)
 	printl $l, $temp;
 }
 
+# Read various hex dump style formats: hexdump, hexdump -C, i2cdump, eeprog
+# note that normal 'hexdump' format on a little-endian system byte-swaps
+# words, using hexdump -C is better.
+sub read_hexdump ($)
+{
+	my $addr = 0;
+	my $repstart = 0;
+	my @bytes;
+	my $header = 1;
+	my $word = 0;
+
+	open F, '<', $_[0] or die "Unable to open: $_[0]";
+	while (<F>) {
+		chomp;
+		if (/^\*$/) {
+			$repstart = $addr;
+			next;
+		}
+		/^(?:0000 )?([a-f\d]{2,8}):?\s+((:?[a-f\d]{4}\s*){8}|(:?[a-f\d]{2}\s*){16})/i ||
+		/^(?:0000 )?([a-f\d]{2,8}):?\s*$/i;
+		next if (!defined $1 && $header);		# skip leading unparsed lines
+
+		defined $1 or die "Unable to parse input";
+		$header = 0;
+
+		$addr = hex $1;
+		if ($repstart) {
+			@bytes[$repstart .. ($addr-1)] =
+				(@bytes[($repstart-16)..($repstart-1)]) x (($addr-$repstart)/16);
+			$repstart = 0;
+		}
+		last unless defined $2;
+		foreach (split(/\s+/, $2)) {
+			if (/^(..)(..)$/) {
+			        $word |= 1;
+				$bytes[$addr++] = hex($1);
+				$bytes[$addr++] = hex($2);
+			} else {
+				$bytes[$addr++] = hex($_);
+			}
+		}
+	}
+	close F;
+	$header and die "Unable to parse any data from hexdump '$_[0]'";
+	$word and printc "Warning: Assuming big-endian order 16-bit hex dump";
+	return @bytes;
+}
+
 sub readspd64 ($$) { # reads 64 bytes from SPD-EEPROM
 	my ($offset, $dimm_i) = @_;
 	my @bytes;
-	if ($use_sysfs) {
+	if ($use_hexdump) {
+		@bytes = read_hexdump($dimm_i);
+		return @bytes[$offset..($offset+63)];
+	} elsif ($use_sysfs) {
 		# Kernel 2.6 with sysfs
 		sysopen(HANDLE, "/sys/bus/i2c/drivers/eeprom/$dimm_i/eeprom", O_RDONLY)
 			or die "Cannot open /sys/bus/i2c/drivers/eeprom/$dimm_i/eeprom";
@@ -1123,19 +1174,30 @@ sub readspd64 ($$) { # reads 64 bytes from SPD-EEPROM
 }
 
 for (@ARGV) {
-    if (/-h/) {
-		print "Usage: $0 [-c] [-f [-b]]\n",
+    if (/^-?-h/) {
+		print "Usage: $0 [-c] [-f [-b]] [-x file [files..]]\n",
 			"       $0 -h\n\n",
 			"  -f, --format            print nice html output\n",
 			"  -b, --bodyonly          don't print html header\n",
 			"                          (useful for postprocessing the output)\n",
 			"  -c, --checksum          decode completely even if checksum fails\n",
+			"  -x,                     Read data from hexdump files\n",
 			"  -h, --help              display this usage summary\n";
+		print <<"EOF";
+
+Hexdumps can be the output from hexdump, hexdump -C, i2cdump, eeprog and
+likely many other progams producing hex dumps of one kind or another.  Note
+that the default output of "hexdump" will be byte-swapped on little-endian
+systems and will therefore not be parsed correctly.  It is better to use
+"hexdump -C", which is not ambiguous.
+EOF
 		exit;
     }
-    $opt_html = 1 if (/-f/);
-    $opt_bodyonly = 1 if (/-b/);
-    $opt_igncheck = 1 if (/-c/);
+    $opt_html = 1 if (/^-?-f/);
+    $opt_bodyonly = 1 if (/^-?-b/);
+    $opt_igncheck = 1 if (/^-?-c/);
+    $use_hexdump = 1 if (/^-x/);
+    push @dimm_list, $_ if ($use_hexdump && !/^-/);
 }
 $opt_body = $opt_html && ! $opt_bodyonly;
 
@@ -1155,21 +1217,23 @@ Jean Delvare and others';
 
 
 my $dimm_count = 0;
-my @dimm_list;
 my $dir;
-if ($use_sysfs) { $dir = '/sys/bus/i2c/drivers/eeprom'; }
-else { $dir = '/proc/sys/dev/sensors'; }
-if (-d $dir) {
-	@dimm_list = split(/\s+/, `ls $dir`);
-} elsif (! -d '/sys/module/eeprom') {
-	print "No EEPROM found, are you sure the eeprom module is loaded?\n";
-	exit;
+if (!$use_hexdump) {
+	if ($use_sysfs) { $dir = '/sys/bus/i2c/drivers/eeprom'; }
+	else { $dir = '/proc/sys/dev/sensors'; }
+	if (-d $dir) {
+		@dimm_list = split(/\s+/, `ls $dir`);
+	} elsif (! -d '/sys/module/eeprom') {
+		print "No EEPROM found, are you sure the eeprom module is loaded?\n";
+		exit;
+	}
 }
 
 for my $i ( 0 .. $#dimm_list ) {
 	$_ = $dimm_list[$i];
 	if (($use_sysfs && /^\d+-\d+$/)
-	 || (!$use_sysfs && /^eeprom-/)) {
+	 || (!$use_sysfs && /^eeprom-/)
+	 || $use_hexdump) {
 		my @bytes = readspd64(0, $dimm_list[$i]);
 		my $dimm_checksum = 0;
 		$dimm_checksum += $bytes[$_] foreach (0 .. 62);
@@ -1179,15 +1243,18 @@ for my $i ( 0 .. $#dimm_list ) {
 		$dimm_count++;
 
 		print "<b><u>" if $opt_html;
-		printl2 "\n\nDecoding EEPROM", ($use_sysfs ?
+		printl2 "\n\nDecoding EEPROM",
+		        $use_hexdump ? $dimm_list[$i] : ($use_sysfs ?
 			"/sys/bus/i2c/drivers/eeprom/$dimm_list[$i]" :
 			"/proc/sys/dev/sensors/$dimm_list[$i]");
 		print "</u></b>" if $opt_html;
 		print "<table border=1>\n" if $opt_html;
-		if (($use_sysfs && /^[^-]+-([^-]+)$/)
-		 || (!$use_sysfs && /^[^-]+-[^-]+-[^-]+-([^-]+)$/)) {
-			my $dimm_num = $1 - 49;
-			printl "Guessing DIMM is in", "bank $dimm_num";
+		if (!$use_hexdump) {
+			if (($use_sysfs && /^[^-]+-([^-]+)$/)
+			 || (!$use_sysfs && /^[^-]+-[^-]+-[^-]+-([^-]+)$/)) {
+				my $dimm_num = $1 - 49;
+				printl "Guessing DIMM is in", "bank $dimm_num";
+			}
 		}
 
 # Decode first 3 bytes (0-2)

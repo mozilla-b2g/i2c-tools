@@ -6,6 +6,7 @@ SVN
                 Update manufacturer IDs
                 Don't print anything by default if checksum fails
                 Decode all DDR2 SDRAM timing information
+                Add support for reading SPD data from hexdumps
   decode-vaio: Private data might not be readable by non-root users
                Print the asset tag
                Fix the timestamp decoding
