@@ -1174,16 +1174,17 @@ sub readspd64($$) # reads 64 bytes from SPD-EEPROM
 	return @bytes;
 }
 
-for (@ARGV) {
-	if (/^-?-h/) {
+# Parse command-line
+foreach (@ARGV) {
+	if ($_ eq '-h' || $_ eq '--help') {
 		print "Usage: $0 [-c] [-f [-b]] [-x file [files..]]\n",
 			"       $0 -h\n\n",
-			"  -f, --format            print nice html output\n",
-			"  -b, --bodyonly          don't print html header\n",
+			"  -f, --format            Print nice html output\n",
+			"  -b, --bodyonly          Don't print html header\n",
 			"                          (useful for postprocessing the output)\n",
-			"  -c, --checksum          decode completely even if checksum fails\n",
+			"  -c, --checksum          Decode completely even if checksum fails\n",
 			"  -x,                     Read data from hexdump files\n",
-			"  -h, --help              display this usage summary\n";
+			"  -h, --help              Display this usage summary\n";
 		print <<"EOF";
 
 Hexdumps can be the output from hexdump, hexdump -C, i2cdump, eeprog and
@@ -1194,11 +1195,30 @@ systems and will therefore not be parsed correctly.  It is better to use
 EOF
 		exit;
 	}
-	$opt_html = 1 if (/^-?-f/);
-	$opt_bodyonly = 1 if (/^-?-b/);
-	$opt_igncheck = 1 if (/^-?-c/);
-	$use_hexdump = 1 if (/^-x/);
-	push @dimm_list, $_ if ($use_hexdump && !/^-/);
+
+	if ($_ eq '-f' || $_ eq '--format') {
+		$opt_html = 1;
+		next;
+	}
+	if ($_ eq '-b' || $_ eq '--bodyonly') {
+		$opt_bodyonly = 1;
+		next;
+	}
+	if ($_ eq '-c' || $_ eq '--checksum') {
+		$opt_igncheck = 1;
+		next;
+	}
+	if ($_ eq '-x') {
+		$use_hexdump = 1;
+		next;
+	}
+
+	if (m/^-/) {
+		print STDERR "Unrecognized option $_\n";
+		exit;
+	}
+
+	push @dimm_list, $_ if $use_hexdump;
 }
 $opt_body = $opt_html && ! $opt_bodyonly;
 
