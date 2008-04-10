@@ -1,6 +1,9 @@
 i2c-tools CHANGES
 -----------------
 
+SVN
+  decode-vaio: Remove history
+
 3.0.1 (2008-04-04)
   Drop the trailing .pl from all perl script names
   decode-dimms: Fix DDR2 SDRAM module speed decoding
