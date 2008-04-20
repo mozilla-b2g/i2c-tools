@@ -25,6 +25,7 @@
 #include <sys/stat.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <limits.h>
 #include <dirent.h>
@@ -215,6 +216,29 @@ done:
 		fprintf(stderr,"Error: No I2C busses found!\n"
 		               "Be sure you have done 'modprobe i2c-dev'\n"
 		               "and also modprobed your i2c bus drivers\n");
+}
+
+/*
+ * Parse an I2CBUS command line argument and return the corresponding
+ * bus number, or a negative value if the bus is invalid.
+ */
+int lookup_i2c_bus(const char *i2cbus_arg)
+{
+	long i2cbus;
+	char *end;
+
+	i2cbus = strtol(i2cbus_arg, &end, 0);
+	if (*end || !*i2cbus_arg) {
+		fprintf(stderr, "Error: I2CBUS argument not a number!\n");
+		return -1;
+	}
+	if (i2cbus < 0 || i2cbus > 0xff) {
+		fprintf(stderr, "Error: I2CBUS argument out of range "
+		        "(0-255)!\n");
+		return -2;
+	}
+
+	return i2cbus;
 }
 
 int open_i2c_dev(const int i2cbus, char *filename, const int quiet)

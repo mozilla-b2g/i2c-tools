@@ -24,6 +24,7 @@
 
 void print_i2c_busses(int procfmt);
 
+int lookup_i2c_bus(const char *i2cbus_arg);
 int open_i2c_dev(const int i2cbus, char *filename, const int quiet);
 int set_slave_addr(int file, int address, int force);
 

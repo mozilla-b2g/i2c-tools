@@ -78,11 +78,9 @@ int main(int argc, char *argv[])
 	if (argc < flags + 5)
 		help();
 
-	i2cbus = strtol(argv[flags+1], &end, 0);
-	if (*end || i2cbus < 0 || i2cbus > 0x3f) {
-		fprintf(stderr, "Error: I2CBUS argument invalid!\n");
+	i2cbus = lookup_i2c_bus(argv[flags+1]);
+	if (i2cbus < 0)
 		help();
-	}
 
 	address = strtol(argv[flags+2], &end, 0);
 	if (*end || address < 0 || address > 0x7f) {

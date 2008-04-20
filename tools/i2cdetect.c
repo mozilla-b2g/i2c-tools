@@ -235,15 +235,8 @@ int main(int argc, char *argv[])
 		help();
 		exit(1);
 	}
-	i2cbus = strtol(argv[flags+1], &end, 0);
-	if (*end) {
-		fprintf(stderr, "Error: I2CBUS argument not a number!\n");
-		help();
-		exit(1);
-	}
-	if ((i2cbus < 0) || (i2cbus > 0xff)) {
-		fprintf(stderr, "Error: I2CBUS argument out of range "
-		        "(0-255)!\n");
+	i2cbus = lookup_i2c_bus(argv[flags+1]);
+	if (i2cbus < 0) {
 		help();
 		exit(1);
 	}
