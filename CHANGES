@@ -3,6 +3,10 @@ i2c-tools CHANGES
 
 SVN
   decode-vaio: Remove history
+  i2cdetect: Support i2c bus passed by name
+  i2cdump: Support i2c bus passed by name
+  i2cget: Support i2c bus passed by name
+  i2cset: Support i2c bus passed by name
 
 3.0.1 (2008-04-04)
   Drop the trailing .pl from all perl script names
