@@ -130,13 +130,11 @@ static struct i2c_adap *more_adapters(struct i2c_adap *adapters, int n)
 
 static struct i2c_adap *gather_i2c_busses(void)
 {
-	FILE *fptr;
-	char s[100];
+	char s[120];
 	struct dirent *de, *dde;
 	DIR *dir, *ddir;
 	FILE *f;
-	char *border;
-	char dev[NAME_MAX], fstype[NAME_MAX], sysfs[NAME_MAX], n[NAME_MAX];
+	char fstype[NAME_MAX], sysfs[NAME_MAX], n[NAME_MAX];
 	int foundsysfs = 0;
 	int count=0;
 	struct i2c_adap *adapters;
@@ -146,8 +144,8 @@ static struct i2c_adap *gather_i2c_busses(void)
 		return NULL;
 
 	/* look in /proc/bus/i2c */
-	if((fptr = fopen("/proc/bus/i2c", "r"))) {
-		while(fgets(s, 100, fptr)) {
+	if ((f = fopen("/proc/bus/i2c", "r"))) {
+		while (fgets(s, 120, f)) {
 			char *algo, *name, *type, *all;
 			int len_algo, len_name, len_type;
 			int i2cbus;
@@ -185,7 +183,7 @@ static struct i2c_adap *gather_i2c_busses(void)
 						      algo);
 			count++;
 		}
-		fclose(fptr);
+		fclose(f);
 		goto done;
 	}
 
@@ -195,7 +193,7 @@ static struct i2c_adap *gather_i2c_busses(void)
 		goto done;
 	}
 	while (fgets(n, NAME_MAX, f)) {
-		sscanf(n, "%[^ ] %[^ ] %[^ ] %*s\n", dev, sysfs, fstype);
+		sscanf(n, "%*[^ ] %[^ ] %[^ ] %*s\n", sysfs, fstype);
 		if (strcasecmp(fstype, "sysfs") == 0) {
 			foundsysfs++;
 			break;
@@ -253,20 +251,19 @@ found:
 		if (f != NULL) {
 			int i2cbus;
 			enum adt type;
-			char	x[120];
 			char *px;
 
-			px = fgets(x, 120, f);
+			px = fgets(s, 120, f);
 			fclose(f);
 			if (!px) {
 				fprintf(stderr, "%s: read error\n", n);
 				continue;
 			}
-			if ((border = strchr(x, '\n')) != NULL)
-				*border = 0;
+			if ((px = strchr(s, '\n')) != NULL)
+				*px = 0;
 			if (!sscanf(de->d_name, "i2c-%d", &i2cbus))
 				continue;
-			if(!strncmp(x, "ISA ", 4)) {
+			if (!strncmp(s, "ISA ", 4)) {
 				type = adt_isa;
 			} else {
 				/* Attempt to probe for adapter capabilities */
@@ -281,7 +278,7 @@ found:
 			}
 
 			adapters[count].nr = i2cbus;
-			adapters[count].name = strdup(x);
+			adapters[count].name = strdup(s);
 			if (adapters[count].name == NULL) {
 				free_adapters(adapters);
 				return NULL;
