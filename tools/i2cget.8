@@ -1,4 +1,4 @@
-.TH I2CGET 8 "June 2007"
+.TH I2CGET 8 "April 2008"
 .SH "NAME"
 i2cget \- read from I2C/SMBus chip registers
 
@@ -36,7 +36,7 @@ will perform the operation directly. This is mainly meant to be used in
 scripts. Use with caution.
 .PP
 There are two required options to i2cget. \fIi2cbus\fR indicates the number
-of the I2C bus to be scanned.  This number should correspond to one of
+or name of the I2C bus to be scanned.  This number should correspond to one of
 the busses listed by \fIi2cdetect -l\fR. \fIchip-address\fR specifies the
 address of the chip on that bus, and is an integer between 0x03 and 0x77.
 .PP

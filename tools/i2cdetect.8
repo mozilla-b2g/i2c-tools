@@ -1,4 +1,4 @@
-.TH I2CDETECT 8 "June 2007"
+.TH I2CDETECT 8 "April 2008"
 .SH NAME
 i2cdetect \- detect I2C chips
 
@@ -23,7 +23,7 @@ i2cdetect \- detect I2C chips
 .SH DESCRIPTION
 i2cdetect is a userspace program to scan an I2C bus for devices. It
 outputs a table with the list of detected devices on the specified bus.
-\fIi2cbus\fR indicates the number of the I2C bus to be scanned, and
+\fIi2cbus\fR indicates the number or name of the I2C bus to be scanned, and
 should correspond to one of the busses listed by \fIi2cdetect -l\fR.
 The optional parameters \fIfirst\fR and \fIlast\fR restrict the scanning
 range (default: from 0x03 to 0x77).

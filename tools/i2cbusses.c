@@ -340,6 +340,40 @@ void print_i2c_busses(int procfmt)
 	free_adapters(adapters);
 }
 
+static int lookup_i2c_bus_by_name(const char *bus_name)
+{
+	struct i2c_adap *adapters;
+	int i, i2cbus = -1;
+
+	adapters = gather_i2c_busses();
+	if (adapters == NULL) {
+		fprintf(stderr, "Error: Out of memory!\n");
+		return -3;
+	}
+
+	/* Walk the list of i2c busses, looking for the one with the
+	   right name */
+	for (i = 0; adapters[i].name; i++) {
+		if (strcmp(adapters[i].name, bus_name) == 0) {
+			if (i2cbus >= 0) {
+				fprintf(stderr,
+					"Error: I2C bus name is not unique!\n");
+				i2cbus = -4;
+				goto done;
+			}
+			i2cbus = adapters[i].nr;
+		}
+	}
+
+	if (i2cbus == -1)
+		fprintf(stderr, "Error: I2CBUS argument doesn't match any "
+			"I2C bus name\n");
+
+done:
+	free_adapters(adapters);
+	return i2cbus;
+}
+
 /*
  * Parse an I2CBUS command line argument and return the corresponding
  * bus number, or a negative value if the bus is invalid.
@@ -351,8 +385,8 @@ int lookup_i2c_bus(const char *i2cbus_arg)
 
 	i2cbus = strtol(i2cbus_arg, &end, 0);
 	if (*end || !*i2cbus_arg) {
-		fprintf(stderr, "Error: I2CBUS argument not a number!\n");
-		return -1;
+		/* Not a number, maybe a name? */
+		return lookup_i2c_bus_by_name(i2cbus_arg);
 	}
 	if (i2cbus < 0 || i2cbus > 0xff) {
 		fprintf(stderr, "Error: I2CBUS argument out of range "
