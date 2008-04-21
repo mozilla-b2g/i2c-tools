@@ -28,9 +28,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "util.h"
-#include "i2cbusses.h"
 #include <linux/i2c-dev.h>
+#include "i2cbusses.h"
+#include "util.h"
 #include "../version.h"
 
 static void help(void) __attribute__ ((noreturn));
