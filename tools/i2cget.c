@@ -184,7 +184,7 @@ int main(int argc, char *argv[])
 		exit(0);
 	}
 
-	if (argc - flags < 3)
+	if (argc < flags + 3)
 		help();
 
 	i2cbus = lookup_i2c_bus(argv[flags+1]);
