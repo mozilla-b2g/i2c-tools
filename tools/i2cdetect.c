@@ -158,6 +158,30 @@ static void print_functionality(unsigned long funcs)
 	}
 }
 
+/*
+ * Print the installed i2c busses. The format is those of Linux 2.4's
+ * /proc/bus/i2c for historical compatibility reasons.
+ */
+static void print_i2c_busses(void)
+{
+	struct i2c_adap *adapters;
+	int count;
+
+	adapters = gather_i2c_busses();
+	if (adapters == NULL) {
+		fprintf(stderr, "Error: Out of memory!\n");
+		return;
+	}
+
+	for (count = 0; adapters[count].name; count++) {
+		printf("i2c-%d\t%-10s\t%-32s\t%s\n",
+			adapters[count].nr, adapters[count].funcs,
+			adapters[count].name, adapters[count].algo);
+	}
+
+	free_adapters(adapters);
+}
+
 int main(int argc, char *argv[])
 {
 	char *end;

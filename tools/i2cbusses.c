@@ -55,13 +55,6 @@ static struct adap_type adap_types[5] = {
 	  .algo		= "N/A", },
 };
 
-struct i2c_adap {
-	int nr;
-	char *name;
-	const char *funcs;
-	const char *algo;
-};
-
 static enum adt i2c_get_funcs(int i2cbus)
 {
 	unsigned long funcs;
@@ -99,7 +92,7 @@ static int rtrim(char *s)
 	return i + 2;
 }
 
-static void free_adapters(struct i2c_adap *adapters)
+void free_adapters(struct i2c_adap *adapters)
 {
 	int i;
 
@@ -128,7 +121,7 @@ static struct i2c_adap *more_adapters(struct i2c_adap *adapters, int n)
 	return new_adapters;
 }
 
-static struct i2c_adap *gather_i2c_busses(void)
+struct i2c_adap *gather_i2c_busses(void)
 {
 	char s[120];
 	struct dirent *de, *dde;
@@ -292,30 +285,6 @@ found:
 
 done:
 	return adapters;
-}
-
-/*
- * Print the installed i2c busses. The format is those of Linux 2.4's
- * /proc/bus/i2c for historical compatibility reasons.
- */
-void print_i2c_busses(void)
-{
-	struct i2c_adap *adapters;
-	int count;
-
-	adapters = gather_i2c_busses();
-	if (adapters == NULL) {
-		fprintf(stderr, "Error: Out of memory!\n");
-		return;
-	}
-
-	for (count = 0; adapters[count].name; count++) {
-		printf("i2c-%d\t%-10s\t%-32s\t%s\n",
-			adapters[count].nr, adapters[count].funcs,
-			adapters[count].name, adapters[count].algo);
-	}
-
-	free_adapters(adapters);
 }
 
 static int lookup_i2c_bus_by_name(const char *bus_name)
