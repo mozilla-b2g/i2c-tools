@@ -97,14 +97,8 @@ int main(int argc, char *argv[])
 		help();
 		exit(1);
 	}
-	address = strtol(argv[flags+2], &end, 0);
-	if (*end) {
-		fprintf(stderr, "Error: Second argument not a number!\n");
-		help();
-		exit(1);
-	}
-	if (address < 0x03 || address > 0x77) {
-		fprintf(stderr, "Error: Address out of range!\n");
+	address = parse_i2c_address(argv[flags+2]);
+	if (address < 0) {
 		help();
 		exit(1);
 	}

@@ -189,11 +189,9 @@ int main(int argc, char *argv[])
 	if (i2cbus < 0)
 		help();
 
-	address = strtol(argv[flags+2], &end, 0);
-	if (*end || address < 0x03 || address > 0x77) {
-		fprintf(stderr, "Error: Chip address invalid!\n");
+	address = parse_i2c_address(argv[flags+2]);
+	if (address < 0)
 		help();
-	}
 
 	if (!(flags+3 < argc)) {
 		size = I2C_SMBUS_BYTE;

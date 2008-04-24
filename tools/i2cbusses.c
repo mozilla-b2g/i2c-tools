@@ -344,6 +344,29 @@ int lookup_i2c_bus(const char *i2cbus_arg)
 	return i2cbus;
 }
 
+/*
+ * Parse a CHIP-ADDRESS command line argument and return the corresponding
+ * chip address, or a negative value if the address is invalid.
+ */
+int parse_i2c_address(const char *address_arg)
+{
+	long address;
+	char *end;
+
+	address = strtol(address_arg, &end, 0);
+	if (*end || !*address_arg) {
+		fprintf(stderr, "Error: Chip address is not a number!\n");
+		return -1;
+	}
+	if (address < 0x03 || address > 0x77) {
+		fprintf(stderr, "Error: Chip address out of range "
+		        "(0x03-0x77)!\n");
+		return -2;
+	}
+
+	return address;
+}
+
 int open_i2c_dev(const int i2cbus, char *filename, const int quiet)
 {
 	int file;
