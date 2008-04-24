@@ -154,8 +154,7 @@ static int confirm(const char *filename, int address, int size, int daddress,
 int main(int argc, char *argv[])
 {
 	char *end;
-	int res, i2cbus, address, file;
-	int size = I2C_SMBUS_BYTE_DATA;
+	int res, i2cbus, address, size, file;
 	int daddress;
 	char filename[20];
 	int pec = 0;
@@ -193,18 +192,19 @@ int main(int argc, char *argv[])
 	if (address < 0)
 		help();
 
-	if (!(flags+3 < argc)) {
-		size = I2C_SMBUS_BYTE;
-		daddress = -1;
-	} else {
+	if (argc > flags + 3) {
+		size = I2C_SMBUS_BYTE_DATA;
 		daddress = strtol(argv[flags+3], &end, 0);
 		if (*end || daddress < 0 || daddress > 0xff) {
 			fprintf(stderr, "Error: Data address invalid!\n");
 			help();
 		}
+	} else {
+		size = I2C_SMBUS_BYTE;
+		daddress = -1;
 	}
 
-	if (flags+4 < argc) {
+	if (argc > flags + 4) {
 		switch (argv[flags+4][0]) {
 		case 'b': size = I2C_SMBUS_BYTE_DATA; break;
 		case 'w': size = I2C_SMBUS_WORD_DATA; break;

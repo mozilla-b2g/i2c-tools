@@ -99,21 +99,20 @@ int main(int argc, char *argv[])
 		help();
 	}
 
-	if (argc < flags + 6) {
-		fprintf(stderr, "No size specified (using byte-data access)\n");
-		size = I2C_SMBUS_BYTE_DATA;
-	} else if (argv[flags+5][0] == 'b') {
-		size = I2C_SMBUS_BYTE_DATA;
-		pec = argv[flags+5][1] == 'p';
-	} else if (argv[flags+5][0] == 'w') {
-		size = I2C_SMBUS_WORD_DATA;
+	if (argc > flags + 5) {
+		switch (argv[flags+5][0]) {
+		case 'b': size = I2C_SMBUS_BYTE_DATA; break;
+		case 'w': size = I2C_SMBUS_WORD_DATA; break;
+		default:
+			fprintf(stderr, "Error: Invalid mode!\n");
+			help();
+		}
 		pec = argv[flags+5][1] == 'p';
 	} else {
-		fprintf(stderr, "Error: Invalid mode!\n");
-		help();
+		size = I2C_SMBUS_BYTE_DATA;
 	}
 
-	if (argc >= flags + 7) {
+	if (argc > flags + 6) {
 		vmask = strtol(argv[flags+6], &end, 0);
 		if (*end || vmask == 0) {
 			fprintf(stderr, "Error: Data value mask invalid!\n");
