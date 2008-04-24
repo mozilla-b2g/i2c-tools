@@ -45,13 +45,50 @@ static void help(void)
 	exit(1);
 }
 
+static int check_funcs(int file, int i2cbus, int size, int pec)
+{
+	unsigned long funcs;
+
+	/* check adapter functionality */
+	if (ioctl(file, I2C_FUNCS, &funcs) < 0) {
+		fprintf(stderr, "Error: Could not get the adapter "
+		        "functionality matrix: %s\n", strerror(errno));
+		return -1;
+	}
+
+	switch (size) {
+	case I2C_SMBUS_BYTE_DATA:
+		if (!(funcs & I2C_FUNC_SMBUS_WRITE_BYTE_DATA)) {
+			fprintf(stderr, "Error: Adapter for i2c bus %d does "
+			        "not have byte write capability\n", i2cbus);
+			return -1;
+		}
+		break;
+
+	case I2C_SMBUS_WORD_DATA:
+		if (!(funcs & I2C_FUNC_SMBUS_WRITE_WORD_DATA)) {
+			fprintf(stderr, "Error: Adapter for i2c bus %d does "
+			        "not have word write capability\n", i2cbus);
+			return -1;
+		}
+		break;
+	}
+
+	if (pec
+	 && !(funcs & (I2C_FUNC_SMBUS_PEC | I2C_FUNC_I2C))) {
+		fprintf(stderr, "Warning: Adapter for i2c bus %d does "
+		        "not seem to support PEC\n", i2cbus);
+	}
+
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	char *end;
 	int res, i2cbus, address, size, file;
 	int value, daddress, vmask = 0;
 	char filename[20];
-	unsigned long funcs;
 	int pec = 0;
 	int flags = 0;
 	int force = 0, yes = 0, version = 0;
@@ -128,36 +165,9 @@ int main(int argc, char *argv[])
 	}
 
 	file = open_i2c_dev(i2cbus, filename, 0);
-	if (file < 0) {
-		exit(1);
-	}
-
-	/* check adapter functionality */
-	if (ioctl(file, I2C_FUNCS, &funcs) < 0) {
-		fprintf(stderr, "Error: Could not get the adapter "
-		        "functionality matrix: %s\n", strerror(errno));
-		exit(1);
-	}
-
-	switch (size) {
-	case I2C_SMBUS_BYTE_DATA:
-		if (!(funcs & I2C_FUNC_SMBUS_WRITE_BYTE_DATA)) {
-			fprintf(stderr, "Error: Adapter for i2c bus %d does "
-			        "not have byte write capability\n", i2cbus);
-			exit(1);
-		}
-		break;
-
-	case I2C_SMBUS_WORD_DATA:
-		if (!(funcs & I2C_FUNC_SMBUS_WRITE_WORD_DATA)) {
-			fprintf(stderr, "Error: Adapter for i2c bus %d does "
-			        "not have word write capability\n", i2cbus);
-			exit(1);
-		}
-		break;
-	}
-
-	if (set_slave_addr(file, address, force) < 0)
+	if (file < 0
+	 || check_funcs(file, i2cbus, size, pec)
+	 || set_slave_addr(file, address, force))
 		exit(1);
 
 	if (!yes) {
@@ -224,17 +234,11 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (pec) {
-		if (ioctl(file, I2C_PEC, 1) < 0) {
-			fprintf(stderr, "Error: Could not set PEC: %s\n",
-			        strerror(errno));
-			close(file);
-			exit(1);
-		}
-		if (!(funcs & (I2C_FUNC_SMBUS_PEC | I2C_FUNC_I2C))) {
-			fprintf(stderr, "Warning: Adapter for i2c bus %d does "
-			        "not seem to actually support PEC\n", i2cbus);
-		}
+	if (pec && ioctl(file, I2C_PEC, 1) < 0) {
+		fprintf(stderr, "Error: Could not set PEC: %s\n",
+		        strerror(errno));
+		close(file);
+		exit(1);
 	}
 
 	if (size == I2C_SMBUS_WORD_DATA) {
