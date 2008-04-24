@@ -313,8 +313,8 @@ static int lookup_i2c_bus_by_name(const char *bus_name)
 	}
 
 	if (i2cbus == -1)
-		fprintf(stderr, "Error: I2CBUS argument doesn't match any "
-			"I2C bus name\n");
+		fprintf(stderr, "Error: I2C bus name doesn't match any "
+			"bus present!\n");
 
 done:
 	free_adapters(adapters);
@@ -336,8 +336,7 @@ int lookup_i2c_bus(const char *i2cbus_arg)
 		return lookup_i2c_bus_by_name(i2cbus_arg);
 	}
 	if (i2cbus < 0 || i2cbus > 0xff) {
-		fprintf(stderr, "Error: I2CBUS argument out of range "
-		        "(0-255)!\n");
+		fprintf(stderr, "Error: I2C bus out of range (0-255)!\n");
 		return -2;
 	}
 
