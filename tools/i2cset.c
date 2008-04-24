@@ -63,8 +63,8 @@ int main(int argc, char *argv[])
 		case 'f': force = 1; break;
 		case 'y': yes = 1; break;
 		default:
-			fprintf(stderr, "Warning: Unsupported flag "
-				"\"-%c\"!\n", argv[1+flags][1]);
+			fprintf(stderr, "Error: Unsupported option "
+				"\"%s\"!\n", argv[1+flags]);
 			help();
 			exit(1);
 		}
