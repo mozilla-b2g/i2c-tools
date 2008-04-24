@@ -1,6 +1,6 @@
 /*
     i2cbusses: Print the installed i2c busses for both 2.4 and 2.6 kernels.
-               Part of user-space programs to access for I2C 
+               Part of user-space programs to access for I2C
                devices.
     Copyright (c) 1999-2003  Frodo Looijaard <frodol@dds.nl> and
                              Mark D. Studebaker <mdsxyz123@yahoo.com>
@@ -225,7 +225,7 @@ struct i2c_adap *gather_i2c_busses(void)
 		if(f == NULL) {
 			sprintf(n, "%s/%s/device", sysfs, de->d_name);
 			if(!(ddir = opendir(n)))
-				continue;       	
+				continue;
 			while ((dde = readdir(ddir)) != NULL) {
 				if (!strcmp(dde->d_name, "."))
 					continue;
@@ -233,7 +233,7 @@ struct i2c_adap *gather_i2c_busses(void)
 					continue;
 				if ((!strncmp(dde->d_name, "i2c-", 4))) {
 					sprintf(n, "%s/%s/device/%s/name",
-					        sysfs, de->d_name, dde->d_name);
+						sysfs, de->d_name, dde->d_name);
 					if((f = fopen(n, "r")))
 						goto found;
 				}
@@ -359,7 +359,7 @@ int parse_i2c_address(const char *address_arg)
 	}
 	if (address < 0x03 || address > 0x77) {
 		fprintf(stderr, "Error: Chip address out of range "
-		        "(0x03-0x77)!\n");
+			"(0x03-0x77)!\n");
 		return -2;
 	}
 
@@ -381,16 +381,16 @@ int open_i2c_dev(const int i2cbus, char *filename, const int quiet)
 	if (file < 0 && !quiet) {
 		if (errno == ENOENT) {
 			fprintf(stderr, "Error: Could not open file "
-			        "`/dev/i2c-%d' or `/dev/i2c/%d': %s\n",
-			        i2cbus, i2cbus, strerror(ENOENT));
+				"`/dev/i2c-%d' or `/dev/i2c/%d': %s\n",
+				i2cbus, i2cbus, strerror(ENOENT));
 		} else {
 			fprintf(stderr, "Error: Could not open file "
-			        "`%s': %s\n", filename, strerror(errno));
+				"`%s': %s\n", filename, strerror(errno));
 			if (errno == EACCES)
 				fprintf(stderr, "Run as root?\n");
 		}
 	}
-	
+
 	return file;
 }
 
@@ -400,8 +400,8 @@ int set_slave_addr(int file, int address, int force)
 	   even when a driver is also running */
 	if (ioctl(file, force ? I2C_SLAVE_FORCE : I2C_SLAVE, address) < 0) {
 		fprintf(stderr,
-		        "Error: Could not set address to 0x%02x: %s\n",
-		        address, strerror(errno));
+			"Error: Could not set address to 0x%02x: %s\n",
+			address, strerror(errno));
 		return -errno;
 	}
 

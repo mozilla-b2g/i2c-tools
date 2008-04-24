@@ -38,14 +38,14 @@ static void help(void) __attribute__ ((noreturn));
 static void help(void)
 {
 	fprintf(stderr,
-	        "Usage: i2cget [-f] [-y] I2CBUS CHIP-ADDRESS [DATA-ADDRESS [MODE]]\n"
-	        "  I2CBUS is an integer or an I2C bus name\n"
-	        "  ADDRESS is an integer (0x03 - 0x77)\n"
-	        "  MODE is one of:\n"
-	        "    b (read byte data, default)\n"
-	        "    w (read word data)\n"
-	        "    c (write byte/read byte)\n"
-	        "    Append p for SMBus PEC\n");
+		"Usage: i2cget [-f] [-y] I2CBUS CHIP-ADDRESS [DATA-ADDRESS [MODE]]\n"
+		"  I2CBUS is an integer or an I2C bus name\n"
+		"  ADDRESS is an integer (0x03 - 0x77)\n"
+		"  MODE is one of:\n"
+		"    b (read byte data, default)\n"
+		"    w (read word data)\n"
+		"    c (write byte/read byte)\n"
+		"    Append p for SMBus PEC\n");
 	exit(1);
 }
 
@@ -56,7 +56,7 @@ static int check_funcs(int file, int i2cbus, int size, int daddress, int pec)
 	/* check adapter functionality */
 	if (ioctl(file, I2C_FUNCS, &funcs) < 0) {
 		fprintf(stderr, "Error: Could not get the adapter "
-		        "functionality matrix: %s\n", strerror(errno));
+			"functionality matrix: %s\n", strerror(errno));
 		return -1;
 	}
 
@@ -64,13 +64,13 @@ static int check_funcs(int file, int i2cbus, int size, int daddress, int pec)
 	case I2C_SMBUS_BYTE:
 		if (!(funcs & I2C_FUNC_SMBUS_READ_BYTE)) {
 			fprintf(stderr, "Error: Adapter for i2c bus %d does "
-			        "not have read byte capability\n", i2cbus);
+				"not have read byte capability\n", i2cbus);
 			return -1;
 		}
 		if (daddress >= 0
 		 && !(funcs & I2C_FUNC_SMBUS_WRITE_BYTE)) {
 			fprintf(stderr, "Error: Adapter for i2c bus %d does "
-			        "not have write byte capability\n", i2cbus);
+				"not have write byte capability\n", i2cbus);
 			return -1;
 		}
 		break;
@@ -78,7 +78,7 @@ static int check_funcs(int file, int i2cbus, int size, int daddress, int pec)
 	case I2C_SMBUS_BYTE_DATA:
 		if (!(funcs & I2C_FUNC_SMBUS_READ_BYTE_DATA)) {
 			fprintf(stderr, "Error: Adapter for i2c bus %d does "
-			        "not have read byte data capability\n", i2cbus);
+				"not have read byte data capability\n", i2cbus);
 			return -1;
 		}
 		break;
@@ -86,7 +86,7 @@ static int check_funcs(int file, int i2cbus, int size, int daddress, int pec)
 	case I2C_SMBUS_WORD_DATA:
 		if (!(funcs & I2C_FUNC_SMBUS_READ_WORD_DATA)) {
 			fprintf(stderr, "Error: Adapter for i2c bus %d does "
-			        "not have read word data capability\n", i2cbus);
+				"not have read word data capability\n", i2cbus);
 			return -1;
 		}
 		break;
@@ -95,7 +95,7 @@ static int check_funcs(int file, int i2cbus, int size, int daddress, int pec)
 	if (pec
 	 && !(funcs & (I2C_FUNC_SMBUS_PEC | I2C_FUNC_I2C))) {
 		fprintf(stderr, "Warning: Adapter for i2c bus %d does "
-		        "not seem to support PEC\n", i2cbus);
+			"not seem to support PEC\n", i2cbus);
 	}
 
 	return 0;
@@ -121,9 +121,9 @@ static int confirm(const char *filename, int address, int size, int daddress,
 
 	if (size == I2C_SMBUS_BYTE && daddress >= 0 && pec) {
 		fprintf(stderr, "WARNING! All I2C chips and some SMBus chips "
-		        "will interpret a write\nbyte command with PEC as a"
-		        "write byte data command, effectively writing a\n"
-		        "value into a register!\n");
+			"will interpret a write\nbyte command with PEC as a"
+			"write byte data command, effectively writing a\n"
+			"value into a register!\n");
 		dont++;
 	}
 
@@ -223,11 +223,11 @@ int main(int argc, char *argv[])
 		exit(1);
 
 	if (!yes && !confirm(filename, address, size, daddress, pec))
-	 	exit(0);
+		exit(0);
 
 	if (pec && ioctl(file, I2C_PEC, 1) < 0) {
 		fprintf(stderr, "Error: Could not set PEC: %s\n",
-		        strerror(errno));
+			strerror(errno));
 		exit(1);
 	}
 

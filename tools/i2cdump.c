@@ -33,17 +33,17 @@
 static void help(void)
 {
 	fprintf(stderr,
-	        "Usage: i2cdump [-f] [-y] [-r first-last] I2CBUS ADDRESS [MODE] [BANK [BANKREG]]\n"
-	        "  I2CBUS is an integer or an I2C bus name\n"
-	        "  ADDRESS is an integer (0x03 - 0x77)\n"
-	        "  MODE is one of:\n"
+		"Usage: i2cdump [-f] [-y] [-r first-last] I2CBUS ADDRESS [MODE] [BANK [BANKREG]]\n"
+		"  I2CBUS is an integer or an I2C bus name\n"
+		"  ADDRESS is an integer (0x03 - 0x77)\n"
+		"  MODE is one of:\n"
 		"    b (byte, default)\n"
 		"    w (word)\n"
 		"    W (word on even register addresses)\n"
 		"    s (SMBus block)\n"
 		"    i (I2C block)\n"
-	        "    c (consecutive byte)\n"
-	        "    Append p for SMBus PEC\n");
+		"    c (consecutive byte)\n"
+		"    Append p for SMBus PEC\n");
 }
 
 int main(int argc, char *argv[])
@@ -153,13 +153,13 @@ int main(int argc, char *argv[])
 			bankreg = strtol(argv[flags+5], &end, 0);
 			if (*end || size == I2C_SMBUS_BLOCK_DATA) {
 				fprintf(stderr, "Error: Invalid bank register "
-				        "number!\n");
+					"number!\n");
 				help();
 				exit(1);
 			}
 			if (bankreg < 0 || bankreg > 0xff) {
 				fprintf(stderr, "Error: bank out of range "
-				        "(0-0xff)!\n");
+					"(0-0xff)!\n");
 				help();
 				exit(1);
 			}
@@ -194,7 +194,7 @@ int main(int argc, char *argv[])
 			/* Fall through */
 		default:
 			fprintf(stderr,
-			        "Error: Range parameter not compatible with selected mode!\n");
+				"Error: Range parameter not compatible with selected mode!\n");
 			exit(1);
 		}
 	}
@@ -207,7 +207,7 @@ int main(int argc, char *argv[])
 	/* check adapter functionality */
 	if (ioctl(file, I2C_FUNCS, &funcs) < 0) {
 		fprintf(stderr, "Error: Could not get the adapter "
-		        "functionality matrix: %s\n", strerror(errno));
+			"functionality matrix: %s\n", strerror(errno));
 		exit(1);
 	}
 
@@ -248,8 +248,8 @@ int main(int argc, char *argv[])
 	case I2C_SMBUS_I2C_BLOCK_DATA:
 		if (!(funcs & I2C_FUNC_SMBUS_READ_I2C_BLOCK)) {
 			fprintf(stderr, "Error: Adapter for i2c bus %d does "
-			        "not have i2c block read capability\n",
-			        i2cbus);
+				"not have i2c block read capability\n",
+				i2cbus);
 			exit(1);
 		}
 		break;
@@ -261,42 +261,42 @@ int main(int argc, char *argv[])
 	if (pec) {
 		if (ioctl(file, I2C_PEC, 1) < 0) {
 			fprintf(stderr, "Error: Could not set PEC: %s\n",
-			        strerror(errno));
+				strerror(errno));
 			exit(1);
 		}
 		if (!(funcs & (I2C_FUNC_SMBUS_PEC | I2C_FUNC_I2C))) {
 			fprintf(stderr, "Warning: Adapter for i2c bus %d does "
-			        "not seem to actually support PEC\n", i2cbus);
+				"not seem to actually support PEC\n", i2cbus);
 		}
 	}
 
 	if (!yes) {
 		fprintf(stderr, "WARNING! This program can confuse your I2C "
-		        "bus, cause data loss and worse!\n");
+			"bus, cause data loss and worse!\n");
 
 		fprintf(stderr, "I will probe file %s, address 0x%x, mode "
-		        "%s\n", filename, address,
-		        size == I2C_SMBUS_BLOCK_DATA ? "smbus block" :
-		        size == I2C_SMBUS_I2C_BLOCK_DATA ? "i2c block" :
-		        size == I2C_SMBUS_BYTE ? "byte consecutive read" :
-		        size == I2C_SMBUS_BYTE_DATA ? "byte" : "word");
+			"%s\n", filename, address,
+			size == I2C_SMBUS_BLOCK_DATA ? "smbus block" :
+			size == I2C_SMBUS_I2C_BLOCK_DATA ? "i2c block" :
+			size == I2C_SMBUS_BYTE ? "byte consecutive read" :
+			size == I2C_SMBUS_BYTE_DATA ? "byte" : "word");
 		if (pec)
 			fprintf(stderr, "PEC checking enabled.\n");
 		if (even)
 			fprintf(stderr, "Only probing even register "
-			        "addresses.\n");
+				"addresses.\n");
 		if (bank) {
 			if (size == I2C_SMBUS_BLOCK_DATA)
 				fprintf(stderr, "Using command 0x%02x.\n",
-				        bank);
+					bank);
 			else
 				fprintf(stderr, "Probing bank %d using bank "
-				        "register 0x%02x.\n", bank, bankreg);
+					"register 0x%02x.\n", bank, bankreg);
 		}
 		if (range) {
 			fprintf(stderr,
-			        "Probe range limited to 0x%02x-0x%02x.\n",
-			        first, last);
+				"Probe range limited to 0x%02x-0x%02x.\n",
+				first, last);
 		}
 
 		fprintf(stderr, "Continue? [Y/n] ");
@@ -346,7 +346,7 @@ int main(int argc, char *argv[])
 			}
 			if (res <= 0) {
 				fprintf(stderr, "Error: Block read failed, "
-				        "return code %d\n", res);
+					"return code %d\n", res);
 				exit(1);
 			}
 			if (res >= 256)
@@ -362,7 +362,7 @@ int main(int argc, char *argv[])
 			res = i2c_smbus_write_byte(file, first);
 			if(res != 0) {
 				fprintf(stderr, "Error: Write start address "
-				        "failed, return code %d\n", res);
+					"failed, return code %d\n", res);
 				exit(1);
 			}
 		}
@@ -395,7 +395,7 @@ int main(int argc, char *argv[])
 					  i2c_smbus_read_byte_data(file, i+j);
 				} else if (size == I2C_SMBUS_WORD_DATA) {
 					res = i2c_smbus_read_word_data(file,
-					                               i+j);
+								       i+j);
 					if (res < 0) {
 						block[i+j] = res;
 						block[i+j+1] = res;

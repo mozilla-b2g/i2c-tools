@@ -36,12 +36,12 @@ static void help(void)
 {
 	fprintf(stderr,
 	        "Usage: i2cset [-f] [-y] I2CBUS CHIP-ADDRESS DATA-ADDRESS VALUE [MODE] [MASK]\n"
-	        "  I2CBUS is an integer or an I2C bus name\n"
-	        "  ADDRESS is an integer (0x03 - 0x77)\n"
-	        "  MODE is one of:\n"
-	        "    b (byte, default)\n"
+		"  I2CBUS is an integer or an I2C bus name\n"
+		"  ADDRESS is an integer (0x03 - 0x77)\n"
+		"  MODE is one of:\n"
+		"    b (byte, default)\n"
 		"    w (word)\n"
-	        "    Append p for SMBus PEC\n");
+		"    Append p for SMBus PEC\n");
 	exit(1);
 }
 
@@ -52,7 +52,7 @@ static int check_funcs(int file, int i2cbus, int size, int pec)
 	/* check adapter functionality */
 	if (ioctl(file, I2C_FUNCS, &funcs) < 0) {
 		fprintf(stderr, "Error: Could not get the adapter "
-		        "functionality matrix: %s\n", strerror(errno));
+			"functionality matrix: %s\n", strerror(errno));
 		return -1;
 	}
 
@@ -60,7 +60,7 @@ static int check_funcs(int file, int i2cbus, int size, int pec)
 	case I2C_SMBUS_BYTE_DATA:
 		if (!(funcs & I2C_FUNC_SMBUS_WRITE_BYTE_DATA)) {
 			fprintf(stderr, "Error: Adapter for i2c bus %d does "
-			        "not have byte write capability\n", i2cbus);
+				"not have byte write capability\n", i2cbus);
 			return -1;
 		}
 		break;
@@ -68,7 +68,7 @@ static int check_funcs(int file, int i2cbus, int size, int pec)
 	case I2C_SMBUS_WORD_DATA:
 		if (!(funcs & I2C_FUNC_SMBUS_WRITE_WORD_DATA)) {
 			fprintf(stderr, "Error: Adapter for i2c bus %d does "
-			        "not have word write capability\n", i2cbus);
+				"not have word write capability\n", i2cbus);
 			return -1;
 		}
 		break;
@@ -77,7 +77,7 @@ static int check_funcs(int file, int i2cbus, int size, int pec)
 	if (pec
 	 && !(funcs & (I2C_FUNC_SMBUS_PEC | I2C_FUNC_I2C))) {
 		fprintf(stderr, "Warning: Adapter for i2c bus %d does "
-		        "not seem to support PEC\n", i2cbus);
+			"not seem to support PEC\n", i2cbus);
 	}
 
 	return 0;
@@ -244,7 +244,7 @@ int main(int argc, char *argv[])
 
 	if (pec && ioctl(file, I2C_PEC, 1) < 0) {
 		fprintf(stderr, "Error: Could not set PEC: %s\n",
-		        strerror(errno));
+			strerror(errno));
 		close(file);
 		exit(1);
 	}
