@@ -83,6 +83,40 @@ static int check_funcs(int file, int i2cbus, int size, int pec)
 	return 0;
 }
 
+static int confirm(const char *filename, int address, int size, int daddress,
+		   int value, int vmask, int pec)
+{
+	int dont = 0;
+
+	fprintf(stderr, "WARNING! This program can confuse your I2C "
+		"bus, cause data loss and worse!\n");
+
+	if (address >= 0x50 && address <= 0x57) {
+		fprintf(stderr, "DANGEROUS! Writing to a serial "
+			"EEPROM on a memory DIMM\nmay render your "
+			"memory USELESS and make your system "
+			"UNBOOTABLE!\n");
+		dont++;
+	}
+
+	fprintf(stderr, "I will write to device file %s, chip address "
+		"0x%02x, data address\n0x%02x, data 0x%02x%s, mode "
+		"%s.\n", filename, address, daddress, value,
+		vmask ? " (masked)" : "",
+		size == I2C_SMBUS_BYTE_DATA ? "byte" : "word");
+	if (pec)
+		fprintf(stderr, "PEC checking enabled.\n");
+
+	fprintf(stderr, "Continue? [%s] ", dont ? "y/N" : "Y/n");
+	fflush(stderr);
+	if (!user_ack(!dont)) {
+		fprintf(stderr, "Aborting on user request.\n");
+		return 0;
+	}
+
+	return 1;
+}
+
 int main(int argc, char *argv[])
 {
 	char *end;
@@ -170,35 +204,9 @@ int main(int argc, char *argv[])
 	 || set_slave_addr(file, address, force))
 		exit(1);
 
-	if (!yes) {
-		int dont = 0;
-
-		fprintf(stderr, "WARNING! This program can confuse your I2C "
-		        "bus, cause data loss and worse!\n");
-
-		if (address >= 0x50 && address <= 0x57) {
-			fprintf(stderr, "DANGEROUS! Writing to a serial "
-			        "EEPROM on a memory DIMM\nmay render your "
-			        "memory USELESS and make your system "
-			        "UNBOOTABLE!\n");
-			dont = 1;
-		}
-
-		fprintf(stderr, "I will write to device file %s, chip address "
-		        "0x%02x, data address\n0x%02x, data 0x%02x%s, mode "
-		        "%s.\n", filename, address, daddress, value,
-			vmask ? " (masked)" : "",
-			size == I2C_SMBUS_BYTE_DATA ? "byte" : "word");
-		if (pec)
-			fprintf(stderr, "PEC checking enabled.\n");
-
-		fprintf(stderr, "Continue? [%s] ", dont ? "y/N" : "Y/n");
-		fflush(stderr);
-		if (!user_ack(!dont)) {
-			fprintf(stderr, "Aborting on user request.\n");
-			exit(0);
-		}
-	}
+	if (!yes && !confirm(filename, address, size, daddress,
+			     value, vmask, pec))
+		exit(0);
 
 	if (vmask) {
 		int oldvalue;
