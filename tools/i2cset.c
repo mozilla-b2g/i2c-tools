@@ -2,7 +2,7 @@
     i2cset.c - A user-space program to write an I2C register.
     Copyright (C) 2001-2003  Frodo Looijaard <frodol@dds.nl>, and
                              Mark D. Studebaker <mdsxyz123@yahoo.com>
-    Copyright (C) 2004-2005  Jean Delvare <khali@linux-fr.org>
+    Copyright (C) 2004-2008  Jean Delvare <khali@linux-fr.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ static void help(void)
 	fprintf(stderr,
 	        "Usage: i2cset [-f] [-y] I2CBUS CHIP-ADDRESS DATA-ADDRESS VALUE [MODE] [MASK]\n"
 	        "  I2CBUS is an integer or an I2C bus name\n"
-	        "  ADDRESS is an integer (0x00 - 0x7f)\n"
+	        "  ADDRESS is an integer (0x03 - 0x77)\n"
 	        "  MODE is one of:\n"
 	        "    b (byte, default)\n"
 		"    w (word)\n"
@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 		help();
 
 	address = strtol(argv[flags+2], &end, 0);
-	if (*end || address < 0 || address > 0x7f) {
+	if (*end || address < 0x03 || address > 0x77) {
 		fprintf(stderr, "Error: Chip address invalid!\n");
 		help();
 	}

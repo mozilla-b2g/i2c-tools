@@ -35,7 +35,7 @@ static void help(void)
 	fprintf(stderr,
 	        "Usage: i2cdump [-f] [-y] [-r first-last] I2CBUS ADDRESS [MODE] [BANK [BANKREG]]\n"
 	        "  I2CBUS is an integer or an I2C bus name\n"
-	        "  ADDRESS is an integer (0x00 - 0x7f)\n"
+	        "  ADDRESS is an integer (0x03 - 0x77)\n"
 	        "  MODE is one of:\n"
 		"    b (byte, default)\n"
 		"    w (word)\n"
@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
 		help();
 		exit(1);
 	}
-	if (address < 0 || address > 0x7f) {
+	if (address < 0x03 || address > 0x77) {
 		fprintf(stderr, "Error: Address out of range!\n");
 		help();
 		exit(1);

@@ -1,6 +1,6 @@
 /*
     i2cget.c - A user-space program to read an I2C register.
-    Copyright (C) 2005       Jean Delvare <khali@linux-fr.org>
+    Copyright (C) 2005-2008  Jean Delvare <khali@linux-fr.org>
 
     Based on i2cset.c:
     Copyright (C) 2001-2003  Frodo Looijaard <frodol@dds.nl>, and
@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
 		help();
 
 	address = strtol(argv[flags+2], &end, 0);
-	if (*end || address < 3 || address > 0x77) {
+	if (*end || address < 0x03 || address > 0x77) {
 		fprintf(stderr, "Error: Chip address invalid!\n");
 		help();
 	}
