@@ -37,18 +37,11 @@
 static void help(void)
 {
 	fprintf(stderr,
-	        "Syntax: i2cdetect [-y] [-a] [-q|-r] I2CBUS [FIRST LAST]\n"
-	        "        i2cdetect -F I2CBUS\n"
-	        "        i2cdetect -l\n"
-	        "        i2cdetect -V\n"
-	        "  I2CBUS is an integer\n"
-	        "  With -a, probe all addresses (NOT RECOMMENDED)\n"
-	        "  With -q, uses only quick write commands for probing (NOT "
-	        "RECOMMENDED)\n"
-	        "  With -r, uses only read byte commands for probing (NOT "
-	        "RECOMMENDED)\n"
-	        "  If provided, FIRST and LAST limit the probing range.\n"
-	        "  With -l, lists installed busses only\n");
+	        "Usage: i2cdetect [-y] [-a] [-q|-r] I2CBUS [FIRST LAST]\n"
+	        "       i2cdetect -F I2CBUS\n"
+	        "       i2cdetect -l\n"
+	        "  I2CBUS is an integer or an I2C bus name\n"
+	        "  If provided, FIRST and LAST limit the probing range.\n");
 }
 
 static int scan_i2c_bus(int file, int mode, int first, int last)

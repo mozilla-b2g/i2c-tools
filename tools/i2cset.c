@@ -34,12 +34,14 @@ static void help(void) __attribute__ ((noreturn));
 
 static void help(void)
 {
-	fprintf(stderr, "Syntax: i2cset [-f] [-y] I2CBUS CHIP-ADDRESS DATA-ADDRESS "
-	        "VALUE [MODE] [MASK]\n"
-	        "        i2cset -V\n"
-	        "  MODE is 'b[yte]' or 'w[ord]' (default b)\n"
-	        "  Append 'p' to MODE for PEC checking\n"
-	        "  I2CBUS is an integer\n");
+	fprintf(stderr,
+	        "Usage: i2cset [-f] [-y] I2CBUS CHIP-ADDRESS DATA-ADDRESS VALUE [MODE] [MASK]\n"
+	        "  I2CBUS is an integer or an I2C bus name\n"
+	        "  ADDRESS is an integer (0x00 - 0x7f)\n"
+	        "  MODE is one of:\n"
+	        "    b (byte, default)\n"
+		"    w (word)\n"
+	        "    Append p for SMBus PEC\n");
 	exit(1);
 }
 

@@ -37,16 +37,15 @@ static void help(void) __attribute__ ((noreturn));
 
 static void help(void)
 {
-	fprintf(stderr, "Syntax: i2cget [-f] [-y] I2CBUS CHIP-ADDRESS "
-	        "[DATA-ADDRESS [MODE]]\n"
-	        "        i2cget -V\n"
-	        "  MODE can be: 'b' (read byte data, default)\n"
-	        "               'w' (read word data)\n"
-	        "               'c' (write byte/read byte)\n"
-		"  If DATA-ADDRESS is omitted, a single read byte command is "
-		"issued\n"
-	        "  Append 'p' to MODE for PEC checking\n"
-	        "  I2CBUS is an integer\n");
+	fprintf(stderr,
+	        "Usage: i2cget [-f] [-y] I2CBUS CHIP-ADDRESS [DATA-ADDRESS [MODE]]\n"
+	        "  I2CBUS is an integer or an I2C bus name\n"
+	        "  ADDRESS is an integer (0x03 - 0x77)\n"
+	        "  MODE is one of:\n"
+	        "    b (read byte data, default)\n"
+	        "    w (read word data)\n"
+	        "    c (write byte/read byte)\n"
+	        "    Append p for SMBus PEC\n");
 	exit(1);
 }
 

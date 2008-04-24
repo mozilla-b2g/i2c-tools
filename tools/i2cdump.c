@@ -32,9 +32,10 @@
 
 static void help(void)
 {
-	fprintf(stderr, "Syntax: i2cdump [-f] [-r first-last] [-y] I2CBUS "
-	        "ADDRESS [MODE] [BANK [BANKREG]]\n"
-	        "        i2cdump -V\n"
+	fprintf(stderr,
+	        "Usage: i2cdump [-f] [-y] [-r first-last] I2CBUS ADDRESS [MODE] [BANK [BANKREG]]\n"
+	        "  I2CBUS is an integer or an I2C bus name\n"
+	        "  ADDRESS is an integer (0x00 - 0x7f)\n"
 	        "  MODE is one of:\n"
 		"    b (byte, default)\n"
 		"    w (word)\n"
@@ -42,12 +43,7 @@ static void help(void)
 		"    s (SMBus block)\n"
 		"    i (I2C block)\n"
 	        "    c (consecutive byte)\n"
-	        "    Append 'p' to 'b', 'w', 's' or 'c' for PEC checking\n"
-	        "  I2CBUS is an integer\n"
-	        "  ADDRESS is an integer 0x00 - 0x7f\n"
-	        "  BANK and BANKREG are for byte and word accesses (default "
-	        "bank 0, reg 0x4e)\n"
-	        "  BANK is the command for smbusblock accesses (default 0)\n");
+	        "    Append p for SMBus PEC\n");
 }
 
 int main(int argc, char *argv[])
