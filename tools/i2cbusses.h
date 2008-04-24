@@ -22,7 +22,7 @@
 #ifndef _I2CBUSSES_H
 #define _I2CBUSSES_H
 
-void print_i2c_busses(int procfmt);
+void print_i2c_busses(void);
 
 int lookup_i2c_bus(const char *i2cbus_arg);
 int open_i2c_dev(const int i2cbus, char *filename, const int quiet);

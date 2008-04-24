@@ -40,7 +40,6 @@ static void help(void)
 	        "  MODE is 'b[yte]' or 'w[ord]' (default b)\n"
 	        "  Append 'p' to MODE for PEC checking\n"
 	        "  I2CBUS is an integer\n");
-	print_i2c_busses(0);
 	exit(1);
 }
 

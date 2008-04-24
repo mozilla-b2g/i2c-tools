@@ -48,7 +48,6 @@ static void help(void)
 	        "  BANK and BANKREG are for byte and word accesses (default "
 	        "bank 0, reg 0x4e)\n"
 	        "  BANK is the command for smbusblock accesses (default 0)\n");
-	print_i2c_busses(0);
 }
 
 int main(int argc, char *argv[])

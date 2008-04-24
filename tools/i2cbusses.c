@@ -295,13 +295,10 @@ done:
 }
 
 /*
-   this just prints out the installed i2c busses in a consistent format, whether
-   on a 2.4 kernel using /proc or a 2.6 kernel using /sys.
-   If procfmt == 1, print out exactly /proc/bus/i2c format on stdout.
-   This allows this to be used in a program to emulate /proc/bus/i2c on a
-   sysfs system.
-*/
-void print_i2c_busses(int procfmt)
+ * Print the installed i2c busses. The format is those of Linux 2.4's
+ * /proc/bus/i2c for historical compatibility reasons.
+ */
+void print_i2c_busses(void)
 {
 	struct i2c_adap *adapters;
 	int count;
@@ -313,26 +310,10 @@ void print_i2c_busses(int procfmt)
 	}
 
 	for (count = 0; adapters[count].name; count++) {
-		if (count == 0 && !procfmt)
-			fprintf(stderr,"  Installed I2C busses:\n");
-		if (procfmt)
-			/* match 2.4 /proc/bus/i2c format as closely as possible */
-			printf("i2c-%d\t%-10s\t%-32s\t%s\n",
-				adapters[count].nr,
-				adapters[count].funcs,
-				adapters[count].name,
-				adapters[count].algo);
-		else
-			fprintf(stderr, "    i2c-%d\t%-10s\t%s\n",
-				adapters[count].nr,
-				adapters[count].funcs,
-				adapters[count].name);
+		printf("i2c-%d\t%-10s\t%-32s\t%s\n",
+			adapters[count].nr, adapters[count].funcs,
+			adapters[count].name, adapters[count].algo);
 	}
-
-	if(count == 0 && !procfmt)
-		fprintf(stderr,"Error: No I2C busses found!\n"
-		               "Be sure you have done 'modprobe i2c-dev'\n"
-		               "and also modprobed your i2c bus drivers\n");
 
 	free_adapters(adapters);
 }

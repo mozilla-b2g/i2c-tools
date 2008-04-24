@@ -47,7 +47,6 @@ static void help(void)
 		"issued\n"
 	        "  Append 'p' to MODE for PEC checking\n"
 	        "  I2CBUS is an integer\n");
-	print_i2c_busses(0);
 	exit(1);
 }
 
