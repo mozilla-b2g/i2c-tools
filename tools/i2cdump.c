@@ -46,13 +46,76 @@ static void help(void)
 		"    Append p for SMBus PEC\n");
 }
 
+static int check_funcs(int file, int i2cbus, int size, int pec)
+{
+	unsigned long funcs;
+
+	/* check adapter functionality */
+	if (ioctl(file, I2C_FUNCS, &funcs) < 0) {
+		fprintf(stderr, "Error: Could not get the adapter "
+			"functionality matrix: %s\n", strerror(errno));
+		return -1;
+	}
+
+	switch(size) {
+	case I2C_SMBUS_BYTE:
+		if (!((funcs & I2C_FUNC_SMBUS_BYTE) == I2C_FUNC_SMBUS_BYTE)) {
+			fprintf(stderr, "Error: Adapter for i2c bus %d does "
+				"not have byte capability\n", i2cbus);
+			return -1;
+		}
+		break;
+
+	case I2C_SMBUS_BYTE_DATA:
+		if (!(funcs & I2C_FUNC_SMBUS_READ_BYTE_DATA)) {
+			fprintf(stderr, "Error: Adapter for i2c bus %d does "
+				"not have byte read capability\n", i2cbus);
+			return -1;
+		}
+		break;
+
+	case I2C_SMBUS_WORD_DATA:
+		if (!(funcs & I2C_FUNC_SMBUS_READ_WORD_DATA)) {
+			fprintf(stderr, "Error: Adapter for i2c bus %d does "
+				"not have word read capability\n", i2cbus);
+			return -1;
+		}
+		break;
+
+	case I2C_SMBUS_BLOCK_DATA:
+		if (!(funcs & I2C_FUNC_SMBUS_READ_BLOCK_DATA)) {
+			fprintf(stderr, "Error: Adapter for i2c bus %d does "
+				"not have smbus block read capability\n",
+				i2cbus);
+			return -1;
+		}
+		break;
+
+	case I2C_SMBUS_I2C_BLOCK_DATA:
+		if (!(funcs & I2C_FUNC_SMBUS_READ_I2C_BLOCK)) {
+			fprintf(stderr, "Error: Adapter for i2c bus %d does "
+				"not have i2c block read capability\n",
+				i2cbus);
+			return -1;
+		}
+		break;
+	}
+
+	if (pec
+	 && !(funcs & (I2C_FUNC_SMBUS_PEC | I2C_FUNC_I2C))) {
+		fprintf(stderr, "Warning: Adapter for i2c bus %d does "
+			"not seem to support PEC\n", i2cbus);
+	}
+
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	char *end;
 	int i, j, res, i2cbus, address, size, file;
 	int bank = 0, bankreg = 0x4E, old_bank = 0;
 	char filename[20];
-	unsigned long funcs;
 	int block[256], s_length = 0;
 	int pec = 0, even = 0;
 	int flags = 0;
@@ -200,62 +263,9 @@ int main(int argc, char *argv[])
 	}
 
 	file = open_i2c_dev(i2cbus, filename, 0);
-	if (file < 0) {
-		exit(1);
-	}
-
-	/* check adapter functionality */
-	if (ioctl(file, I2C_FUNCS, &funcs) < 0) {
-		fprintf(stderr, "Error: Could not get the adapter "
-			"functionality matrix: %s\n", strerror(errno));
-		exit(1);
-	}
-
-	switch(size) {
-	case I2C_SMBUS_BYTE:
-		if (!((funcs & I2C_FUNC_SMBUS_BYTE) == I2C_FUNC_SMBUS_BYTE)) {
-			fprintf(stderr, "Error: Adapter for i2c bus %d does "
-				"not have byte capability\n", i2cbus);
-			exit(1);
-		}
-		break;
-
-	case I2C_SMBUS_BYTE_DATA:
-		if (!(funcs & I2C_FUNC_SMBUS_READ_BYTE_DATA)) {
-			fprintf(stderr, "Error: Adapter for i2c bus %d does "
-				"not have byte read capability\n", i2cbus);
-			exit(1);
-		}
-		break;
-
-	case I2C_SMBUS_WORD_DATA:
-		if (!(funcs & I2C_FUNC_SMBUS_READ_WORD_DATA)) {
-			fprintf(stderr, "Error: Adapter for i2c bus %d does "
-				"not have word read capability\n", i2cbus);
-			exit(1);
-		}
-		break;
-
-	case I2C_SMBUS_BLOCK_DATA:
-		if (!(funcs & I2C_FUNC_SMBUS_READ_BLOCK_DATA)) {
-			fprintf(stderr, "Error: Adapter for i2c bus %d does "
-				"not have smbus block read capability\n",
-				i2cbus);
-			exit(1);
-		}
-		break;
-
-	case I2C_SMBUS_I2C_BLOCK_DATA:
-		if (!(funcs & I2C_FUNC_SMBUS_READ_I2C_BLOCK)) {
-			fprintf(stderr, "Error: Adapter for i2c bus %d does "
-				"not have i2c block read capability\n",
-				i2cbus);
-			exit(1);
-		}
-		break;
-	}
-
-	if (set_slave_addr(file, address, force) < 0)
+	if (file < 0
+	 || check_funcs(file, i2cbus, size, pec)
+	 || set_slave_addr(file, address, force))
 		exit(1);
 
 	if (pec) {
@@ -263,10 +273,6 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "Error: Could not set PEC: %s\n",
 				strerror(errno));
 			exit(1);
-		}
-		if (!(funcs & (I2C_FUNC_SMBUS_PEC | I2C_FUNC_I2C))) {
-			fprintf(stderr, "Warning: Adapter for i2c bus %d does "
-				"not seem to actually support PEC\n", i2cbus);
 		}
 	}
 

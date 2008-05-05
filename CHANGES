@@ -8,6 +8,7 @@ SVN
   i2cdump: Support i2c bus passed by name
            Shorten the usage message
            Restrict the chip address to 0x03-0x77
+           Split the functionality checking code into a separate function
   i2cget: Support i2c bus passed by name
           Shorten the usage message
   i2cset: Support i2c bus passed by name
