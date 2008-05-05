@@ -228,6 +228,7 @@ int main(int argc, char *argv[])
 	if (pec && ioctl(file, I2C_PEC, 1) < 0) {
 		fprintf(stderr, "Error: Could not set PEC: %s\n",
 			strerror(errno));
+		close(file);
 		exit(1);
 	}
 
