@@ -63,30 +63,26 @@ static int check_funcs(int file, int size, int daddress, int pec)
 	switch (size) {
 	case I2C_SMBUS_BYTE:
 		if (!(funcs & I2C_FUNC_SMBUS_READ_BYTE)) {
-			fprintf(stderr, "Error: Adapter does "
-				"not have read byte capability\n");
+			fprintf(stderr, MISSING_FUNC_FMT, "read byte");
 			return -1;
 		}
 		if (daddress >= 0
 		 && !(funcs & I2C_FUNC_SMBUS_WRITE_BYTE)) {
-			fprintf(stderr, "Error: Adapter does "
-				"not have write byte capability\n");
+			fprintf(stderr, MISSING_FUNC_FMT, "write byte");
 			return -1;
 		}
 		break;
 
 	case I2C_SMBUS_BYTE_DATA:
 		if (!(funcs & I2C_FUNC_SMBUS_READ_BYTE_DATA)) {
-			fprintf(stderr, "Error: Adapter does "
-				"not have read byte data capability\n");
+			fprintf(stderr, MISSING_FUNC_FMT, "read byte");
 			return -1;
 		}
 		break;
 
 	case I2C_SMBUS_WORD_DATA:
 		if (!(funcs & I2C_FUNC_SMBUS_READ_WORD_DATA)) {
-			fprintf(stderr, "Error: Adapter does "
-				"not have read word data capability\n");
+			fprintf(stderr, MISSING_FUNC_FMT, "read word");
 			return -1;
 		}
 		break;

@@ -37,4 +37,6 @@ int parse_i2c_address(const char *address_arg);
 int open_i2c_dev(const int i2cbus, char *filename, const int quiet);
 int set_slave_addr(int file, int address, int force);
 
+#define MISSING_FUNC_FMT	"Error: Adapter does not have %s capability\n"
+
 #endif

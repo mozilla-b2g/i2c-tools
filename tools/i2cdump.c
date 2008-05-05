@@ -60,40 +60,35 @@ static int check_funcs(int file, int size, int pec)
 	switch(size) {
 	case I2C_SMBUS_BYTE:
 		if (!((funcs & I2C_FUNC_SMBUS_BYTE) == I2C_FUNC_SMBUS_BYTE)) {
-			fprintf(stderr, "Error: Adapter does "
-				"not have byte capability\n");
+			fprintf(stderr, MISSING_FUNC_FMT, "byte");
 			return -1;
 		}
 		break;
 
 	case I2C_SMBUS_BYTE_DATA:
 		if (!(funcs & I2C_FUNC_SMBUS_READ_BYTE_DATA)) {
-			fprintf(stderr, "Error: Adapter does "
-				"not have byte read capability\n");
+			fprintf(stderr, MISSING_FUNC_FMT, "byte read");
 			return -1;
 		}
 		break;
 
 	case I2C_SMBUS_WORD_DATA:
 		if (!(funcs & I2C_FUNC_SMBUS_READ_WORD_DATA)) {
-			fprintf(stderr, "Error: Adapter does "
-				"not have word read capability\n");
+			fprintf(stderr, MISSING_FUNC_FMT, "word read");
 			return -1;
 		}
 		break;
 
 	case I2C_SMBUS_BLOCK_DATA:
 		if (!(funcs & I2C_FUNC_SMBUS_READ_BLOCK_DATA)) {
-			fprintf(stderr, "Error: Adapter does "
-				"not have smbus block read capability\n");
+			fprintf(stderr, MISSING_FUNC_FMT, "smbus block read");
 			return -1;
 		}
 		break;
 
 	case I2C_SMBUS_I2C_BLOCK_DATA:
 		if (!(funcs & I2C_FUNC_SMBUS_READ_I2C_BLOCK)) {
-			fprintf(stderr, "Error: Adapter does "
-				"not have i2c block read capability\n");
+			fprintf(stderr, MISSING_FUNC_FMT, "i2c block read");
 			return -1;
 		}
 		break;
