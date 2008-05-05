@@ -49,7 +49,7 @@ static void help(void)
 	exit(1);
 }
 
-static int check_funcs(int file, int i2cbus, int size, int daddress, int pec)
+static int check_funcs(int file, int size, int daddress, int pec)
 {
 	unsigned long funcs;
 
@@ -63,30 +63,30 @@ static int check_funcs(int file, int i2cbus, int size, int daddress, int pec)
 	switch (size) {
 	case I2C_SMBUS_BYTE:
 		if (!(funcs & I2C_FUNC_SMBUS_READ_BYTE)) {
-			fprintf(stderr, "Error: Adapter for i2c bus %d does "
-				"not have read byte capability\n", i2cbus);
+			fprintf(stderr, "Error: Adapter does "
+				"not have read byte capability\n");
 			return -1;
 		}
 		if (daddress >= 0
 		 && !(funcs & I2C_FUNC_SMBUS_WRITE_BYTE)) {
-			fprintf(stderr, "Error: Adapter for i2c bus %d does "
-				"not have write byte capability\n", i2cbus);
+			fprintf(stderr, "Error: Adapter does "
+				"not have write byte capability\n");
 			return -1;
 		}
 		break;
 
 	case I2C_SMBUS_BYTE_DATA:
 		if (!(funcs & I2C_FUNC_SMBUS_READ_BYTE_DATA)) {
-			fprintf(stderr, "Error: Adapter for i2c bus %d does "
-				"not have read byte data capability\n", i2cbus);
+			fprintf(stderr, "Error: Adapter does "
+				"not have read byte data capability\n");
 			return -1;
 		}
 		break;
 
 	case I2C_SMBUS_WORD_DATA:
 		if (!(funcs & I2C_FUNC_SMBUS_READ_WORD_DATA)) {
-			fprintf(stderr, "Error: Adapter for i2c bus %d does "
-				"not have read word data capability\n", i2cbus);
+			fprintf(stderr, "Error: Adapter does "
+				"not have read word data capability\n");
 			return -1;
 		}
 		break;
@@ -94,8 +94,8 @@ static int check_funcs(int file, int i2cbus, int size, int daddress, int pec)
 
 	if (pec
 	 && !(funcs & (I2C_FUNC_SMBUS_PEC | I2C_FUNC_I2C))) {
-		fprintf(stderr, "Warning: Adapter for i2c bus %d does "
-			"not seem to support PEC\n", i2cbus);
+		fprintf(stderr, "Warning: Adapter does "
+			"not seem to support PEC\n");
 	}
 
 	return 0;
@@ -218,7 +218,7 @@ int main(int argc, char *argv[])
 
 	file = open_i2c_dev(i2cbus, filename, 0);
 	if (file < 0
-	 || check_funcs(file, i2cbus, size, daddress, pec)
+	 || check_funcs(file, size, daddress, pec)
 	 || set_slave_addr(file, address, force))
 		exit(1);
 

@@ -46,7 +46,7 @@ static void help(void)
 		"    Append p for SMBus PEC\n");
 }
 
-static int check_funcs(int file, int i2cbus, int size, int pec)
+static int check_funcs(int file, int size, int pec)
 {
 	unsigned long funcs;
 
@@ -60,42 +60,40 @@ static int check_funcs(int file, int i2cbus, int size, int pec)
 	switch(size) {
 	case I2C_SMBUS_BYTE:
 		if (!((funcs & I2C_FUNC_SMBUS_BYTE) == I2C_FUNC_SMBUS_BYTE)) {
-			fprintf(stderr, "Error: Adapter for i2c bus %d does "
-				"not have byte capability\n", i2cbus);
+			fprintf(stderr, "Error: Adapter does "
+				"not have byte capability\n");
 			return -1;
 		}
 		break;
 
 	case I2C_SMBUS_BYTE_DATA:
 		if (!(funcs & I2C_FUNC_SMBUS_READ_BYTE_DATA)) {
-			fprintf(stderr, "Error: Adapter for i2c bus %d does "
-				"not have byte read capability\n", i2cbus);
+			fprintf(stderr, "Error: Adapter does "
+				"not have byte read capability\n");
 			return -1;
 		}
 		break;
 
 	case I2C_SMBUS_WORD_DATA:
 		if (!(funcs & I2C_FUNC_SMBUS_READ_WORD_DATA)) {
-			fprintf(stderr, "Error: Adapter for i2c bus %d does "
-				"not have word read capability\n", i2cbus);
+			fprintf(stderr, "Error: Adapter does "
+				"not have word read capability\n");
 			return -1;
 		}
 		break;
 
 	case I2C_SMBUS_BLOCK_DATA:
 		if (!(funcs & I2C_FUNC_SMBUS_READ_BLOCK_DATA)) {
-			fprintf(stderr, "Error: Adapter for i2c bus %d does "
-				"not have smbus block read capability\n",
-				i2cbus);
+			fprintf(stderr, "Error: Adapter does "
+				"not have smbus block read capability\n");
 			return -1;
 		}
 		break;
 
 	case I2C_SMBUS_I2C_BLOCK_DATA:
 		if (!(funcs & I2C_FUNC_SMBUS_READ_I2C_BLOCK)) {
-			fprintf(stderr, "Error: Adapter for i2c bus %d does "
-				"not have i2c block read capability\n",
-				i2cbus);
+			fprintf(stderr, "Error: Adapter does "
+				"not have i2c block read capability\n");
 			return -1;
 		}
 		break;
@@ -103,8 +101,8 @@ static int check_funcs(int file, int i2cbus, int size, int pec)
 
 	if (pec
 	 && !(funcs & (I2C_FUNC_SMBUS_PEC | I2C_FUNC_I2C))) {
-		fprintf(stderr, "Warning: Adapter for i2c bus %d does "
-			"not seem to support PEC\n", i2cbus);
+		fprintf(stderr, "Warning: Adapter does "
+			"not seem to support PEC\n");
 	}
 
 	return 0;
@@ -264,7 +262,7 @@ int main(int argc, char *argv[])
 
 	file = open_i2c_dev(i2cbus, filename, 0);
 	if (file < 0
-	 || check_funcs(file, i2cbus, size, pec)
+	 || check_funcs(file, size, pec)
 	 || set_slave_addr(file, address, force))
 		exit(1);
 
