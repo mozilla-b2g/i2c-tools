@@ -59,36 +59,40 @@ static int check_funcs(int file, int size, int pec)
 
 	switch(size) {
 	case I2C_SMBUS_BYTE:
-		if (!((funcs & I2C_FUNC_SMBUS_BYTE) == I2C_FUNC_SMBUS_BYTE)) {
-			fprintf(stderr, MISSING_FUNC_FMT, "byte");
+		if (!(funcs & I2C_FUNC_SMBUS_READ_BYTE)) {
+			fprintf(stderr, MISSING_FUNC_FMT, "SMBus receive byte");
+			return -1;
+		}
+		if (!(funcs & I2C_FUNC_SMBUS_WRITE_BYTE)) {
+			fprintf(stderr, MISSING_FUNC_FMT, "SMBus send byte");
 			return -1;
 		}
 		break;
 
 	case I2C_SMBUS_BYTE_DATA:
 		if (!(funcs & I2C_FUNC_SMBUS_READ_BYTE_DATA)) {
-			fprintf(stderr, MISSING_FUNC_FMT, "byte read");
+			fprintf(stderr, MISSING_FUNC_FMT, "SMBus read byte");
 			return -1;
 		}
 		break;
 
 	case I2C_SMBUS_WORD_DATA:
 		if (!(funcs & I2C_FUNC_SMBUS_READ_WORD_DATA)) {
-			fprintf(stderr, MISSING_FUNC_FMT, "word read");
+			fprintf(stderr, MISSING_FUNC_FMT, "SMBus read word");
 			return -1;
 		}
 		break;
 
 	case I2C_SMBUS_BLOCK_DATA:
 		if (!(funcs & I2C_FUNC_SMBUS_READ_BLOCK_DATA)) {
-			fprintf(stderr, MISSING_FUNC_FMT, "smbus block read");
+			fprintf(stderr, MISSING_FUNC_FMT, "SMBus block read");
 			return -1;
 		}
 		break;
 
 	case I2C_SMBUS_I2C_BLOCK_DATA:
 		if (!(funcs & I2C_FUNC_SMBUS_READ_I2C_BLOCK)) {
-			fprintf(stderr, MISSING_FUNC_FMT, "i2c block read");
+			fprintf(stderr, MISSING_FUNC_FMT, "I2C block read");
 			return -1;
 		}
 		break;

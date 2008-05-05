@@ -9,13 +9,16 @@ SVN
            Shorten the usage message
            Restrict the chip address to 0x03-0x77
            Split the functionality checking code into a separate function
+           Better error message on missing adapter functionality
   i2cget: Support i2c bus passed by name
           Shorten the usage message
+          Better error message on missing adapter functionality
   i2cset: Support i2c bus passed by name
           Shorten the usage message
           Restrict the chip address to 0x03-0x77
           Split the code into several functions for clarity
           Add support for short writes (SMBus send byte)
+          Better error message on missing adapter functionality
 
 3.0.1 (2008-04-04)
   Drop the trailing .pl from all perl script names

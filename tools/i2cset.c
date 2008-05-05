@@ -59,21 +59,21 @@ static int check_funcs(int file, int size, int pec)
 	switch (size) {
 	case I2C_SMBUS_BYTE:
 		if (!(funcs & I2C_FUNC_SMBUS_WRITE_BYTE)) {
-			fprintf(stderr, MISSING_FUNC_FMT, "byte send");
+			fprintf(stderr, MISSING_FUNC_FMT, "SMBus send byte");
 			return -1;
 		}
 		break;
 
 	case I2C_SMBUS_BYTE_DATA:
 		if (!(funcs & I2C_FUNC_SMBUS_WRITE_BYTE_DATA)) {
-			fprintf(stderr, MISSING_FUNC_FMT, "byte write");
+			fprintf(stderr, MISSING_FUNC_FMT, "SMBus write byte");
 			return -1;
 		}
 		break;
 
 	case I2C_SMBUS_WORD_DATA:
 		if (!(funcs & I2C_FUNC_SMBUS_WRITE_WORD_DATA)) {
-			fprintf(stderr, MISSING_FUNC_FMT, "word write");
+			fprintf(stderr, MISSING_FUNC_FMT, "SMBus write word");
 			return -1;
 		}
 		break;
