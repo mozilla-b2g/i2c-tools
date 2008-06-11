@@ -73,24 +73,26 @@ sub process_dump
 	open(DUMP, $dump) || die "Can't open $dump: $!\n";
  OUTER_LOOP:
 	while (<DUMP>) {
-		if (m/^([0-9a-f]0):(( [0-9a-f]{2}){16})/) {
+		if (m/^([0-9a-f]0):(( [0-9a-fX]{2}){16})/) {
 			# Byte dump
 			my $offset = hex($1);
 			my @values = split(/ /, $2);
 			shift(@values);
 			for (my $i = 0; $i < 16 && (my $val = shift(@values)); $i++) {
+				next if $val =~ m/X/;
 				last OUTER_LOOP if system("i2cset", "-y",
 					$bus_nr, $addr,
 					sprintf("0x\%02x", $offset+$i),
 					"0x$val", "b");
 				$bytes++;
 			}
-		} elsif (m/^([0-9a-f][08]):(( [0-9a-f]{4}){8})/) {
+		} elsif (m/^([0-9a-f][08]):(( [0-9a-fX]{4}){8})/) {
 			# Word dump
 			my $offset = hex($1);
 			my @values = split(/ /, $2);
 			shift(@values);
 			for (my $i = 0; $i < 8 && (my $val = shift(@values)); $i++) {
+				next if $val =~ m/X/;
 				last OUTER_LOOP if system("i2cset", "-y",
 					$bus_nr, $addr,
 					sprintf("0x\%02x", $offset+$i),
@@ -149,4 +151,9 @@ if ($words) {
 		$bus_nr, oct($addr);
 }
 
-exit($bytes + $words == 0);
+if ($bytes + $words == 0) {
+	printf SAVEOUT "Only garbage found in dump file $ARGV[1]\n";
+	exit(1);
+}
+
+exit(0);

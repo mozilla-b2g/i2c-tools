@@ -19,6 +19,8 @@ SVN
           Split the code into several functions for clarity
           Add support for short writes (SMBus send byte)
           Better error message on missing adapter functionality
+  i2c-stub-from-dump: Add support for partial dumps
+                      Report if only garbage is found in dump file
 
 3.0.1 (2008-04-04)
   Drop the trailing .pl from all perl script names
