@@ -2,6 +2,7 @@ i2c-tools CHANGES
 -----------------
 
 SVN
+  decode-dimms: Add support for little-endian word hexdumps
   decode-vaio: Remove history
   i2cdetect: Support i2c bus passed by name
              Shorten the usage message

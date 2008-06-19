@@ -43,6 +43,9 @@ use Fcntl qw(:DEFAULT :seek);
 use vars qw($opt_html $opt_bodyonly $opt_igncheck $use_sysfs $use_hexdump
 	    @vendors %decode_callback $revision @dimm_list %hexdump_cache);
 
+use constant LITTLEENDIAN	=> "little-endian";
+use constant BIGENDIAN		=> "big-endian";
+
 $revision = '$Revision$ ($Date$)';
 $revision =~ s/\$\w+: (.*?) \$/$1/g;
 $revision =~ s/ \([^()]*\)//;
@@ -1132,8 +1135,13 @@ sub read_hexdump($)
 		foreach (split(/\s+/, $2)) {
 			if (/^(..)(..)$/) {
 			        $word |= 1;
-				$bytes[$addr++] = hex($1);
-				$bytes[$addr++] = hex($2);
+				if ($use_hexdump eq LITTLEENDIAN) {
+					$bytes[$addr++] = hex($2);
+					$bytes[$addr++] = hex($1);
+				} else {
+					$bytes[$addr++] = hex($1);
+					$bytes[$addr++] = hex($2);
+				}
 			} else {
 				$bytes[$addr++] = hex($_);
 			}
@@ -1141,7 +1149,7 @@ sub read_hexdump($)
 	}
 	close F;
 	$header and die "Unable to parse any data from hexdump '$_[0]'";
-	$word and printc "Warning: Assuming big-endian order 16-bit hex dump";
+	$word and printc "Using $use_hexdump 16-bit hex dump";
 
 	# Cache the data for later use
 	$hexdump_cache{$_[0]} = \@bytes;
@@ -1177,21 +1185,23 @@ sub readspd64($$) # reads 64 bytes from SPD-EEPROM
 # Parse command-line
 foreach (@ARGV) {
 	if ($_ eq '-h' || $_ eq '--help') {
-		print "Usage: $0 [-c] [-f [-b]] [-x file [files..]]\n",
+		print "Usage: $0 [-c] [-f [-b]] [-x|-X file [files..]]\n",
 			"       $0 -h\n\n",
 			"  -f, --format            Print nice html output\n",
 			"  -b, --bodyonly          Don't print html header\n",
 			"                          (useful for postprocessing the output)\n",
 			"  -c, --checksum          Decode completely even if checksum fails\n",
 			"  -x,                     Read data from hexdump files\n",
+			"  -X,                     Same as -x except treat multibyte hex\n",
+			"                          data as little endian\n",
 			"  -h, --help              Display this usage summary\n";
 		print <<"EOF";
 
 Hexdumps can be the output from hexdump, hexdump -C, i2cdump, eeprog and
 likely many other progams producing hex dumps of one kind or another.  Note
 that the default output of "hexdump" will be byte-swapped on little-endian
-systems and will therefore not be parsed correctly.  It is better to use
-"hexdump -C", which is not ambiguous.
+systems and you must use -X instead of -x, otherwise the dump will not be
+parsed correctly.  It is better to use "hexdump -C", which is not ambiguous.
 EOF
 		exit;
 	}
@@ -1209,7 +1219,11 @@ EOF
 		next;
 	}
 	if ($_ eq '-x') {
-		$use_hexdump = 1;
+		$use_hexdump = BIGENDIAN;
+		next;
+	}
+	if ($_ eq '-X') {
+		$use_hexdump = LITTLEENDIAN;
 		next;
 	}
 
