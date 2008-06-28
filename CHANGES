@@ -22,6 +22,7 @@ SVN
           Better error message on missing adapter functionality
   i2c-stub-from-dump: Add support for partial dumps
                       Report if only garbage is found in dump file
+                      Behave properly when i2c-stub is already loaded
 
 3.0.1 (2008-04-04)
   Drop the trailing .pl from all perl script names
