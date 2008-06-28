@@ -22,7 +22,7 @@
 # a device you do not have access to, but of which you have a dump.
 
 use strict;
-use vars qw($bus_nr $addr $bytes $words);
+use vars qw($bus_nr $addr $bytes $words $err);
 
 # Kernel version detection code by Mark M. Hoffman,
 # copied from sensors-detect.
@@ -108,6 +108,7 @@ sub load_kernel_drivers
 sub process_dump
 {
 	my $dump = shift;
+	my $err = 0;
 
 	open(DUMP, $dump) || die "Can't open $dump: $!\n";
  OUTER_LOOP:
@@ -119,10 +120,12 @@ sub process_dump
 			shift(@values);
 			for (my $i = 0; $i < 16 && (my $val = shift(@values)); $i++) {
 				next if $val =~ m/X/;
-				last OUTER_LOOP if system("i2cset", "-y",
-					$bus_nr, $addr,
-					sprintf("0x\%02x", $offset+$i),
-					"0x$val", "b");
+				if (system("i2cset", "-y", $bus_nr, $addr,
+					   sprintf("0x\%02x", $offset+$i),
+					   "0x$val", "b")) {
+					$err = 3;
+					last OUTER_LOOP;
+				}
 				$bytes++;
 			}
 		} elsif (m/^([0-9a-f][08]):(( [0-9a-fX]{4}){8})/) {
@@ -132,15 +135,19 @@ sub process_dump
 			shift(@values);
 			for (my $i = 0; $i < 8 && (my $val = shift(@values)); $i++) {
 				next if $val =~ m/X/;
-				last OUTER_LOOP if system("i2cset", "-y",
-					$bus_nr, $addr,
-					sprintf("0x\%02x", $offset+$i),
-					"0x$val", "w");
+				if (system("i2cset", "-y", $bus_nr, $addr,
+					   sprintf("0x\%02x", $offset+$i),
+					   "0x$val", "w")) {
+					$err = 3;
+					last OUTER_LOOP;
+				}
 				$words++;
 			}
 		}
 	}
 	close(DUMP);
+
+	return $err;
 }
 
 if ($>) {
@@ -168,7 +175,7 @@ $bytes = $words = 0;
 # We don't want to see the output of 256 i2cset
 open(SAVEOUT, ">&STDOUT");
 open(STDOUT, ">/dev/null");
-process_dump($ARGV[1]);
+$err = process_dump($ARGV[1]);
 close(STDOUT);
 
 if ($bytes) {
@@ -181,9 +188,9 @@ if ($words) {
 		$bus_nr, oct($addr);
 }
 
-if ($bytes + $words == 0) {
+if (!$err && ($bytes + $words == 0)) {
 	printf SAVEOUT "Only garbage found in dump file $ARGV[1]\n";
 	exit(1);
 }
 
-exit(0);
+exit($err);
