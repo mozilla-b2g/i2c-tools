@@ -4,6 +4,7 @@ i2c-tools CHANGES
 SVN
   i2c-dev.h: Drop I2C_FUNC_SMBUS_*I2C_BLOCK_2 defines
   decode-dimms: Add support for little-endian word hexdumps
+                Only export the ceil function from POSIX
   decode-vaio: Remove history
   i2cdetect: Support i2c bus passed by name
              Shorten the usage message
