@@ -213,7 +213,7 @@ int main(int argc, char *argv[])
 		maskp = argv[flags+6];
 	}
 
-	if (maskp && size != I2C_SMBUS_BYTE) {
+	if (maskp) {
 		vmask = strtol(maskp, &end, 0);
 		if (*end || vmask == 0) {
 			fprintf(stderr, "Error: Data value mask invalid!\n");
@@ -240,9 +240,14 @@ int main(int argc, char *argv[])
 	if (vmask) {
 		int oldvalue;
 
-		if (size == I2C_SMBUS_WORD_DATA) {
+		switch (size) {
+		case I2C_SMBUS_BYTE:
+			oldvalue = i2c_smbus_read_byte(file);
+			break;
+		case I2C_SMBUS_WORD_DATA:
 			oldvalue = i2c_smbus_read_word_data(file, daddress);
-		} else {
+			break;
+		default:
 			oldvalue = i2c_smbus_read_byte_data(file, daddress);
 		}
 
