@@ -1,4 +1,4 @@
-.TH I2CSET 8 "May 2008"
+.TH I2CSET 8 "November 2008"
 .SH "NAME"
 i2cset \- set I2C registers
 
@@ -6,10 +6,11 @@ i2cset \- set I2C registers
 .B i2cset
 .RB [ -f ]
 .RB [ -y ]
+.RB [ "-m mask" ]
 .I i2cbus
 .I chip-address
 .I data-address
-.RI [ "value " [ "mode " [ mask ]]]
+.RI [ "value " [ "mode" ]]
 .br
 .B i2cset
 .B -V
@@ -36,6 +37,12 @@ Disable interactive mode. By default, i2cset will wait for a confirmation
 from the user before messing with the I2C bus. When this flag is used, it
 will perform the operation directly. This is mainly meant to be used in
 scripts.
+.TP
+.B -m mask
+The \fImask\fR parameter, if specified, describes which bits of \fIvalue\fR
+will be actually written to \fIdata-address\fR. Bits set to 1 in the mask
+are taken from \fIvalue\fR, while bits set to 0 will be read from
+\fIdata-address\fR and thus preserved by the operation.
 .PP
 There are three required options to i2cset. \fIi2cbus\fR indicates the number
 or name of the I2C bus to be scanned.  This number should correspond to one of
@@ -57,11 +64,6 @@ respectively. A \fBp\fP can also be appended to the \fImode\fR parameter to
 enable PEC. If the \fImode\fR parameter is omitted, i2cset defaults to byte
 mode without PEC. The \fIvalue\fR provided must be within range for the
 specified data type (0x00-0xFF for bytes, 0x0000-0xFFFF for words).
-.PP
-The \fImask\fR parameter, if specified, describes which bits of \fIvalue\fR
-will be actually written to \fIdata-address\fR. Bits set to 1 in the mask
-are taken from \fIvalue\fR, while bits set to 0 will be read from
-\fIdata-address\fR and thus preserved by the operation.
 
 .SH WARNING
 i2cset can be extremely dangerous if used improperly. It can confuse your

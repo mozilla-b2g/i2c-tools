@@ -35,7 +35,7 @@ static void help(void) __attribute__ ((noreturn));
 static void help(void)
 {
 	fprintf(stderr,
-	        "Usage: i2cset [-f] [-y] I2CBUS CHIP-ADDRESS DATA-ADDRESS [VALUE [MODE [MASK]]]\n"
+	        "Usage: i2cset [-f] [-y] [-m MASK] I2CBUS CHIP-ADDRESS DATA-ADDRESS [VALUE [MODE]]\n"
 		"  I2CBUS is an integer or an I2C bus name\n"
 		"  ADDRESS is an integer (0x03 - 0x77)\n"
 		"  MODE is one of:\n"
@@ -128,6 +128,7 @@ static int confirm(const char *filename, int address, int size, int daddress,
 int main(int argc, char *argv[])
 {
 	char *end;
+	const char *maskp = NULL;
 	int res, i2cbus, address, size, file;
 	int value, daddress, vmask = 0;
 	char filename[20];
@@ -141,6 +142,11 @@ int main(int argc, char *argv[])
 		case 'V': version = 1; break;
 		case 'f': force = 1; break;
 		case 'y': yes = 1; break;
+		case 'm':
+			if (2+flags < argc)
+				maskp = argv[2+flags];
+			flags++;
+			break;
 		default:
 			fprintf(stderr, "Error: Unsupported option "
 				"\"%s\"!\n", argv[1+flags]);
@@ -195,8 +201,20 @@ int main(int argc, char *argv[])
 		pec = argv[flags+5][1] == 'p';
 	}
 
+	/* Old method to provide the value mask, deprecated and no longer
+	   documented but still supported for compatibility */
 	if (argc > flags + 6) {
-		vmask = strtol(argv[flags+6], &end, 0);
+		if (maskp) {
+			fprintf(stderr, "Error: Data value mask provided twice!\n");
+			help();
+		}
+		fprintf(stderr, "Warning: Using deprecated way to set the data value mask!\n");
+		fprintf(stderr, "         Please switch to using -m.\n");
+		maskp = argv[flags+6];
+	}
+
+	if (maskp && size != I2C_SMBUS_BYTE) {
+		vmask = strtol(maskp, &end, 0);
 		if (*end || vmask == 0) {
 			fprintf(stderr, "Error: Data value mask invalid!\n");
 			help();
