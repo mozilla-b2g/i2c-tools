@@ -316,7 +316,8 @@ int main(int argc, char *argv[])
 
 	switch (size) {
 	case I2C_SMBUS_BYTE:
-		/* No readback */
+		res = i2c_smbus_read_byte(file);
+		value = daddress;
 		break;
 	case I2C_SMBUS_WORD_DATA:
 		res = i2c_smbus_read_word_data(file, daddress);
@@ -325,9 +326,6 @@ int main(int argc, char *argv[])
 		res = i2c_smbus_read_byte_data(file, daddress);
 	}
 	close(file);
-
-	if (size == I2C_SMBUS_BYTE) /* We're done */
-		exit(0);
 
 	if (res < 0) {
 		printf("Warning - readback failed\n");
