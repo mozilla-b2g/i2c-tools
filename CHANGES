@@ -23,6 +23,7 @@ SVN
           Add support for short writes (SMBus send byte)
           Better error message on missing adapter functionality
           Set the data value mask with -m
+          Make reading back the written value optional
   i2c-stub-from-dump: Add support for partial dumps
                       Report if only garbage is found in dump file
                       Behave properly when i2c-stub is already loaded

@@ -7,6 +7,7 @@ i2cset \- set I2C registers
 .RB [ -f ]
 .RB [ -y ]
 .RB [ "-m mask" ]
+.RB [ -r ]
 .I i2cbus
 .I chip-address
 .I data-address
@@ -46,6 +47,11 @@ are taken from \fIvalue\fR, while bits set to 0 will be read from
 this parameter assumes that the read and write operations for the specified
 mode are symmetrical for the device you are accessing. This may or may not
 be the case, as neither I2C nor SMBus guarantees this.
+.TP
+.B -r
+Read back the value right after writing it, and compare the result with the
+value written. This used to be the default behavior. The same limitations
+apply as those of option \fB-m\fR.
 .PP
 There are three required options to i2cset. \fIi2cbus\fR indicates the number
 or name of the I2C bus to be scanned.  This number should correspond to one of

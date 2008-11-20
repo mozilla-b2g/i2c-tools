@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
 	char filename[20];
 	int pec = 0;
 	int flags = 0;
-	int force = 0, yes = 0, version = 0;
+	int force = 0, yes = 0, version = 0, readback = 0;
 
 	/* handle (optional) flags first */
 	while (1+flags < argc && argv[1+flags][0] == '-') {
@@ -147,6 +147,7 @@ int main(int argc, char *argv[])
 				maskp = argv[2+flags];
 			flags++;
 			break;
+		case 'r': readback = 1; break;
 		default:
 			fprintf(stderr, "Error: Unsupported option "
 				"\"%s\"!\n", argv[1+flags]);
@@ -306,6 +307,11 @@ int main(int argc, char *argv[])
 			close(file);
 			exit(1);
 		}
+	}
+
+	if (!readback) { /* We're done */
+		close(file);
+		exit(0);
 	}
 
 	switch (size) {
