@@ -42,7 +42,10 @@ scripts.
 The \fImask\fR parameter, if specified, describes which bits of \fIvalue\fR
 will be actually written to \fIdata-address\fR. Bits set to 1 in the mask
 are taken from \fIvalue\fR, while bits set to 0 will be read from
-\fIdata-address\fR and thus preserved by the operation.
+\fIdata-address\fR and thus preserved by the operation. Please note that
+this parameter assumes that the read and write operations for the specified
+mode are symmetrical for the device you are accessing. This may or may not
+be the case, as neither I2C nor SMBus guarantees this.
 .PP
 There are three required options to i2cset. \fIi2cbus\fR indicates the number
 or name of the I2C bus to be scanned.  This number should correspond to one of
