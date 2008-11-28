@@ -22,9 +22,14 @@
     MA 02110-1301 USA.
 */
 
+/* For strdup */
+#define _BSD_SOURCE 1
+
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/param.h>	/* for NAME_MAX */
 #include <string.h>
+#include <strings.h>	/* for strcasecmp() */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
