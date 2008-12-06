@@ -94,7 +94,11 @@ sub load_kernel_drivers
 	} else {
 		system("/sbin/modprobe", "i2c-stub") == 0 || exit 1;
 	}
-	sleep(1); # udev may take some time to create the device node
+	# udev may take some time to create the device node
+	if (!(-x "/sbin/udevadm" && system("/sbin/udevadm settle") == 0)
+	 && !(-x "/sbin/udevsettle" && system("/sbin/udevsettle") == 0)) {
+		sleep(1);
+	}
 
 	$nr = get_i2c_stub_bus_number();
 	if (!defined($nr)) {

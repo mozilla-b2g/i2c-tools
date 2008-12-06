@@ -1,6 +1,9 @@
 i2c-tools CHANGES
 -----------------
 
+SVN
+  i2c-stub-from-dump: Use udev settle to speed up initialization
+
 3.0.2 (2008-11-29)
   i2c-dev.h: Drop I2C_FUNC_SMBUS_*I2C_BLOCK_2 defines
   decode-dimms: Add support for little-endian word hexdumps
