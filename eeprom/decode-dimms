@@ -1066,7 +1066,7 @@ sub decode_rambus($)
 	"Rambus"	=> \&decode_rambus,
 );
 
-# Parameter: bytes 64-127
+# Parameter: EEPROM bytes 0-127 (using 64-98)
 sub decode_manufacturing_information($)
 {
 	my $bytes = shift;
@@ -1078,60 +1078,60 @@ sub decode_manufacturing_information($)
 	# $extra is a reference to an array containing up to
 	# 7 extra bytes from the Manufacturer field. Sometimes
 	# these bytes are filled with interesting data.
-	($temp, $extra) = manufacturer(@{$bytes}[0..7]);
+	($temp, $extra) = manufacturer(@{$bytes}[64..71]);
 	printl $l, $temp;
 	$l = "Custom Manufacturer Data";
 	$temp = manufacturer_data(@{$extra});
 	printl $l, $temp if defined $temp;
 
-	if (spd_written($bytes->[8])) {
+	if (spd_written($bytes->[72])) {
 		# Try the location code as ASCII first, as earlier specifications
 		# suggested this. As newer specifications don't mention it anymore,
 		# we still fall back to binary.
 		$l = "Manufacturing Location Code";
-		$temp = (chr($bytes->[8]) =~ m/^[\w\d]$/) ? chr($bytes->[8])
-		      : sprintf("0x%.2X", $bytes->[8]);
+		$temp = (chr($bytes->[72]) =~ m/^[\w\d]$/) ? chr($bytes->[72])
+		      : sprintf("0x%.2X", $bytes->[72]);
 		printl $l, $temp;
 	}
 
 	$l = "Part Number";
-	$temp = part_number(@{$bytes}[9..26]);
+	$temp = part_number(@{$bytes}[73..90]);
 	printl $l, $temp;
 
-	if (spd_written(@{$bytes}[27..28])) {
+	if (spd_written(@{$bytes}[91..92])) {
 		$l = "Revision Code";
-		$temp = sprintf("0x%02X%02X\n", @{$bytes}[27..28]);
+		$temp = sprintf("0x%02X%02X\n", @{$bytes}[91..92]);
 		printl $l, $temp;
 	}
 
-	if (spd_written(@{$bytes}[29..30])) {
+	if (spd_written(@{$bytes}[93..94])) {
 		$l = "Manufacturing Date";
 		# In theory the year and week are in BCD format, but
 		# this is not always true in practice :(
-		if (($bytes->[29] & 0xf0) <= 0x90
-		 && ($bytes->[29] & 0x0f) <= 0x09
-		 && ($bytes->[30] & 0xf0) <= 0x90
-		 && ($bytes->[30] & 0x0f) <= 0x09) {
+		if (($bytes->[93] & 0xf0) <= 0x90
+		 && ($bytes->[93] & 0x0f) <= 0x09
+		 && ($bytes->[94] & 0xf0) <= 0x90
+		 && ($bytes->[94] & 0x0f) <= 0x09) {
 			# Note that this heuristic will break in year 2080
 			$temp = sprintf("%d%02X-W%02X\n",
-					$bytes->[29] >= 0x80 ? 19 : 20,
-					@{$bytes}[29..30]);
+					$bytes->[93] >= 0x80 ? 19 : 20,
+					@{$bytes}[93..94]);
 		} else {
 			$temp = sprintf("0x%02X%02X\n",
-					@{$bytes}[29..30]);
+					@{$bytes}[93..94]);
 		}
 		printl $l, $temp;
 	}
 
-	if (spd_written(@{$bytes}[31..34])) {
+	if (spd_written(@{$bytes}[95..98])) {
 		$l = "Assembly Serial Number";
 		$temp = sprintf("0x%02X%02X%02X%02X\n",
-				@{$bytes}[31..34]);
+				@{$bytes}[95..98]);
 		printl $l, $temp;
 	}
 }
 
-# Parameter: bytes 64-127
+# Parameter: EEPROM bytes 0-127 (using 126-127)
 sub decode_intel_spec_freq($)
 {
 	my $bytes = shift;
@@ -1140,25 +1140,25 @@ sub decode_intel_spec_freq($)
 	prints "Intel Specification";
 
 	$l = "Frequency";
-	if ($bytes->[62] == 0x66) { $temp = "66MHz\n"; }
-	elsif ($bytes->[62] == 100) { $temp = "100MHz or 133MHz\n"; }
-	elsif ($bytes->[62] == 133) { $temp = "133MHz\n"; }
+	if ($bytes->[126] == 0x66) { $temp = "66MHz\n"; }
+	elsif ($bytes->[126] == 100) { $temp = "100MHz or 133MHz\n"; }
+	elsif ($bytes->[126] == 133) { $temp = "133MHz\n"; }
 	else { $temp = "Undefined!\n"; }
 	printl $l, $temp;
 
 	$l = "Details for 100MHz Support";
 	$temp = "";
-	if ($bytes->[63] & 1) { $temp .= "Intel Concurrent Auto-precharge\n"; }
-	if ($bytes->[63] & 2) { $temp .= "CAS Latency = 2\n"; }
-	if ($bytes->[63] & 4) { $temp .= "CAS Latency = 3\n"; }
-	if ($bytes->[63] & 8) { $temp .= "Junction Temp A (100 degrees C)\n"; }
+	if ($bytes->[127] & 1) { $temp .= "Intel Concurrent Auto-precharge\n"; }
+	if ($bytes->[127] & 2) { $temp .= "CAS Latency = 2\n"; }
+	if ($bytes->[127] & 4) { $temp .= "CAS Latency = 3\n"; }
+	if ($bytes->[127] & 8) { $temp .= "Junction Temp A (100 degrees C)\n"; }
 	else { $temp .= "Junction Temp B (90 degrees C)\n"; }
-	if ($bytes->[63] & 16) { $temp .= "CLK 3 Connected\n"; }
-	if ($bytes->[63] & 32) { $temp .= "CLK 2 Connected\n"; }
-	if ($bytes->[63] & 64) { $temp .= "CLK 1 Connected\n"; }
-	if ($bytes->[63] & 128) { $temp .= "CLK 0 Connected\n"; }
-	if (($bytes->[63] & 192) == 192) { $temp .= "Double-sided DIMM\n"; }
-	elsif (($bytes->[63] & 192) != 0) { $temp .= "Single-sided DIMM\n"; }
+	if ($bytes->[127] & 16) { $temp .= "CLK 3 Connected\n"; }
+	if ($bytes->[127] & 32) { $temp .= "CLK 2 Connected\n"; }
+	if ($bytes->[127] & 64) { $temp .= "CLK 1 Connected\n"; }
+	if ($bytes->[127] & 128) { $temp .= "CLK 0 Connected\n"; }
+	if (($bytes->[127] & 192) == 192) { $temp .= "Double-sided DIMM\n"; }
+	elsif (($bytes->[127] & 192) != 0) { $temp .= "Single-sided DIMM\n"; }
 	printl $l, $temp;
 }
 
@@ -1407,7 +1407,6 @@ for my $i ( 0 .. $#dimm_list ) {
 			if exists $decode_callback{$type};
 
 # Decode next 35 bytes (64-98, common to all memory types)
-		splice(@bytes, 0, 64);
 		decode_manufacturing_information(\@bytes);
 
 # Next 27 bytes (99-125) are manufacturer specific, can't decode
