@@ -1067,6 +1067,71 @@ sub decode_rambus($)
 );
 
 # Parameter: bytes 64-127
+sub decode_manufacturing_information($)
+{
+	my $bytes = shift;
+	my ($l, $temp, $extra);
+
+	prints "Manufacturing Information";
+
+	$l = "Manufacturer";
+	# $extra is a reference to an array containing up to
+	# 7 extra bytes from the Manufacturer field. Sometimes
+	# these bytes are filled with interesting data.
+	($temp, $extra) = manufacturer(@{$bytes}[0..7]);
+	printl $l, $temp;
+	$l = "Custom Manufacturer Data";
+	$temp = manufacturer_data(@{$extra});
+	printl $l, $temp if defined $temp;
+
+	if (spd_written($bytes->[8])) {
+		# Try the location code as ASCII first, as earlier specifications
+		# suggested this. As newer specifications don't mention it anymore,
+		# we still fall back to binary.
+		$l = "Manufacturing Location Code";
+		$temp = (chr($bytes->[8]) =~ m/^[\w\d]$/) ? chr($bytes->[8])
+		      : sprintf("0x%.2X", $bytes->[8]);
+		printl $l, $temp;
+	}
+
+	$l = "Part Number";
+	$temp = part_number(@{$bytes}[9..26]);
+	printl $l, $temp;
+
+	if (spd_written(@{$bytes}[27..28])) {
+		$l = "Revision Code";
+		$temp = sprintf("0x%02X%02X\n", @{$bytes}[27..28]);
+		printl $l, $temp;
+	}
+
+	if (spd_written(@{$bytes}[29..30])) {
+		$l = "Manufacturing Date";
+		# In theory the year and week are in BCD format, but
+		# this is not always true in practice :(
+		if (($bytes->[29] & 0xf0) <= 0x90
+		 && ($bytes->[29] & 0x0f) <= 0x09
+		 && ($bytes->[30] & 0xf0) <= 0x90
+		 && ($bytes->[30] & 0x0f) <= 0x09) {
+			# Note that this heuristic will break in year 2080
+			$temp = sprintf("%d%02X-W%02X\n",
+					$bytes->[29] >= 0x80 ? 19 : 20,
+					@{$bytes}[29..30]);
+		} else {
+			$temp = sprintf("0x%02X%02X\n",
+					@{$bytes}[29..30]);
+		}
+		printl $l, $temp;
+	}
+
+	if (spd_written(@{$bytes}[31..34])) {
+		$l = "Assembly Serial Number";
+		$temp = sprintf("0x%02X%02X%02X%02X\n",
+				@{$bytes}[31..34]);
+		printl $l, $temp;
+	}
+}
+
+# Parameter: bytes 64-127
 sub decode_intel_spec_freq($)
 {
 	my $bytes = shift;
@@ -1342,65 +1407,8 @@ for my $i ( 0 .. $#dimm_list ) {
 			if exists $decode_callback{$type};
 
 # Decode next 35 bytes (64-98, common to all memory types)
-		prints "Manufacturing Information";
-
 		@bytes = readspd64(64, $dimm_list[$i]);
-
-		$l = "Manufacturer";
-		# $extra is a reference to an array containing up to
-		# 7 extra bytes from the Manufacturer field. Sometimes
-		# these bytes are filled with interesting data.
-		($temp, my $extra) = manufacturer(@bytes[0..7]);
-		printl $l, $temp;
-		$l = "Custom Manufacturer Data";
-		$temp = manufacturer_data(@{$extra});
-		printl $l, $temp if defined $temp;
-
-		if (spd_written($bytes[8])) {
-			# Try the location code as ASCII first, as earlier specifications
-			# suggested this. As newer specifications don't mention it anymore,
-			# we still fall back to binary.
-			$l = "Manufacturing Location Code";
-			$temp = (chr($bytes[8]) =~ m/^[\w\d]$/) ? chr($bytes[8])
-			      : sprintf("0x%.2X", $bytes[8]);
-			printl $l, $temp;
-		}
-
-		$l = "Part Number";
-		$temp = part_number(@bytes[9..26]);
-		printl $l, $temp;
-
-		if (spd_written(@bytes[27..28])) {
-			$l = "Revision Code";
-			$temp = sprintf("0x%02X%02X\n", @bytes[27..28]);
-			printl $l, $temp;
-		}
-
-		if (spd_written(@bytes[29..30])) {
-			$l = "Manufacturing Date";
-			# In theory the year and week are in BCD format, but
-			# this is not always true in practice :(
-			if (($bytes[29] & 0xf0) <= 0x90
-			 && ($bytes[29] & 0x0f) <= 0x09
-			 && ($bytes[30] & 0xf0) <= 0x90
-			 && ($bytes[30] & 0x0f) <= 0x09) {
-				# Note that this heuristic will break in year 2080
-				$temp = sprintf("%d%02X-W%02X\n",
-						$bytes[29] >= 0x80 ? 19 : 20,
-						@bytes[29..30]);
-			} else {
-				$temp = sprintf("0x%02X%02X\n",
-						@bytes[29..30]);
-			}
-			printl $l, $temp;
-		}
-
-		if (spd_written(@bytes[31..34])) {
-			$l = "Assembly Serial Number";
-			$temp = sprintf("0x%02X%02X%02X%02X\n",
-					@bytes[31..34]);
-			printl $l, $temp;
-		}
+		decode_manufacturing_information(\@bytes);
 
 # Next 27 bytes (99-125) are manufacturer specific, can't decode
 
