@@ -1221,26 +1221,26 @@ sub read_hexdump($)
 	return @bytes;
 }
 
-sub readspd64($$) # reads 64 bytes from SPD-EEPROM
+sub readspd($$) # reads bytes from SPD-EEPROM
 {
-	my ($offset, $dimm_i) = @_;
+	my ($size, $dimm_i) = @_;
 	my @bytes;
 	if ($use_hexdump) {
 		@bytes = read_hexdump($dimm_i);
-		return @bytes[$offset..($offset+63)];
+		return @bytes[0..($size-1)];
 	} elsif ($use_sysfs) {
 		# Kernel 2.6 with sysfs
 		sysopen(HANDLE, "/sys/bus/i2c/drivers/eeprom/$dimm_i/eeprom", O_RDONLY)
 			or die "Cannot open /sys/bus/i2c/drivers/eeprom/$dimm_i/eeprom";
 		binmode HANDLE;
-		sysseek(HANDLE, $offset, SEEK_SET);
-		sysread(HANDLE, my $eeprom, 64);
+		sysseek(HANDLE, 0, SEEK_SET);
+		sysread(HANDLE, my $eeprom, $size);
 		close HANDLE;
-		@bytes = unpack("C64", $eeprom);
+		@bytes = unpack("C*", $eeprom);
 	} else {
 		# Kernel 2.4 with procfs
-		for my $i (0 .. 3) {
-			my $hexoff = sprintf('%02x', $offset + $i * 16);
+		for my $i (0 .. ($size-1)/16) {
+			my $hexoff = sprintf('%02x', $i * 16);
 			push @bytes, split(" ", `cat /proc/sys/dev/sensors/$dimm_i/$hexoff`);
 		}
 	}
@@ -1332,7 +1332,7 @@ for my $i ( 0 .. $#dimm_list ) {
 	if (($use_sysfs && /^\d+-\d+$/)
 	 || (!$use_sysfs && /^eeprom-/)
 	 || $use_hexdump) {
-		my @bytes = readspd64(0, $dimm_list[$i]);
+		my @bytes = readspd(128, $dimm_list[$i]);
 		my $dimm_checksum = 0;
 		$dimm_checksum += $bytes[$_] foreach (0 .. 62);
 		$dimm_checksum &= 0xff;
@@ -1407,7 +1407,7 @@ for my $i ( 0 .. $#dimm_list ) {
 			if exists $decode_callback{$type};
 
 # Decode next 35 bytes (64-98, common to all memory types)
-		@bytes = readspd64(64, $dimm_list[$i]);
+		splice(@bytes, 0, 64);
 		decode_manufacturing_information(\@bytes);
 
 # Next 27 bytes (99-125) are manufacturer specific, can't decode
