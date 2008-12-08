@@ -414,7 +414,7 @@ sub tns($) # print a time in ns
 	return sprintf("%3.2f ns", $_[0]);
 }
 
-# Parameter: bytes 0-63
+# Parameter: EEPROM bytes 0-127 (using 3-62)
 sub decode_sdr_sdram($)
 {
 	my $bytes = shift;
@@ -694,7 +694,7 @@ sub decode_sdr_sdram($)
 	}
 }
 
-# Parameter: bytes 0-63
+# Parameter: EEPROM bytes 0-127 (using 3-62)
 sub decode_ddr_sdram($)
 {
 	my $bytes = shift;
@@ -873,7 +873,7 @@ sub ddr2_refresh_rate($)
 	       ($byte & 0x80 ? " - Self Refresh" : "");
 }
 
-# Parameter: bytes 0-63
+# Parameter: EEPROM bytes 0-127 (using 3-62)
 sub decode_ddr2_sdram($)
 {
 	my $bytes = shift;
@@ -1018,7 +1018,7 @@ sub decode_ddr2_sdram($)
 	printl "PLL Relock Time", $bytes->[46] . " us" if ($bytes->[46]);
 }
 
-# Parameter: bytes 0-63
+# Parameter: EEPROM bytes 0-127 (using 4-5)
 sub decode_direct_rambus($)
 {
 	my $bytes = shift;
@@ -1038,7 +1038,7 @@ sub decode_direct_rambus($)
 	}
 }
 
-# Parameter: bytes 0-63
+# Parameter: EEPROM bytes 0-127 (using 3-5)
 sub decode_rambus($)
 {
 	my $bytes = shift;
