@@ -1079,6 +1079,23 @@ sub decode_rambus($)
 	"Rambus"	=> \&decode_rambus,
 );
 
+# Parameter: Manufacturing year/week bytes
+sub manufacture_date($$)
+{
+	my ($year, $week) = @_;
+
+	# In theory the year and week are in BCD format, but
+	# this is not always true in practice :(
+	if (($year & 0xf0) <= 0x90 && ($year & 0x0f) <= 0x09
+	 && ($week & 0xf0) <= 0x90 && ($week & 0x0f) <= 0x09) {
+		# Note that this heuristic will break in year 2080
+		return sprintf("%d%02X-W%02X\n",
+				$year >= 0x80 ? 19 : 20, $year, $week);
+	} else {
+		return sprintf("0x%02X%02X\n", $year, $week);
+	}
+}
+
 # Parameter: EEPROM bytes 0-127 (using 64-98)
 sub decode_manufacturing_information($)
 {
@@ -1119,21 +1136,7 @@ sub decode_manufacturing_information($)
 
 	if (spd_written(@{$bytes}[93..94])) {
 		$l = "Manufacturing Date";
-		# In theory the year and week are in BCD format, but
-		# this is not always true in practice :(
-		if (($bytes->[93] & 0xf0) <= 0x90
-		 && ($bytes->[93] & 0x0f) <= 0x09
-		 && ($bytes->[94] & 0xf0) <= 0x90
-		 && ($bytes->[94] & 0x0f) <= 0x09) {
-			# Note that this heuristic will break in year 2080
-			$temp = sprintf("%d%02X-W%02X\n",
-					$bytes->[93] >= 0x80 ? 19 : 20,
-					@{$bytes}[93..94]);
-		} else {
-			$temp = sprintf("0x%02X%02X\n",
-					@{$bytes}[93..94]);
-		}
-		printl $l, $temp;
+		printl $l, manufacture_date($bytes->[93], $bytes->[94]);
 	}
 
 	if (spd_written(@{$bytes}[95..98])) {
