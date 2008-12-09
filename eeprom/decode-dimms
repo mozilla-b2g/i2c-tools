@@ -282,6 +282,18 @@ sub parity($)
 	return ($parity & 1);
 }
 
+# New encoding format (as of DDR3) for manufacturer just has a count of
+# leading 0x7F rather than all the individual bytes.  The count bytes includes
+# parity!
+sub manufacturer_ddr3($$)
+{
+	my ($count, $code) = @_;
+	return "Invalid" if parity($count) != 1;
+	return "Invalid" if parity($code) != 1;
+	return (($code & 0x7F) - 1 > $vendors[$count & 0x7F]) ? "Unknown" :
+		$vendors[$count & 0x7F][($code & 0x7F) - 1];
+}
+
 sub manufacturer(@)
 {
 	my @bytes = @_;
@@ -296,9 +308,10 @@ sub manufacturer(@)
 
 	return ("Invalid", []) unless defined $first;
 	return ("Invalid", [$first, @bytes]) if parity($first) != 1;
-	return ("Unknown", \@bytes) unless (($first & 0x7F) - 1 <= $vendors[$ai]);
-
-	return ($vendors[$ai][($first & 0x7F) - 1], \@bytes);
+	if (parity($ai) == 0) {
+		$ai |= 0x80;
+	}
+	return (manufacturer_ddr3($ai, $first), \@bytes);
 }
 
 sub manufacturer_data(@)
