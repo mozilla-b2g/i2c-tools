@@ -1411,7 +1411,7 @@ for my $i ( 0 .. $#dimm_list ) {
 		my @bytes = readspd(128, $dimm_list[$i]);
 		my $is_rambus = $bytes[0] < 4;		# Simple heuristic
 		my ($l, $chk_valid, $chk_spd, $chk_calc);
-		if ($bytes[2] < 9) {
+		if ($is_rambus || $bytes[2] < 9) {
 			($l, $chk_valid, $chk_spd, $chk_calc) =
 				checksum(\@bytes);
 		} else {
