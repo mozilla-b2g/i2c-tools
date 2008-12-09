@@ -1221,6 +1221,37 @@ sub read_hexdump($)
 	return @bytes;
 }
 
+# Returns the (total, used) number of bytes in the EEPROM,
+# assuming it is an SPD EEPROM.
+sub spd_sizes($)
+{
+	my $bytes = shift;
+
+	if ($bytes->[2] >= 9) {
+		# For FB-DIMM and newer, decode number of bytes written
+		my $spd_len = ($bytes->[0] >> 4) & 7;
+		my $size = 64 << ($bytes->[0] & 15);
+		if ($spd_len == 0) {
+			return ($size, 128);
+		} elsif ($spd_len == 1) {
+			return ($size, 176);
+		} elsif ($spd_len == 2) {
+			return ($size, 256);
+		} else {
+			return (64, 64);
+		}
+	} else {
+		my $size;
+		if ($bytes->[1] <= 14) {
+			$size = 1 << $bytes->[1];
+		} elsif ($bytes->[1] == 0) {
+			$size = "RFU";
+		} else { $size = "ERROR!" }
+
+		return ($size, ($bytes->[0] < 64) ? 64 : $bytes->[0]);
+	}
+}
+
 sub readspd($$) # reads bytes from SPD-EEPROM
 {
 	my ($size, $dimm_i) = @_;
@@ -1245,6 +1276,51 @@ sub readspd($$) # reads bytes from SPD-EEPROM
 		}
 	}
 	return @bytes;
+}
+
+# Calculate and verify checksum of first 63 bytes
+sub checksum($)
+{
+	my $bytes = shift;
+	my $dimm_checksum = 0;
+	local $_;
+
+	$dimm_checksum += $bytes->[$_] foreach (0 .. 62);
+	$dimm_checksum &= 0xff;
+
+	return ("EEPROM Checksum of bytes 0-62",
+		($bytes->[63] == $dimm_checksum) ? 1 : 0,
+		sprintf('0x%02X', $bytes->[63]),
+		sprintf('0x%02X', $dimm_checksum));
+}
+
+# Calculate and verify CRC
+sub check_crc($)
+{
+	my $bytes = shift;
+	my $crc = 0;
+	my $crc_cover = $bytes->[0] & 0x80 ? 116 : 125;
+	my $crc_ptr = 0;
+	my $crc_bit;
+
+	while ($crc_ptr <= $crc_cover) {
+		$crc = $crc ^ ($bytes->[$crc_ptr] << 8);
+		for ($crc_bit = 0; $crc_bit < 8; $crc_bit++) {
+			if ($crc & 0x8000) {
+				$crc = ($crc << 1) ^ 0x1021;
+			} else {
+				$crc = $crc << 1
+			}
+		}
+		$crc_ptr++;
+	}
+	$crc &= 0xffff;
+
+	my $dimm_crc = ($bytes->[127] << 8) | $bytes->[126];
+	return ("EEPROM CRC of bytes 0-$crc_cover",
+		($dimm_crc == $crc) ? 1 : 0,
+		sprintf("0x%04X", $dimm_crc),
+		sprintf("0x%04X", $crc));
 }
 
 # Parse command-line
@@ -1333,11 +1409,17 @@ for my $i ( 0 .. $#dimm_list ) {
 	 || (!$use_sysfs && /^eeprom-/)
 	 || $use_hexdump) {
 		my @bytes = readspd(128, $dimm_list[$i]);
-		my $dimm_checksum = 0;
-		$dimm_checksum += $bytes[$_] foreach (0 .. 62);
-		$dimm_checksum &= 0xff;
+		my ($spd_size, $spd_used) = spd_sizes(\@bytes);
+		my ($l, $chk_valid, $chk_spd, $chk_calc);
+		if ($bytes[2] < 9) {
+			($l, $chk_valid, $chk_spd, $chk_calc) =
+				checksum(\@bytes);
+		} else {
+			($l, $chk_valid, $chk_spd, $chk_calc) =
+				check_crc(\@bytes);
+		}
 
-		next unless $bytes[63] == $dimm_checksum || $opt_igncheck;
+		next unless $chk_valid || $opt_igncheck;
 		$dimm_count++;
 
 		print "<b><u>" if $opt_html;
@@ -1358,11 +1440,10 @@ for my $i ( 0 .. $#dimm_list ) {
 # Decode first 3 bytes (0-2)
 		prints "SPD EEPROM Information";
 
-		my $l = "EEPROM Checksum of bytes 0-62";
-		printl $l, ($bytes[63] == $dimm_checksum ?
-			sprintf("OK (0x%.2X)", $bytes[63]):
-			sprintf("Bad\n(found 0x%.2X, calculated 0x%.2X)\n",
-				$bytes[63], $dimm_checksum));
+		printl $l, ($chk_valid ?
+			sprintf("OK (%s)", $chk_calc) :
+			sprintf("Bad\n(found %s, calculated %s)\n",
+				$chk_spd, $chk_calc));
 
 		# Simple heuristic to detect Rambus
 		my $is_rambus = $bytes[0] < 4;
@@ -1374,31 +1455,29 @@ for my $i ( 0 .. $#dimm_list ) {
 			else { $temp = "Reserved"; }
 			printl "SPD Revision", $temp;
 		} else {
-			printl "# of bytes written to SDRAM EEPROM",
-			       $bytes[0];
+			printl "# of bytes written to SDRAM EEPROM", $spd_used;
 		}
 
 		$l = "Total number of bytes in EEPROM";
-		if ($bytes[1] <= 14) {
-			printl $l, 2**$bytes[1];
-		} elsif ($bytes[1] == 0) {
-			printl $l, "RFU";
-		} else { printl $l, "ERROR!"; }
+		printl $l, $spd_size;
 
 		$l = "Fundamental Memory type";
-		my $type = "Unknown";
+		my $type = sprintf("Unknown (0x%02x)", $bytes[2]);
 		if ($is_rambus) {
 			if ($bytes[2] == 1) { $type = "Direct Rambus"; }
 			elsif ($bytes[2] == 17) { $type = "Rambus"; }
 		} else {
-			if ($bytes[2] == 1) { $type = "FPM DRAM"; }
-			elsif ($bytes[2] == 2) { $type = "EDO"; }
-			elsif ($bytes[2] == 3) { $type = "Pipelined Nibble"; }
-			elsif ($bytes[2] == 4) { $type = "SDR SDRAM"; }
-			elsif ($bytes[2] == 5) { $type = "Multiplexed ROM"; }
-			elsif ($bytes[2] == 6) { $type = "DDR SGRAM"; }
-			elsif ($bytes[2] == 7) { $type = "DDR SDRAM"; }
-			elsif ($bytes[2] == 8) { $type = "DDR2 SDRAM"; }
+			my @type_list = (
+				"Reserved", "FPM DRAM",		# 0, 1
+				"EDO", "Pipelined Nibble",	# 2, 3
+				"SDR SDRAM", "Multiplexed ROM",	# 4, 5
+				"DDR SGRAM", "DDR SDRAM",	# 6, 7
+				"DDR2 SDRAM", "FB-DIMM",	# 8, 9
+				"FB-DIMM Probe", "DDR3 SDRAM",	# 10, 11
+			);
+			if ($bytes[2] < @type_list) {
+				$type = $type_list[$bytes[2]];
+			}
 		}
 		printl $l, $type;
 

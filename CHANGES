@@ -2,6 +2,7 @@ i2c-tools CHANGES
 -----------------
 
 SVN
+  decode-dimms: Handle CRC of FB-DIMM and DDR3 SDRAM memory modules
   i2c-stub-from-dump: Use udev settle to speed up initialization
 
 3.0.2 (2008-11-29)
