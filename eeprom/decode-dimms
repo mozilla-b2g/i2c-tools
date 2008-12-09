@@ -1222,7 +1222,7 @@ sub read_hexdump($)
 }
 
 # Returns the (total, used) number of bytes in the EEPROM,
-# assuming it is an SPD EEPROM.
+# assuming it is a non-Rambus SPD EEPROM.
 sub spd_sizes($)
 {
 	my $bytes = shift;
@@ -1409,7 +1409,7 @@ for my $i ( 0 .. $#dimm_list ) {
 	 || (!$use_sysfs && /^eeprom-/)
 	 || $use_hexdump) {
 		my @bytes = readspd(128, $dimm_list[$i]);
-		my ($spd_size, $spd_used) = spd_sizes(\@bytes);
+		my $is_rambus = $bytes[0] < 4;		# Simple heuristic
 		my ($l, $chk_valid, $chk_spd, $chk_calc);
 		if ($bytes[2] < 9) {
 			($l, $chk_valid, $chk_spd, $chk_calc) =
@@ -1445,21 +1445,18 @@ for my $i ( 0 .. $#dimm_list ) {
 			sprintf("Bad\n(found %s, calculated %s)\n",
 				$chk_spd, $chk_calc));
 
-		# Simple heuristic to detect Rambus
-		my $is_rambus = $bytes[0] < 4;
 		my $temp;
 		if ($is_rambus) {
 			if ($bytes[0] == 1) { $temp = "0.7"; }
 			elsif ($bytes[0] == 2) { $temp = "1.0"; }
-			elsif ($bytes[0] == 0 || $bytes[0] == 255) { $temp = "Invalid"; }
+			elsif ($bytes[0] == 0) { $temp = "Invalid"; }
 			else { $temp = "Reserved"; }
 			printl "SPD Revision", $temp;
 		} else {
+			my ($spd_size, $spd_used) = spd_sizes(\@bytes);
 			printl "# of bytes written to SDRAM EEPROM", $spd_used;
+			printl "Total number of bytes in EEPROM", $spd_size;
 		}
-
-		$l = "Total number of bytes in EEPROM";
-		printl $l, $spd_size;
 
 		$l = "Fundamental Memory type";
 		my $type = sprintf("Unknown (0x%02x)", $bytes[2]);
