@@ -1268,26 +1268,28 @@ sub spd_sizes($)
 	}
 }
 
-sub readspd($$) # reads bytes from SPD-EEPROM
+# Read bytes from SPD-EEPROM
+# Note: offset must be a multiple of 16!
+sub readspd($$$)
 {
-	my ($size, $dimm_i) = @_;
+	my ($offset, $size, $dimm_i) = @_;
 	my @bytes;
 	if ($use_hexdump) {
 		@bytes = read_hexdump($dimm_i);
-		return @bytes[0..($size-1)];
+		return @bytes[$offset..($offset + $size - 1)];
 	} elsif ($use_sysfs) {
 		# Kernel 2.6 with sysfs
 		sysopen(HANDLE, "/sys/bus/i2c/drivers/eeprom/$dimm_i/eeprom", O_RDONLY)
 			or die "Cannot open /sys/bus/i2c/drivers/eeprom/$dimm_i/eeprom";
 		binmode HANDLE;
-		sysseek(HANDLE, 0, SEEK_SET);
+		sysseek(HANDLE, $offset, SEEK_SET);
 		sysread(HANDLE, my $eeprom, $size);
 		close HANDLE;
 		@bytes = unpack("C*", $eeprom);
 	} else {
 		# Kernel 2.4 with procfs
 		for my $i (0 .. ($size-1)/16) {
-			my $hexoff = sprintf('%02x', $i * 16);
+			my $hexoff = sprintf('%02x', $offset + $i * 16);
 			push @bytes, split(" ", `cat /proc/sys/dev/sensors/$dimm_i/$hexoff`);
 		}
 	}
@@ -1424,7 +1426,7 @@ for my $i ( 0 .. $#dimm_list ) {
 	if (($use_sysfs && /^\d+-\d+$/)
 	 || (!$use_sysfs && /^eeprom-/)
 	 || $use_hexdump) {
-		my @bytes = readspd(128, $dimm_list[$i]);
+		my @bytes = readspd(0, 128, $dimm_list[$i]);
 		my $is_rambus = $bytes[0] < 4;		# Simple heuristic
 		my ($l, $chk_valid, $chk_spd, $chk_calc);
 		if ($is_rambus || $bytes[2] < 9) {
@@ -1472,6 +1474,14 @@ for my $i ( 0 .. $#dimm_list ) {
 			my ($spd_size, $spd_used) = spd_sizes(\@bytes);
 			printl "# of bytes written to SDRAM EEPROM", $spd_used;
 			printl "Total number of bytes in EEPROM", $spd_size;
+
+			# If there's more data than what we've read, let's
+			# read it now.  DDR3 will need this data.
+			if ($spd_used > @bytes) {
+				push (@bytes,
+				      readspd(@bytes, $spd_used - @bytes,
+					      $dimm_list[$i]));
+			}
 		}
 
 		$l = "Fundamental Memory type";
