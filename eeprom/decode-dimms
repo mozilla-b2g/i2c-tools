@@ -1285,6 +1285,25 @@ sub manufacture_date($$)
 	}
 }
 
+sub printl_mfg_location_code($)
+{
+	my $code = shift;
+	my $letter = chr($code);
+
+	return unless spd_written($code);
+	# Try the location code as ASCII first, as earlier specifications
+	# suggested this. As newer specifications don't mention it anymore,
+	# we still fall back to binary.
+	printl("Manufacturing Location Code",
+	       $letter =~ m/^[\w\d]$/ ? $letter : sprintf("0x%.2X", $code));
+}
+
+sub printl_mfg_assembly_serial(@)
+{
+	return unless spd_written(@_);
+	printl("Assembly Serial Number", sprintf("0x%02X%02X%02X%02X\n", @_));
+}
+
 # Parameter: EEPROM bytes 0-175 (using 117-149)
 sub decode_ddr3_mfg_data($)
 {
@@ -1301,30 +1320,17 @@ sub decode_ddr3_mfg_data($)
 			manufacturer_ddr3($bytes->[148], $bytes->[149]);
 	}
 
-	if (spd_written($bytes->[119])) {
-		$l = "Manufacturing Location Code";
-		my $temp = (chr($bytes->[119]) =~ m/^[\w\d]$/) ? chr($bytes->[119])
-		      : sprintf("0x%.2X", $bytes->[119]);
-		printl $l, $temp;
-	}
+	printl_mfg_location_code($bytes->[119]);
 
 	if (spd_written(@{$bytes}[120..121])) {
 		$l = "Manufacturing Date";
 		printl $l, manufacture_date($bytes->[120], $bytes->[121]);
 	}
 
-	if (spd_written(@{$bytes}[122..125])) {
-		$l = "Assembly Serial Number";
-		$temp = sprintf("0x%02X%02X%02X%02X\n", $bytes->[122], $bytes->[123],
-			$bytes->[124], $bytes->[125]);
-		printl $l, $temp;
-	}
+	printl_mfg_assembly_serial(@{$bytes}[122..125]);
 
 	$l = "Part Number";
-	$temp = "";
-	for (my $i = 128; $i <= 145; $i++) {
-		$temp .= chr($bytes->[$i]);
-	};
+	$temp = part_number(@{$bytes}[128..145]);
 	printl $l, $temp;
 
 	if (spd_written(@{$bytes}[146..147])) {
@@ -1352,15 +1358,7 @@ sub decode_manufacturing_information($)
 	$temp = manufacturer_data(@{$extra});
 	printl $l, $temp if defined $temp;
 
-	if (spd_written($bytes->[72])) {
-		# Try the location code as ASCII first, as earlier specifications
-		# suggested this. As newer specifications don't mention it anymore,
-		# we still fall back to binary.
-		$l = "Manufacturing Location Code";
-		$temp = (chr($bytes->[72]) =~ m/^[\w\d]$/) ? chr($bytes->[72])
-		      : sprintf("0x%.2X", $bytes->[72]);
-		printl $l, $temp;
-	}
+	printl_mfg_location_code($bytes->[72]);
 
 	$l = "Part Number";
 	$temp = part_number(@{$bytes}[73..90]);
@@ -1377,12 +1375,7 @@ sub decode_manufacturing_information($)
 		printl $l, manufacture_date($bytes->[93], $bytes->[94]);
 	}
 
-	if (spd_written(@{$bytes}[95..98])) {
-		$l = "Assembly Serial Number";
-		$temp = sprintf("0x%02X%02X%02X%02X\n",
-				@{$bytes}[95..98]);
-		printl $l, $temp;
-	}
+	printl_mfg_assembly_serial(@{$bytes}[95..98]);
 }
 
 # Parameter: EEPROM bytes 0-127 (using 126-127)
