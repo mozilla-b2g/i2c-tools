@@ -6,7 +6,7 @@
 # Version 0.1
 #
 #
-# ID ROM data decoding for Xeon processors. 
+# ID ROM data decoding for Xeon processors.
 # Each Xeon processor contains two memories:
 #	- A scratch EEPROM at an even location 0x50, 52, 54, or 56;
 #	- An ID ROM at an odd location 0x51, 53, 55, or 57.
@@ -24,9 +24,9 @@
 #	Calculate and check checksums for each section
 #	Decode flags in byte 0x7B (cartridge feature flags)
 #
-# References: 
+# References:
 # "Pentium II Xeon Processor at 400 and 450 MHz" Data Sheet
-# Intel 
+# Intel
 #
 #
 #
@@ -43,7 +43,7 @@ for $i ( 0 .. $#dimm_list ) {
 	$_=$dimm_list[$i];
 	if ((/^eeprom-/) && (/-51$/ || /-53$/ || /-55$/ || /-57$/)) {
 		$dimm_count=$dimm_count + 1;
-		
+
 		print "\nDecoding Xeon ROM: /proc/sys/dev/sensors/$dimm_list[$i]\n";
 		if (/^[^-]+-[^-]+-[^-]+-([^-]+)$/) {
 			$dimm_num=($1 - 49) / 2;
@@ -54,7 +54,7 @@ for $i ( 0 .. $#dimm_list ) {
 
 		$_=`cat /proc/sys/dev/sensors/$dimm_list[$i]/00`;
 		@bytes=split(" ");
-		
+
 		printf("\tData Format Revision: \t\t\t\t0x%.4X\n", $bytes[0]);
 
 		print "\tTotal number of bytes in EEPROM:\t\t";
@@ -69,15 +69,15 @@ for $i ( 0 .. $#dimm_list ) {
 		printf("\tThermal Reference Data Address:\t\t\t0x%.2X\n", $bytes[8]);
 		printf("\tFeature Data Address:\t\t\t\t0x%.2X\n", $bytes[9]);
 		printf("\tOther Data Address:\t\t\t\t0x%.2X\n", $bytes[10]);
-		
+
 		print "\t\t----=== Xeon ROM Processor Data ===----\n";
-		
+
 # Decode next 16 bytes
 		$_=`cat /proc/sys/dev/sensors/$dimm_list[$i]/10`;
 		@bbytes=split(" ");
-	      	print "\tS-spec/QDF Number:\t\t\t\t\"";
+		print "\tS-spec/QDF Number:\t\t\t\t\"";
 		print pack("cccccc",$bytes[14],$bytes[15],$bbytes[0],
-    				    $bbytes[1],$bbytes[2],$bbytes[3]);
+				    $bbytes[1],$bbytes[2],$bbytes[3]);
 		print "\"\n";
 		$tmp =  $bbytes[4] & 0xC0 >> 6;
 		printf("\tSample / Production:\t\t\t\t0x%.2X", $tmp);
@@ -88,7 +88,7 @@ for $i ( 0 .. $#dimm_list ) {
 		}
 
 		print "\t\t----=== Xeon ROM Core Data ===----\n";
-		
+
 		printf("\tProcessor Core Type:\t\t\t\t0x%.2X\n",
 			($bbytes[6] & 0xC0) >> 6);
 		printf("\tProcessor Core Family:\t\t\t\t0x%.2X\n",
@@ -100,7 +100,7 @@ for $i ( 0 .. $#dimm_list ) {
 		print "\tMaximum Core Frequency (Mhz):\t\t\t";
 		print ($bbytes[13] << 4) + $bbytes[14];
 		print "\n";
-		
+
 # Decode next 16 bytes (32-47)
 		$_=`cat /proc/sys/dev/sensors/$dimm_list[$i]/20`;
 		@bytes=split(" ");
@@ -115,7 +115,7 @@ for $i ( 0 .. $#dimm_list ) {
 		print "\n";
 
 		print "\t\t----=== Xeon ROM L2 Cache Data ===----\n";
-		
+
 		print "\tL2 Cache Size (KB):\t\t\t\t";
 		print ($bytes[9] << 4) + $bytes[10];
 		print "\n";
@@ -173,12 +173,12 @@ for $i ( 0 .. $#dimm_list ) {
 			$bbytes[1],$bbytes[2],$bbytes[3],$bbytes[4]);
 
 # Decode next 16 bytes (96-111)
-# Not used...   
+# Not used...
 
 # Decode next 16 bytes (112-127)
 		$_=`cat /proc/sys/dev/sensors/$dimm_list[$i]/70`;
 		@bytes=split(" ");
-		
+
 		print "\t\t----=== Xeon Thermal Reference Data ===----\n";
 
 		printf("\tThermal Reference Byte: \t\t\t0x%.2X\n", $bytes[0]);
@@ -191,7 +191,7 @@ for $i ( 0 .. $#dimm_list ) {
 			$bytes[8],$bytes[9],$bytes[10],$bytes[11]);
 		printf("\tNumber of Devices in TAP Chain:\t\t\t%d\n",
 			($bytes[12] & 0xF0) >> 4);
-		
+
 	}
 }
 print "\n\nNumber of Xeon ROMs detected and decoded: $dimm_count\n";

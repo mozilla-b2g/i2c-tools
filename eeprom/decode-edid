@@ -80,7 +80,7 @@ sub rawread
 {
 	my ($filename, $length, $offset) = @_;
 	my $bytes = '';
-	
+
 	sysopen(FH, $filename, O_RDONLY)
 		or die "Can't open $filename";
 	if ($offset)
@@ -138,9 +138,9 @@ sub bus_detect
 					"decode-edid: using bus $i (autodetected)\n";
 				return $i;
 			}
-		}	
+		}
 	}
-	
+
 	return; # default
 }
 
@@ -163,7 +163,7 @@ sub edid_decode
 		or die "Can't open parse-edid. Please install read-edid.\n";
 	delete $SIG{__WARN__};
 	binmode PIPE;
-	
+
 	if ($mode == PROCFS)
 	{
 		for (my $i=0; $i<=0x70; $i+=0x10)

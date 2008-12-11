@@ -17,7 +17,7 @@
 #    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #    MA 02110-1301 USA.
 #
-# EEPROM data decoding for Sony Vaio laptops. 
+# EEPROM data decoding for Sony Vaio laptops.
 #
 # The eeprom driver must be loaded. For kernels older than 2.6.0, the
 # eeprom driver can be found in the lm-sensors package.
@@ -61,7 +61,7 @@ use constant ONLYROOT	=> "Readable only by root";
 sub print_item
 {
 	my ($label,$value) = @_;
-	
+
 	printf("\%16s : \%s\n",$label,$value);
 }
 
@@ -71,7 +71,7 @@ sub read_eeprom_bytes
 {
 	my ($bus, $addr, $offset, $length) = @_;
 	my $filename;
-	
+
 	if ($sysfs)
 	{
 		$filename = "/sys/bus/i2c/devices/$bus-00$addr/eeprom";
@@ -94,7 +94,7 @@ sub read_eeprom_bytes
 			$length -= $r;
 		}
 		close(FH);
-		
+
 		return $bytes;
 	}
 	else
@@ -103,7 +103,7 @@ sub read_eeprom_bytes
 		$offset -= $base;
 		my $values = '';
 		my $remains = $length + $offset;
-		
+
 		# Get all lines in a single string
 		while ($remains > 0)
 		{
@@ -116,7 +116,7 @@ sub read_eeprom_bytes
 			$remains -= 16;
 			$base += 16;
 		}
-		
+
 		# Store the useful part in an array
 		my @bytes = split(/[ \n]/, $values);
 		@bytes = @bytes[$offset..$offset+$length-1];
@@ -132,7 +132,7 @@ sub decode_string
 
 	my $string = read_eeprom_bytes($bus, $addr, $offset, $length);
 	$string =~ s/\x00.*$//;
-	
+
 	return($string);
 }
 
@@ -180,7 +180,7 @@ sub decode_uuid
 sub vaio_decode
 {
 	my ($bus,$addr) = @_;
-	
+
 	my $name = decode_string($bus, $addr, 128, 32);
 	# Simple heuristic to skip false positives
 	return 0 unless $name =~ m/^[A-Z-]{4}/;

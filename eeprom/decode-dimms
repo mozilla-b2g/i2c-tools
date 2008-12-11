@@ -662,7 +662,7 @@ sub decode_sdr_sdram($)
 	       value_or_undefined($bytes->[29], "ns"));
 
 	printl("Min RAS Pulse Width",
-	       value_or_undefined($bytes->[30], "ns")); 
+	       value_or_undefined($bytes->[30], "ns"));
 
 	$temp = "";
 	if ($bytes->[31] & 1) { $temp .= "4 MByte\n"; }
@@ -1107,7 +1107,7 @@ sub decode_ddr3_sdram($)
 		tns3($bytes->[19] * $mtb));
 	printl("Minimum Active to Auto-Refresh Delay (tRC)",
 		tns3((((($bytes->[21] >> 4) & 15) << 8) + $bytes->[23]) * $mtb));
-	printl("Minimum Recovery Delay (tRFC)", 
+	printl("Minimum Recovery Delay (tRFC)",
 		tns3((($bytes->[25] << 8) + $bytes->[24]) * $mtb));
 	printl("Minimum Write to Read CMD Delay (tWTR)",
 		tns3($bytes->[26] * $mtb));
@@ -1153,7 +1153,7 @@ sub decode_ddr3_sdram($)
 		prints("Physical Characteristics");
 		printl("Module Height (mm)", ($bytes->[60] & 31) + 15);
 		printl("Module Thickness (mm)", sprintf("%d front, %d back",
-						($bytes->[61] & 15) + 1, 
+						($bytes->[61] & 15) + 1,
 						(($bytes->[61] >> 4) & 15) +1));
 		printl("Module Width (mm)", ($bytes->[3] <= 2) ? 133.5 :
 					($bytes->[3] == 3) ? 67.6 : "TBD");
@@ -1711,7 +1711,7 @@ for my $i ( 0 .. $#dimm_list ) {
 			if exists $decode_callback{$type};
 
 		if ($type eq "DDR3 SDRAM") {
-			# Decode DDR3-specific manufacturing data in bytes 
+			# Decode DDR3-specific manufacturing data in bytes
 			# 117-149
 			decode_ddr3_mfg_data(\@bytes)
 		} else {
