@@ -1278,10 +1278,10 @@ sub manufacture_date($$)
 	if (($year & 0xf0) <= 0x90 && ($year & 0x0f) <= 0x09
 	 && ($week & 0xf0) <= 0x90 && ($week & 0x0f) <= 0x09) {
 		# Note that this heuristic will break in year 2080
-		return sprintf("%d%02X-W%02X\n",
+		return sprintf("%d%02X-W%02X",
 				$year >= 0x80 ? 19 : 20, $year, $week);
 	} else {
-		return sprintf("0x%02X%02X\n", $year, $week);
+		return sprintf("0x%02X%02X", $year, $week);
 	}
 }
 
@@ -1301,42 +1301,38 @@ sub printl_mfg_location_code($)
 sub printl_mfg_assembly_serial(@)
 {
 	return unless spd_written(@_);
-	printl("Assembly Serial Number", sprintf("0x%02X%02X%02X%02X\n", @_));
+	printl("Assembly Serial Number", sprintf("0x%02X%02X%02X%02X", @_));
 }
 
 # Parameter: EEPROM bytes 0-175 (using 117-149)
 sub decode_ddr3_mfg_data($)
 {
 	my $bytes = shift;
-	my ($l, $temp);
 
-	prints "Manufacturer Data";
+	prints("Manufacturer Data");
 
-	printl "Module Manufacturer",
-		manufacturer_ddr3($bytes->[117], $bytes->[118]);
+	printl("Module Manufacturer",
+	       manufacturer_ddr3($bytes->[117], $bytes->[118]));
 
 	if (spd_written(@{$bytes}[148..149])) {
-		printl "DRAM Manufacturer",
-			manufacturer_ddr3($bytes->[148], $bytes->[149]);
+		printl("DRAM Manufacturer",
+		       manufacturer_ddr3($bytes->[148], $bytes->[149]));
 	}
 
 	printl_mfg_location_code($bytes->[119]);
 
 	if (spd_written(@{$bytes}[120..121])) {
-		$l = "Manufacturing Date";
-		printl $l, manufacture_date($bytes->[120], $bytes->[121]);
+		printl("Manufacturing Date",
+		       manufacture_date($bytes->[120], $bytes->[121]));
 	}
 
 	printl_mfg_assembly_serial(@{$bytes}[122..125]);
 
-	$l = "Part Number";
-	$temp = part_number(@{$bytes}[128..145]);
-	printl $l, $temp;
+	printl("Part Number", part_number(@{$bytes}[128..145]));
 
 	if (spd_written(@{$bytes}[146..147])) {
-		$l = "Revision Code";
-		$temp = sprintf("0x%02X%02X\n", $bytes->[146], $bytes->[147]);
-		printl $l, $temp;
+		printl("Revision Code",
+		       sprintf("0x%02X%02X", $bytes->[146], $bytes->[147]));
 	}
 }
 
@@ -1344,35 +1340,30 @@ sub decode_ddr3_mfg_data($)
 sub decode_manufacturing_information($)
 {
 	my $bytes = shift;
-	my ($l, $temp, $extra);
+	my ($temp, $extra);
 
-	prints "Manufacturing Information";
+	prints("Manufacturing Information");
 
-	$l = "Manufacturer";
 	# $extra is a reference to an array containing up to
 	# 7 extra bytes from the Manufacturer field. Sometimes
 	# these bytes are filled with interesting data.
 	($temp, $extra) = manufacturer(@{$bytes}[64..71]);
-	printl $l, $temp;
-	$l = "Custom Manufacturer Data";
+	printl("Manufacturer", $temp);
 	$temp = manufacturer_data(@{$extra});
-	printl $l, $temp if defined $temp;
+	printl("Custom Manufacturer Data", $temp) if defined $temp;
 
 	printl_mfg_location_code($bytes->[72]);
 
-	$l = "Part Number";
-	$temp = part_number(@{$bytes}[73..90]);
-	printl $l, $temp;
+	printl("Part Number", part_number(@{$bytes}[73..90]));
 
 	if (spd_written(@{$bytes}[91..92])) {
-		$l = "Revision Code";
-		$temp = sprintf("0x%02X%02X\n", @{$bytes}[91..92]);
-		printl $l, $temp;
+		printl("Revision Code",
+		       sprintf("0x%02X%02X", @{$bytes}[91..92]));
 	}
 
 	if (spd_written(@{$bytes}[93..94])) {
-		$l = "Manufacturing Date";
-		printl $l, manufacture_date($bytes->[93], $bytes->[94]);
+		printl("Manufacturing Date",
+		       manufacture_date($bytes->[93], $bytes->[94]));
 	}
 
 	printl_mfg_assembly_serial(@{$bytes}[95..98]);
