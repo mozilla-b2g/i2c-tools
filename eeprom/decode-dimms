@@ -432,6 +432,14 @@ sub tns3($) # print a time in ns, with 3 decimal digits
 	return sprintf("%.3f ns", $_[0]);
 }
 
+sub value_or_undefined
+{
+	my ($value, $unit) = @_;
+	return "Undefined!" unless $value;
+	$value .= " $unit" if defined $unit;
+	return $value;
+}
+
 # Parameter: EEPROM bytes 0-127 (using 3-62)
 sub decode_sdr_sdram($)
 {
@@ -494,9 +502,7 @@ sub decode_sdr_sdram($)
 	else { $temp = $bytes->[4]; }
 	printl("Number of Col Address Bits", $temp);
 
-	if ($bytes->[5] == 0) { $temp = "Undefined!"; }
-	else { $temp = $bytes->[5]; }
-	printl("Number of Module Rows", $temp);
+	printl("Number of Module Rows", value_or_undefined($bytes->[5]));
 
 	if ($bytes->[7] > 1) { $temp = "Undefined!"; }
 	else { $temp = ($bytes->[7] * 256) + $bytes->[6]; }
@@ -534,22 +540,17 @@ sub decode_sdr_sdram($)
 	if ($bytes->[13] > 126) { $temp = "Bank2 = 2 x Bank1"; }
 	else { $temp = "No Bank2 OR Bank2 = Bank1 width"; }
 	printl("Primary SDRAM Component Bank Config", $temp);
-
-	$temp = $bytes->[13] & 0x7f;
-	if ($temp == 0) { $temp = "Undefined!"; }
-	printl("Primary SDRAM Component Widths", $temp);
+	printl("Primary SDRAM Component Widths",
+	       value_or_undefined($bytes->[13] & 0x7f));
 
 	if ($bytes->[14] > 126) { $temp = "Bank2 = 2 x Bank1"; }
 	else { $temp = "No Bank2 OR Bank2 = Bank1 width"; }
 	printl("Error Checking SDRAM Component Bank Config", $temp);
+	printl("Error Checking SDRAM Component Widths",
+	       value_or_undefined($bytes->[14] & 0x7f));
 
-	$temp = $bytes->[14] & 0x7f;
-	if ($temp == 0) { $temp = "Undefined!"; }
-	printl("Error Checking SDRAM Component Widths", $temp);
-
-	if ($bytes->[15] == 0) { $temp = "Undefined!"; }
-	else { $temp = $bytes->[15]; }
-	printl("Min Clock Delay for Back to Back Random Access", $temp);
+	printl("Min Clock Delay for Back to Back Random Access",
+	       value_or_undefined($bytes->[15]));
 
 	my @array;
 	for ($ii = 0; $ii < 4; $ii++) {
@@ -560,9 +561,8 @@ sub decode_sdr_sdram($)
 	else { $temp = "None"; }
 	printl("Supported Burst Lengths", $temp);
 
-	if ($bytes->[17] == 0) { $temp = "Undefined/Reserved!"; }
-	else { $temp = $bytes->[17]; }
-	printl("Number of Device Banks", $temp);
+	printl("Number of Device Banks",
+	       value_or_undefined($bytes->[17]));
 
 	printl("Supported CAS Latencies", cas_latencies(@cas));
 
@@ -652,21 +652,17 @@ sub decode_sdr_sdram($)
 	if ($bytes->[22] & 128) { $temp .= "Undefined (bit 7)\n"; }
 	printl("SDRAM Device Attributes (General)", $temp);
 
-	if ($bytes->[27] == 0) { $temp = "Undefined!"; }
-	else { $temp = "$bytes->[27] ns"; }
-	printl("Minimum Row Precharge Time", $temp);
+	printl("Minimum Row Precharge Time",
+	       value_or_undefined($bytes->[27], "ns"));
 
-	if ($bytes->[28] == 0) { $temp = "Undefined!"; }
-	else { $temp = "$bytes->[28] ns"; }
-	printl("Row Active to Row Active Min", $temp);
+	printl("Row Active to Row Active Min",
+	       value_or_undefined($bytes->[28], "ns"));
 
-	if ($bytes->[29] == 0) { $temp = "Undefined!"; }
-	else { $temp = "$bytes->[29] ns"; }
-	printl("RAS to CAS Delay", $temp);
+	printl("RAS to CAS Delay",
+	       value_or_undefined($bytes->[29], "ns"));
 
-	if ($bytes->[30] == 0) { $temp = "Undefined!"; }
-	else { $temp = "$bytes->[30] ns"; }
-	printl("Min RAS Pulse Width", $temp);
+	printl("Min RAS Pulse Width",
+	       value_or_undefined($bytes->[30], "ns")); 
 
 	$temp = "";
 	if ($bytes->[31] & 1) { $temp .= "4 MByte\n"; }
