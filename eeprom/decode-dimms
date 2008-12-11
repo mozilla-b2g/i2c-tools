@@ -541,7 +541,7 @@ sub decode_sdr_sdram($)
 
 	$l = "Primary SDRAM Component Widths";
 	$temp = $bytes->[13] & 0x7f;
-	if ($temp == 0) { printl $l, "Undefined!\n"; }
+	if ($temp == 0) { printl $l, "Undefined!"; }
 	else { printl $l, $temp; }
 
 	$l = "Error Checking SDRAM Component Bank Config";
@@ -1378,10 +1378,10 @@ sub decode_intel_spec_freq($)
 	prints "Intel Specification";
 
 	$l = "Frequency";
-	if ($bytes->[126] == 0x66) { $temp = "66MHz\n"; }
-	elsif ($bytes->[126] == 100) { $temp = "100MHz or 133MHz\n"; }
-	elsif ($bytes->[126] == 133) { $temp = "133MHz\n"; }
-	else { $temp = "Undefined!\n"; }
+	if ($bytes->[126] == 0x66) { $temp = "66MHz"; }
+	elsif ($bytes->[126] == 100) { $temp = "100MHz or 133MHz"; }
+	elsif ($bytes->[126] == 133) { $temp = "133MHz"; }
+	else { $temp = "Undefined!"; }
 	printl $l, $temp;
 
 	$l = "Details for 100MHz Support";
@@ -1682,7 +1682,7 @@ for my $i ( 0 .. $#dimm_list ) {
 
 		printl $l, ($chk_valid ?
 			sprintf("OK (%s)", $chk_calc) :
-			sprintf("Bad\n(found %s, calculated %s)\n",
+			sprintf("Bad\n(found %s, calculated %s)",
 				$chk_spd, $chk_calc));
 
 		my $temp;
