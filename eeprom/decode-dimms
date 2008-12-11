@@ -439,11 +439,11 @@ sub decode_sdr_sdram($)
 	my ($l, $temp);
 
 # SPD revision
-	printl "SPD Revision", $bytes->[62];
+	printl("SPD Revision", $bytes->[62]);
 
 #size computation
 
-	prints "Memory Characteristics";
+	prints("Memory Characteristics");
 
 	my $k = 0;
 	my $ii = 0;
@@ -454,10 +454,10 @@ sub decode_sdr_sdram($)
 	}
 
 	if ($ii > 0 && $ii <= 12 && $k > 0) {
-		printl "Size", ((1 << $ii) * $k) . " MB";
+		printl("Size", ((1 << $ii) * $k) . " MB");
 	} else {
-		printl "INVALID SIZE", $bytes->[3] . "," . $bytes->[4] . "," .
-				       $bytes->[5] . "," . $bytes->[17];
+		printl("INVALID SIZE", $bytes->[3] . "," . $bytes->[4] . "," .
+				       $bytes->[5] . "," . $bytes->[17]);
 	}
 
 	my @cas;
@@ -474,88 +474,88 @@ sub decode_sdr_sdram($)
 	$trp = $bytes->[27];;
 	$tras = $bytes->[30];
 
-	printl "tCL-tRCD-tRP-tRAS",
+	printl("tCL-tRCD-tRP-tRAS",
 		$cas[$#cas] . "-" .
 		ceil($trcd/$ctime) . "-" .
 		ceil($trp/$ctime) . "-" .
-		ceil($tras/$ctime);
+		ceil($tras/$ctime));
 
 	$l = "Number of Row Address Bits";
-	if ($bytes->[3] == 0) { printl $l, "Undefined!"; }
-	elsif ($bytes->[3] == 1) { printl $l, "1/16"; }
-	elsif ($bytes->[3] == 2) { printl $l, "2/17"; }
-	elsif ($bytes->[3] == 3) { printl $l, "3/18"; }
-	else { printl $l, $bytes->[3]; }
+	if ($bytes->[3] == 0) { printl($l, "Undefined!"); }
+	elsif ($bytes->[3] == 1) { printl($l, "1/16"); }
+	elsif ($bytes->[3] == 2) { printl($l, "2/17"); }
+	elsif ($bytes->[3] == 3) { printl($l, "3/18"); }
+	else { printl($l, $bytes->[3]); }
 
 	$l = "Number of Col Address Bits";
-	if ($bytes->[4] == 0) { printl $l, "Undefined!"; }
-	elsif ($bytes->[4] == 1) { printl $l, "1/16"; }
-	elsif ($bytes->[4] == 2) { printl $l, "2/17"; }
-	elsif ($bytes->[4] == 3) { printl $l, "3/18"; }
-	else { printl $l, $bytes->[4]; }
+	if ($bytes->[4] == 0) { printl($l, "Undefined!"); }
+	elsif ($bytes->[4] == 1) { printl($l, "1/16"); }
+	elsif ($bytes->[4] == 2) { printl($l, "2/17"); }
+	elsif ($bytes->[4] == 3) { printl($l, "3/18"); }
+	else { printl($l, $bytes->[4]); }
 
 	$l = "Number of Module Rows";
-	if ($bytes->[5] == 0 ) { printl $l, "Undefined!"; }
-	else { printl $l, $bytes->[5]; }
+	if ($bytes->[5] == 0 ) { printl($l, "Undefined!"); }
+	else { printl($l, $bytes->[5]); }
 
 	$l = "Data Width";
 	if ($bytes->[7] > 1) {
-		printl $l, "Undefined!"
+		printl($l, "Undefined!");
 	} else {
 		$temp = ($bytes->[7] * 256) + $bytes->[6];
-		printl $l, $temp;
+		printl($l, $temp);
 	}
 
 	$l = "Module Interface Signal Levels";
-	if ($bytes->[8] == 0) { printl $l, "5.0 Volt/TTL"; }
-	elsif ($bytes->[8] == 1) { printl $l, "LVTTL"; }
-	elsif ($bytes->[8] == 2) { printl $l, "HSTL 1.5"; }
-	elsif ($bytes->[8] == 3) { printl $l, "SSTL 3.3"; }
-	elsif ($bytes->[8] == 4) { printl $l, "SSTL 2.5"; }
-	elsif ($bytes->[8] == 255) { printl $l, "New Table"; }
-	else { printl $l, "Undefined!"; }
+	if ($bytes->[8] == 0) { printl($l, "5.0 Volt/TTL"); }
+	elsif ($bytes->[8] == 1) { printl($l, "LVTTL"); }
+	elsif ($bytes->[8] == 2) { printl($l, "HSTL 1.5"); }
+	elsif ($bytes->[8] == 3) { printl($l, "SSTL 3.3"); }
+	elsif ($bytes->[8] == 4) { printl($l, "SSTL 2.5"); }
+	elsif ($bytes->[8] == 255) { printl($l, "New Table"); }
+	else { printl($l, "Undefined!"); }
 
 	$l = "Module Configuration Type";
-	if ($bytes->[11] == 0) { printl $l, "No Parity"; }
-	elsif ($bytes->[11] == 1) { printl $l, "Parity"; }
-	elsif ($bytes->[11] == 2) { printl $l, "ECC"; }
-	else { printl $l, "Undefined!"; }
+	if ($bytes->[11] == 0) { printl($l, "No Parity"); }
+	elsif ($bytes->[11] == 1) { printl($l, "Parity"); }
+	elsif ($bytes->[11] == 2) { printl($l, "ECC");  }
+	else { printl($l, "Undefined!"); }
 
 	$l = "Refresh Type";
-	if ($bytes->[12] > 126) { printl $l, "Self Refreshing"; }
-	else { printl $l, "Not Self Refreshing"; }
+	if ($bytes->[12] > 126) { printl($l, "Self Refreshing"); }
+	else { printl($l, "Not Self Refreshing"); }
 
 	$l = "Refresh Rate";
 	$temp = $bytes->[12] & 0x7f;
-	if ($temp == 0) { printl $l, "Normal (15.625 us)"; }
-	elsif ($temp == 1) { printl $l, "Reduced (3.9 us)"; }
-	elsif ($temp == 2) { printl $l, "Reduced (7.8 us)"; }
-	elsif ($temp == 3) { printl $l, "Extended (31.3 us)"; }
-	elsif ($temp == 4) { printl $l, "Extended (62.5 us)"; }
-	elsif ($temp == 5) { printl $l, "Extended (125 us)"; }
-	else { printl $l, "Undefined!"; }
+	if ($temp == 0) { printl($l, "Normal (15.625 us)"); }
+	elsif ($temp == 1) { printl($l, "Reduced (3.9 us)"); }
+	elsif ($temp == 2) { printl($l, "Reduced (7.8 us)"); }
+	elsif ($temp == 3) { printl($l, "Extended (31.3 us)"); }
+	elsif ($temp == 4) { printl($l, "Extended (62.5 us)"); }
+	elsif ($temp == 5) { printl($l, "Extended (125 us)"); }
+	else { printl($l, "Undefined!"); }
 
 	$l = "Primary SDRAM Component Bank Config";
-	if ($bytes->[13] > 126) { printl $l, "Bank2 = 2 x Bank1"; }
-	else { printl $l, "No Bank2 OR Bank2 = Bank1 width"; }
+	if ($bytes->[13] > 126) { printl($l, "Bank2 = 2 x Bank1"); }
+	else { printl($l, "No Bank2 OR Bank2 = Bank1 width"); }
 
 	$l = "Primary SDRAM Component Widths";
 	$temp = $bytes->[13] & 0x7f;
-	if ($temp == 0) { printl $l, "Undefined!"; }
-	else { printl $l, $temp; }
+	if ($temp == 0) { printl($l, "Undefined!"); }
+	else { printl($l, $temp); }
 
 	$l = "Error Checking SDRAM Component Bank Config";
-	if ($bytes->[14] > 126) { printl $l, "Bank2 = 2 x Bank1"; }
-	else { printl $l, "No Bank2 OR Bank2 = Bank1 width"; }
+	if ($bytes->[14] > 126) { printl($l, "Bank2 = 2 x Bank1"); }
+	else { printl($l, "No Bank2 OR Bank2 = Bank1 width"); }
 
 	$l = "Error Checking SDRAM Component Widths";
 	$temp = $bytes->[14] & 0x7f;
-	if ($temp == 0) { printl $l, "Undefined!"; }
-	else { printl $l, $temp; }
+	if ($temp == 0) { printl($l, "Undefined!"); }
+	else { printl($l, $temp); }
 
 	$l = "Min Clock Delay for Back to Back Random Access";
-	if ($bytes->[15] == 0) { printl $l, "Undefined!"; }
-	else { printl $l, $bytes->[15]; }
+	if ($bytes->[15] == 0) { printl($l, "Undefined!"); }
+	else { printl($l, $bytes->[15]); }
 
 	$l = "Supported Burst Lengths";
 	my @array;
@@ -565,14 +565,14 @@ sub decode_sdr_sdram($)
 	push(@array, "Page") if ($bytes->[16] & 128);
 	if (@array) { $temp = join ', ', @array; }
 	else { $temp = "None"; }
-	printl $l, $temp;
+	printl($l, $temp);
 
 	$l = "Number of Device Banks";
-	if ($bytes->[17] == 0) { printl $l, "Undefined/Reserved!"; }
-	else { printl $l, $bytes->[17]; }
+	if ($bytes->[17] == 0) { printl($l, "Undefined/Reserved!"); }
+	else { printl($l, $bytes->[17]); }
 
 	$l = "Supported CAS Latencies";
-	printl $l, cas_latencies(@cas);
+	printl($l, cas_latencies(@cas));
 
 	$l = "Supported CS Latencies";
 	@array = ();
@@ -581,7 +581,7 @@ sub decode_sdr_sdram($)
 	}
 	if (@array) { $temp = join ', ', @array; }
 	else { $temp = "None"; }
-	printl $l, $temp;
+	printl($l, $temp);
 
 	$l = "Supported WE Latencies";
 	@array = ();
@@ -590,45 +590,45 @@ sub decode_sdr_sdram($)
 	}
 	if (@array) { $temp = join ', ', @array; }
 	else { $temp = "None"; }
-	printl $l, $temp;
+	printl($l, $temp);
 
 	if (@cas >= 1) {
 		$l = "Cycle Time at CAS ".$cas[$#cas];
-		printl $l, "$ctime ns";
+		printl($l, "$ctime ns");
 
 		$l = "Access Time at CAS ".$cas[$#cas];
 		$temp = ($bytes->[10] >> 4) + ($bytes->[10] & 0xf) * 0.1;
-		printl $l, "$temp ns";
+		printl($l, "$temp ns");
 	}
 
 	if (@cas >= 2 && spd_written(@$bytes[23..24])) {
 		$l = "Cycle Time at CAS ".$cas[$#cas-1];
 		$temp = $bytes->[23] >> 4;
-		if ($temp == 0) { printl $l, "Undefined!"; }
+		if ($temp == 0) { printl($l, "Undefined!"); }
 		else {
 			if ($temp < 4 ) { $temp += 15; }
-			printl $l, $temp + (($bytes->[23] & 0xf) * 0.1) . " ns";
+			printl($l, $temp + (($bytes->[23] & 0xf) * 0.1) . " ns");
 		}
 
 		$l = "Access Time at CAS ".$cas[$#cas-1];
 		$temp = $bytes->[24] >> 4;
-		if ($temp == 0) { printl $l, "Undefined!"; }
+		if ($temp == 0) { printl($l, "Undefined!"); }
 		else {
 			if ($temp < 4 ) { $temp += 15; }
-			printl $l, $temp + (($bytes->[24] & 0xf) * 0.1) . " ns";
+			printl($l, $temp + (($bytes->[24] & 0xf) * 0.1) . " ns");
 		}
 	}
 
 	if (@cas >= 3 && spd_written(@$bytes[25..26])) {
 		$l = "Cycle Time at CAS ".$cas[$#cas-2];
 		$temp = $bytes->[25] >> 2;
-		if ($temp == 0) { printl $l, "Undefined!"; }
-		else { printl $l, $temp + ($bytes->[25] & 0x3) * 0.25 . " ns"; }
+		if ($temp == 0) { printl($l, "Undefined!"); }
+		else { printl($l, $temp + ($bytes->[25] & 0x3) * 0.25 . " ns"); }
 
 		$l = "Access Time at CAS ".$cas[$#cas-2];
 		$temp = $bytes->[26] >> 2;
-		if ($temp == 0) { printl $l, "Undefined!"; }
-		else { printl $l, $temp + ($bytes->[26] & 0x3) * 0.25 . " ns"; }
+		if ($temp == 0) { printl($l, "Undefined!"); }
+		else { printl($l, $temp + ($bytes->[26] & 0x3) * 0.25 . " ns"); }
 	}
 
 	$l = "SDRAM Module Attributes";
@@ -642,7 +642,7 @@ sub decode_sdr_sdram($)
 	if ($bytes->[21] & 64) { $temp .= "Redundant Row Address\n"; }
 	if ($bytes->[21] & 128) { $temp .= "Undefined (bit 7)\n"; }
 	if ($bytes->[21] == 0) { $temp .= "(None Reported)\n"; }
-	printl $l, $temp;
+	printl($l, $temp);
 
 	$l = "SDRAM Device Attributes (General)";
 	$temp = "";
@@ -656,23 +656,23 @@ sub decode_sdr_sdram($)
 	else { $temp .= "Upper VCC Tolerance: 10%\n"; }
 	if ($bytes->[22] & 64) { $temp .= "Undefined (bit 6)\n"; }
 	if ($bytes->[22] & 128) { $temp .= "Undefined (bit 7)\n"; }
-	printl $l, $temp;
+	printl($l, $temp);
 
 	$l = "Minimum Row Precharge Time";
-	if ($bytes->[27] == 0) { printl $l, "Undefined!"; }
-	else { printl $l, "$bytes->[27] ns"; }
+	if ($bytes->[27] == 0) { printl($l, "Undefined!"); }
+	else { printl($l, "$bytes->[27] ns"); }
 
 	$l = "Row Active to Row Active Min";
-	if ($bytes->[28] == 0) { printl $l, "Undefined!"; }
-	else { printl $l, "$bytes->[28] ns"; }
+	if ($bytes->[28] == 0) { printl($l, "Undefined!"); }
+	else { printl($l, "$bytes->[28] ns"); }
 
 	$l = "RAS to CAS Delay";
-	if ($bytes->[29] == 0) { printl $l, "Undefined!"; }
-	else { printl $l, "$bytes->[29] ns"; }
+	if ($bytes->[29] == 0) { printl($l, "Undefined!"); }
+	else { printl($l, "$bytes->[29] ns"); }
 
 	$l = "Min RAS Pulse Width";
-	if ($bytes->[30] == 0) { printl $l, "Undefined!"; }
-	else { printl $l, "$bytes->[30] ns"; }
+	if ($bytes->[30] == 0) { printl($l, "Undefined!"); }
+	else { printl($l, "$bytes->[30] ns"); }
 
 	$l = "Row Densities";
 	$temp = "";
@@ -685,30 +685,30 @@ sub decode_sdr_sdram($)
 	if ($bytes->[31] & 64) { $temp .= "256 MByte\n"; }
 	if ($bytes->[31] & 128) { $temp .= "512 MByte\n"; }
 	if ($bytes->[31] == 0) { $temp .= "(Undefined! -- None Reported!)\n"; }
-	printl $l, $temp;
+	printl($l, $temp);
 
 	if (($bytes->[32] & 0xf) <= 9) {
 		$l = "Command and Address Signal Setup Time";
 		$temp = (($bytes->[32] & 0x7f) >> 4) + ($bytes->[32] & 0xf) * 0.1;
-		printl $l, (($bytes->[32] >> 7) ? -$temp : $temp) . " ns";
+		printl($l, (($bytes->[32] >> 7) ? -$temp : $temp) . " ns");
 	}
 
 	if (($bytes->[33] & 0xf) <= 9) {
 		$l = "Command and Address Signal Hold Time";
 		$temp = (($bytes->[33] & 0x7f) >> 4) + ($bytes->[33] & 0xf) * 0.1;
-		printl $l, (($bytes->[33] >> 7) ? -$temp : $temp) . " ns";
+		printl($l, (($bytes->[33] >> 7) ? -$temp : $temp) . " ns");
 	}
 
 	if (($bytes->[34] & 0xf) <= 9) {
 		$l = "Data Signal Setup Time";
 		$temp = (($bytes->[34] & 0x7f) >> 4) + ($bytes->[34] & 0xf) * 0.1;
-		printl $l, (($bytes->[34] >> 7) ? -$temp : $temp) . " ns";
+		printl($l, (($bytes->[34] >> 7) ? -$temp : $temp) . " ns");
 	}
 
 	if (($bytes->[35] & 0xf) <= 9) {
 		$l = "Data Signal Hold Time";
 		$temp = (($bytes->[35] & 0x7f) >> 4) + ($bytes->[35] & 0xf) * 0.1;
-		printl $l, (($bytes->[35] >> 7) ? -$temp : $temp) . " ns";
+		printl($l, (($bytes->[35] >> 7) ? -$temp : $temp) . " ns");
 	}
 }
 
@@ -720,12 +720,12 @@ sub decode_ddr_sdram($)
 
 # SPD revision
 	if ($bytes->[62] != 0xff) {
-		printl "SPD Revision", ($bytes->[62] >> 4) . "." .
-				       ($bytes->[62] & 0xf);
+		printl("SPD Revision", ($bytes->[62] >> 4) . "." .
+				       ($bytes->[62] & 0xf));
 	}
 
 # speed
-	prints "Memory Characteristics";
+	prints("Memory Characteristics");
 
 	$l = "Maximum module speed";
 	$temp = ($bytes->[9] >> 4) + ($bytes->[9] & 0xf) * 0.1;
@@ -736,7 +736,7 @@ sub decode_ddr_sdram($)
 	$pcclk += 100 if ($pcclk % 100) >= 50; # Round properly
 	$pcclk = $pcclk - ($pcclk % 100);
 	$ddrclk = int ($ddrclk);
-	printl $l, "${ddrclk}MHz (PC${pcclk})";
+	printl($l, "${ddrclk}MHz (PC${pcclk})");
 
 #size computation
 	my $k = 0;
@@ -748,10 +748,10 @@ sub decode_ddr_sdram($)
 	}
 
 	if ($ii > 0 && $ii <= 12 && $k > 0) {
-		printl "Size", ((1 << $ii) * $k) . " MB";
+		printl("Size", ((1 << $ii) * $k) . " MB");
 	} else {
-		printl "INVALID SIZE", $bytes->[3] . ", " . $bytes->[4] . ", " .
-				       $bytes->[5] . ", " . $bytes->[17];
+		printl("INVALID SIZE", $bytes->[3] . ", " . $bytes->[4] . ", " .
+				       $bytes->[5] . ", " . $bytes->[17]);
 	}
 
 	my $highestCAS = 0;
@@ -772,14 +772,14 @@ sub decode_ddr_sdram($)
 	$trp = ($bytes->[27] >> 2) + (($bytes->[27] & 3) * 0.25);
 	$tras = $bytes->[30];
 
-	printl "tCL-tRCD-tRP-tRAS",
+	printl("tCL-tRCD-tRP-tRAS",
 		$highestCAS . "-" .
 		ceil($trcd/$ctime) . "-" .
 		ceil($trp/$ctime) . "-" .
-		ceil($tras/$ctime);
+		ceil($tras/$ctime));
 
 # latencies
-	printl "Supported CAS Latencies", cas_latencies(keys %cas);
+	printl("Supported CAS Latencies", cas_latencies(keys %cas));
 
 	my @array;
 	for ($ii = 0; $ii < 7; $ii++) {
@@ -787,7 +787,7 @@ sub decode_ddr_sdram($)
 	}
 	if (@array) { $temp = join ', ', @array; }
 	else { $temp = "None"; }
-	printl "Supported CS Latencies", $temp;
+	printl("Supported CS Latencies", $temp);
 
 	@array = ();
 	for ($ii = 0; $ii < 7; $ii++) {
@@ -795,31 +795,31 @@ sub decode_ddr_sdram($)
 	}
 	if (@array) { $temp = join ', ', @array; }
 	else { $temp = "None"; }
-	printl "Supported WE Latencies", $temp;
+	printl("Supported WE Latencies", $temp);
 
 # timings
 	if (exists $cas{$highestCAS}) {
-		printl "Minimum Cycle Time at CAS $highestCAS",
-		       "$ctime ns";
+		printl("Minimum Cycle Time at CAS $highestCAS",
+		       "$ctime ns");
 
-		printl "Maximum Access Time at CAS $highestCAS",
-		       (($bytes->[10] >> 4) * 0.1 + ($bytes->[10] & 0xf) * 0.01) . " ns";
+		printl("Maximum Access Time at CAS $highestCAS",
+		       (($bytes->[10] >> 4) * 0.1 + ($bytes->[10] & 0xf) * 0.01) . " ns");
 	}
 
 	if (exists $cas{$highestCAS-0.5} && spd_written(@$bytes[23..24])) {
-		printl "Minimum Cycle Time at CAS ".($highestCAS-0.5),
-		       (($bytes->[23] >> 4) + ($bytes->[23] & 0xf) * 0.1) . " ns";
+		printl("Minimum Cycle Time at CAS ".($highestCAS-0.5),
+		       (($bytes->[23] >> 4) + ($bytes->[23] & 0xf) * 0.1) . " ns");
 
-		printl "Maximum Access Time at CAS ".($highestCAS-0.5),
-		       (($bytes->[24] >> 4) * 0.1 + ($bytes->[24] & 0xf) * 0.01) . " ns";
+		printl("Maximum Access Time at CAS ".($highestCAS-0.5),
+		       (($bytes->[24] >> 4) * 0.1 + ($bytes->[24] & 0xf) * 0.01) . " ns");
 	}
 
 	if (exists $cas{$highestCAS-1} && spd_written(@$bytes[25..26])) {
-		printl "Minimum Cycle Time at CAS ".($highestCAS-1),
-		       (($bytes->[25] >> 4) + ($bytes->[25] & 0xf) * 0.1) . " ns";
+		printl("Minimum Cycle Time at CAS ".($highestCAS-1),
+		       (($bytes->[25] >> 4) + ($bytes->[25] & 0xf) * 0.1) . " ns");
 
-		printl "Maximum Access Time at CAS ".($highestCAS-1),
-		       (($bytes->[26] >> 4) * 0.1 + ($bytes->[26] & 0xf) * 0.01) . " ns";
+		printl("Maximum Access Time at CAS ".($highestCAS-1),
+		       (($bytes->[26] >> 4) * 0.1 + ($bytes->[26] & 0xf) * 0.01) . " ns");
 	}
 
 # module attributes
@@ -827,7 +827,7 @@ sub decode_ddr_sdram($)
 		if (($bytes->[47] & 0x03) == 0x01) { $temp = "1.125\" to 1.25\""; }
 		elsif (($bytes->[47] & 0x03) == 0x02) { $temp = "1.7\""; }
 		elsif (($bytes->[47] & 0x03) == 0x03) { $temp = "Other"; }
-		printl "Module Height", $temp;
+		printl("Module Height", $temp);
 	}
 }
 
@@ -900,12 +900,12 @@ sub decode_ddr2_sdram($)
 
 # SPD revision
 	if ($bytes->[62] != 0xff) {
-		printl "SPD Revision", ($bytes->[62] >> 4) . "." .
-				       ($bytes->[62] & 0xf);
+		printl("SPD Revision", ($bytes->[62] >> 4) . "." .
+				       ($bytes->[62] & 0xf));
 	}
 
 # speed
-	prints "Memory Characteristics";
+	prints("Memory Characteristics");
 
 	$l = "Maximum module speed";
 	$ctime = ddr2_sdram_ctime($bytes->[9]);
@@ -916,7 +916,7 @@ sub decode_ddr2_sdram($)
 	# Round down to comply with Jedec
 	$pcclk = $pcclk - ($pcclk % 100);
 	$ddrclk = int ($ddrclk);
-	printl $l, "${ddrclk}MHz (PC2-${pcclk})";
+	printl($l, "${ddrclk}MHz (PC2-${pcclk})");
 
 #size computation
 	my $k = 0;
@@ -926,37 +926,37 @@ sub decode_ddr2_sdram($)
 	$k = (($bytes->[5] & 0x7) + 1) * $bytes->[17];
 
 	if($ii > 0 && $ii <= 12 && $k > 0) {
-		printl "Size", ((1 << $ii) * $k) . " MB";
+		printl("Size", ((1 << $ii) * $k) . " MB");
 	} else {
-		printl "INVALID SIZE", $bytes->[3] . "," . $bytes->[4] . "," .
-				       $bytes->[5] . "," . $bytes->[17];
+		printl("INVALID SIZE", $bytes->[3] . "," . $bytes->[4] . "," .
+				       $bytes->[5] . "," . $bytes->[17]);
 	}
 
-	printl "Banks x Rows x Columns x Bits",
-	       join(' x ', $bytes->[17], $bytes->[3], $bytes->[4], $bytes->[6]);
-	printl "Ranks", ($bytes->[5] & 7) + 1;
+	printl("Banks x Rows x Columns x Bits",
+	       join(' x ', $bytes->[17], $bytes->[3], $bytes->[4], $bytes->[6]));
+	printl("Ranks", ($bytes->[5] & 7) + 1);
 
-	printl "SDRAM Device Width", $bytes->[13]." bits";
+	printl("SDRAM Device Width", $bytes->[13]." bits");
 
 	my @heights = ('< 25.4', '25.4', '25.4 - 30.0', '30.0', '30.5', '> 30.5');
-	printl "Module Height", $heights[$bytes->[5] >> 5]." mm";
+	printl("Module Height", $heights[$bytes->[5] >> 5]." mm");
 
 	my @suptypes = ddr2_module_types($bytes->[20]);
-	printl "Module Type".(@suptypes > 1 ? 's' : ''), join(', ', @suptypes);
+	printl("Module Type".(@suptypes > 1 ? 's' : ''), join(', ', @suptypes));
 
-	printl "DRAM Package", $bytes->[5] & 0x10 ? "Stack" : "Planar";
+	printl("DRAM Package", $bytes->[5] & 0x10 ? "Stack" : "Planar");
 
 	my @volts = ("TTL (5V Tolerant)", "LVTTL", "HSTL 1.5V",
 		     "SSTL 3.3V", "SSTL 2.5V", "SSTL 1.8V", "TBD");
-	printl "Voltage Interface Level", $volts[$bytes->[8]];
+	printl("Voltage Interface Level", $volts[$bytes->[8]]);
 
-	printl "Refresh Rate", ddr2_refresh_rate($bytes->[12]);
+	printl("Refresh Rate", ddr2_refresh_rate($bytes->[12]));
 
 	my @burst;
 	push @burst, 4 if ($bytes->[16] & 4);
 	push @burst, 8 if ($bytes->[16] & 8);
 	$burst[0] = 'None' if !@burst;
-	printl "Supported Burst Lengths", join(', ', @burst);
+	printl("Supported Burst Lengths", join(', ', @burst));
 
 	my $highestCAS = 0;
 	my %cas;
@@ -975,65 +975,65 @@ sub decode_ddr2_sdram($)
 	$trp = ($bytes->[27] >> 2) + (($bytes->[27] & 3) * 0.25);
 	$tras = $bytes->[30];
 
-	printl "tCL-tRCD-tRP-tRAS",
+	printl("tCL-tRCD-tRP-tRAS",
 		$highestCAS . "-" .
 		ceil($trcd/$ctime) . "-" .
 		ceil($trp/$ctime) . "-" .
-		ceil($tras/$ctime);
+		ceil($tras/$ctime));
 
 # latencies
-	printl "Supported CAS Latencies (tCL)", cas_latencies(keys %cas);
+	printl("Supported CAS Latencies (tCL)", cas_latencies(keys %cas));
 
 # timings
 	if (exists $cas{$highestCAS}) {
-		printl "Minimum Cycle Time at CAS $highestCAS (tCK min)",
-		       tns($ctime);
-		printl "Maximum Access Time at CAS $highestCAS (tAC)",
-		       tns(ddr2_sdram_atime($bytes->[10]));
+		printl("Minimum Cycle Time at CAS $highestCAS (tCK min)",
+		       tns($ctime));
+		printl("Maximum Access Time at CAS $highestCAS (tAC)",
+		       tns(ddr2_sdram_atime($bytes->[10])));
 	}
 
 	if (exists $cas{$highestCAS-1} && spd_written(@$bytes[23..24])) {
-		printl "Minimum Cycle Time at CAS ".($highestCAS-1),
-		       tns(ddr2_sdram_ctime($bytes->[23]));
-		printl "Maximum Access Time at CAS ".($highestCAS-1),
-		       tns(ddr2_sdram_atime($bytes->[24]));
+		printl("Minimum Cycle Time at CAS ".($highestCAS-1),
+		       tns(ddr2_sdram_ctime($bytes->[23])));
+		printl("Maximum Access Time at CAS ".($highestCAS-1),
+		       tns(ddr2_sdram_atime($bytes->[24])));
 	}
 
 	if (exists $cas{$highestCAS-2} && spd_written(@$bytes[25..26])) {
-		printl "Minimum Cycle Time at CAS ".($highestCAS-2),
-		       tns(ddr2_sdram_ctime($bytes->[25]));
-		printl "Maximum Access Time at CAS ".($highestCAS-2),
-		       tns(ddr2_sdram_atime($bytes->[26]));
+		printl("Minimum Cycle Time at CAS ".($highestCAS-2),
+		       tns(ddr2_sdram_ctime($bytes->[25])));
+		printl("Maximum Access Time at CAS ".($highestCAS-2),
+		       tns(ddr2_sdram_atime($bytes->[26])));
 	}
-	printl "Maximum Cycle Time (tCK max)",
-	       tns(ddr2_sdram_ctime($bytes->[43]));
+	printl("Maximum Cycle Time (tCK max)",
+	       tns(ddr2_sdram_ctime($bytes->[43])));
 
 # more timing information
 	prints("Timing Parameters");
-	printl "Address/Command Setup Time Before Clock (tIS)",
-	       tns(ddr2_sdram_atime($bytes->[32]));
-	printl "Address/Command Hold Time After Clock (tIH)",
-	       tns(ddr2_sdram_atime($bytes->[33]));
-	printl "Data Input Setup Time Before Strobe (tDS)",
-	       tns(ddr2_sdram_atime($bytes->[34]));
-	printl "Data Input Hold Time After Strobe (tDH)",
-	       tns(ddr2_sdram_atime($bytes->[35]));
-	printl "Minimum Row Precharge Delay (tRP)", tns($trp);
-	printl "Minimum Row Active to Row Active Delay (tRRD)",
-	       tns($bytes->[28]/4);
-	printl "Minimum RAS# to CAS# Delay (tRCD)", tns($trcd);
-	printl "Minimum RAS# Pulse Width (tRAS)", tns($tras);
-	printl "Write Recovery Time (tWR)", tns($bytes->[36]/4);
-	printl "Minimum Write to Read CMD Delay (tWTR)", tns($bytes->[37]/4);
-	printl "Minimum Read to Pre-charge CMD Delay (tRTP)", tns($bytes->[38]/4);
-	printl "Minimum Active to Auto-refresh Delay (tRC)",
-	       tns(ddr2_sdram_rtime($bytes->[41], 0, ($bytes->[40] >> 4) & 7));
-	printl "Minimum Recovery Delay (tRFC)",
+	printl("Address/Command Setup Time Before Clock (tIS)",
+	       tns(ddr2_sdram_atime($bytes->[32])));
+	printl("Address/Command Hold Time After Clock (tIH)",
+	       tns(ddr2_sdram_atime($bytes->[33])));
+	printl("Data Input Setup Time Before Strobe (tDS)",
+	       tns(ddr2_sdram_atime($bytes->[34])));
+	printl("Data Input Hold Time After Strobe (tDH)",
+	       tns(ddr2_sdram_atime($bytes->[35])));
+	printl("Minimum Row Precharge Delay (tRP)", tns($trp));
+	printl("Minimum Row Active to Row Active Delay (tRRD)",
+	       tns($bytes->[28]/4));
+	printl("Minimum RAS# to CAS# Delay (tRCD)", tns($trcd));
+	printl("Minimum RAS# Pulse Width (tRAS)", tns($tras));
+	printl("Write Recovery Time (tWR)", tns($bytes->[36]/4));
+	printl("Minimum Write to Read CMD Delay (tWTR)", tns($bytes->[37]/4));
+	printl("Minimum Read to Pre-charge CMD Delay (tRTP)", tns($bytes->[38]/4));
+	printl("Minimum Active to Auto-refresh Delay (tRC)",
+	       tns(ddr2_sdram_rtime($bytes->[41], 0, ($bytes->[40] >> 4) & 7)));
+	printl("Minimum Recovery Delay (tRFC)",
 	       tns(ddr2_sdram_rtime($bytes->[42], $bytes->[40] & 1,
-				    ($bytes->[40] >> 1) & 7));
-	printl "Maximum DQS to DQ Skew (tDQSQ)", tns($bytes->[44]/100);
-	printl "Maximum Read Data Hold Skew (tQHS)", tns($bytes->[45]/100);
-	printl "PLL Relock Time", $bytes->[46] . " us" if ($bytes->[46]);
+				    ($bytes->[40] >> 1) & 7)));
+	printl("Maximum DQS to DQ Skew (tDQSQ)", tns($bytes->[44]/100));
+	printl("Maximum Read Data Hold Skew (tQHS)", tns($bytes->[45]/100));
+	printl("PLL Relock Time", $bytes->[46] . " us") if ($bytes->[46]);
 }
 
 # Parameter: EEPROM bytes 0-127 (using 3-76)
@@ -1047,23 +1047,23 @@ sub decode_ddr3_sdram($)
 	my @module_types = ("Undefined", "RDIMM", "UDIMM", "SO-DIMM",
 			    "Micro-DIMM", "Mini-RDIMM", "Mini-UDIMM");
 
-	printl "Module Type", ($bytes->[3] <= $#module_types) ?
+	printl("Module Type", ($bytes->[3] <= $#module_types) ?
 					$module_types[$bytes->[3]] :
-					sprint("Reserved (0x%.2X)", $bytes->[3]);
+					sprint("Reserved (0x%.2X)", $bytes->[3]));
 
 # speed
-	prints "Memory Characteristics";
+	prints("Memory Characteristics");
 
 	$l = "Fine time base";
 	my $dividend = ($bytes->[9] >> 4) & 15;
 	my $divisor  = $bytes->[9] & 15;
-	printl $l, sprintf("%.3f", $dividend / $divisor) . " ps";
+	printl($l, sprintf("%.3f", $dividend / $divisor) . " ps");
 
 	$l = "Medium time base";
 	$dividend = $bytes->[10];
 	$divisor  = $bytes->[11];
 	my $mtb = $dividend / $divisor;
-	printl $l, tns3($mtb);
+	printl($l, tns3($mtb));
 
 	$l = "Maximum module speed";
 	$ctime = $bytes->[12] * $mtb;
@@ -1071,7 +1071,7 @@ sub decode_ddr3_sdram($)
 	my $tbits = 1 << (($bytes->[8] & 7) + 3);
 	my $pcclk = int ($ddrclk * $tbits / 8);
 	$ddrclk = int ($ddrclk);
-	printl $l, "${ddrclk}MHz (PC3-${pcclk})";
+	printl($l, "${ddrclk}MHz (PC3-${pcclk})");
 
 # Size computation
 
@@ -1080,16 +1080,16 @@ sub decode_ddr3_sdram($)
 	$cap   -=  ($bytes->[7]       & 7)  + 2;
 	$cap   -= 20 + 3;
 	my $k   = (($bytes->[7] >> 3) & 31) + 1;
-	printl "Size", ((1 << $cap) * $k) . " MB";
+	printl("Size", ((1 << $cap) * $k) . " MB");
 
-	printl "Banks x Rows x Columns x Bits",
+	printl("Banks x Rows x Columns x Bits",
 	       join(' x ', 1 << ((($bytes->[4] >> 4) &  7) +  3),
 			   ((($bytes->[5] >> 3) & 31) + 12),
 			   ( ($bytes->[5]       &  7) +  9),
-			   ( 1 << (($bytes->[8] &  7) + 3)) );
-	printl "Ranks", $k;
+			   ( 1 << (($bytes->[8] &  7) + 3)) ));
+	printl("Ranks", $k);
 
-	printl "SDRAM Device Width", (1 << (($bytes->[7] & 7) + 2))." bits";
+	printl("SDRAM Device Width", (1 << (($bytes->[7] & 7) + 2))." bits");
 
 	my $taa;
 	my $trcd;
@@ -1101,7 +1101,7 @@ sub decode_ddr3_sdram($)
 	$trp  = int($bytes->[20] / $bytes->[12]);
 	$tras = int((($bytes->[21] >> 4) * 256 + $bytes->[22]) / $bytes->[12]);
 
-	printl "tCL-tRCD-tRP-tRAS", join("-", $taa, $trcd, $trp, $tras);
+	printl("tCL-tRCD-tRP-tRAS", join("-", $taa, $trcd, $trp, $tras));
 
 # latencies
 	my $highestCAS = 0;
@@ -1114,27 +1114,27 @@ sub decode_ddr3_sdram($)
 			$cas{$highestCAS}++;
 		}
 	}
-	printl "Supported CAS Latencies (tCL)", cas_latencies(keys %cas);
+	printl("Supported CAS Latencies (tCL)", cas_latencies(keys %cas));
 
 # more timing information
-	prints "Timing Parameters" ;
+	prints("Timing Parameters");
 
-	printl "Minimum Write Recovery time (tWR)", tns3($bytes->[17] * $mtb);
-	printl "Minimum Row Active to Row Active Delay (tRRD)",
-		tns3($bytes->[19] * $mtb);
-	printl "Minimum Active to Auto-Refresh Delay (tRC)",
-		tns3((((($bytes->[21] >> 4) & 15) << 8) + $bytes->[23]) * $mtb);
-	printl "Minimum Recovery Delay (tRFC)", 
-		tns3((($bytes->[25] << 8) + $bytes->[24]) * $mtb);
-	printl "Minimum Write to Read CMD Delay (tWTR)",
-		tns3($bytes->[26] * $mtb);
-	printl "Minimum Read to Pre-charge CMD Delay (tRTP)",
-		tns3($bytes->[27] * $mtb);
-	printl "Minimum Four Activate Window Delay (tFAW)",
-		tns3(((($bytes->[28] & 15) << 8) + $bytes->[29]) * $mtb);
+	printl("Minimum Write Recovery time (tWR)", tns3($bytes->[17] * $mtb));
+	printl("Minimum Row Active to Row Active Delay (tRRD)",
+		tns3($bytes->[19] * $mtb));
+	printl("Minimum Active to Auto-Refresh Delay (tRC)",
+		tns3((((($bytes->[21] >> 4) & 15) << 8) + $bytes->[23]) * $mtb));
+	printl("Minimum Recovery Delay (tRFC)", 
+		tns3((($bytes->[25] << 8) + $bytes->[24]) * $mtb));
+	printl("Minimum Write to Read CMD Delay (tWTR)",
+		tns3($bytes->[26] * $mtb));
+	printl("Minimum Read to Pre-charge CMD Delay (tRTP)",
+		tns3($bytes->[27] * $mtb));
+	printl("Minimum Four Activate Window Delay (tFAW)",
+		tns3(((($bytes->[28] & 15) << 8) + $bytes->[29]) * $mtb));
 
 # miscellaneous stuff
-	prints "Optional Features";
+	prints("Optional Features");
 
 	my $volts = "1.5V";
 	if ($bytes->[6] & 1) {
@@ -1146,34 +1146,34 @@ sub decode_ddr3_sdram($)
 	if ($bytes->[6] & 4) {
 		$volts .= ", 1.2X V";
 	}
-	printl "Operable voltages", $volts;
-	printl "RZQ/6 supported?", ($bytes->[30] & 1) ? "Yes" : "No";
-	printl "RZQ/7 supported?", ($bytes->[30] & 2) ? "Yes" : "No";
-	printl "DLL-Off Mode supported?", ($bytes->[30] & 128) ? "Yes" : "No";
-	printl "Operating temperature range", sprintf "0-%dC",
-		($bytes->[31] & 1) ? 95 : 85;
-	printl "Refresh Rate in extended temp range",
-		($bytes->[31] & 2) ? "2X" : "1X";
-	printl "Auto Self-Refresh?", ($bytes->[31] & 4) ? "Yes" : "No";
-	printl "On-Die Thermal Sensor readout?",
-		($bytes->[31] & 8) ? "Yes" : "No";
-	printl "Partial Array Self-Refresh?",
-		($bytes->[31] & 128) ? "Yes" : "No";
-	printl "Thermal Sensor Accuracy",
+	printl("Operable voltages", $volts);
+	printl("RZQ/6 supported?", ($bytes->[30] & 1) ? "Yes" : "No");
+	printl("RZQ/7 supported?", ($bytes->[30] & 2) ? "Yes" : "No");
+	printl("DLL-Off Mode supported?", ($bytes->[30] & 128) ? "Yes" : "No");
+	printl("Operating temperature range", sprintf "0-%dC",
+		($bytes->[31] & 1) ? 95 : 85);
+	printl("Refresh Rate in extended temp range",
+		($bytes->[31] & 2) ? "2X" : "1X");
+	printl("Auto Self-Refresh?", ($bytes->[31] & 4) ? "Yes" : "No");
+	printl("On-Die Thermal Sensor readout?",
+		($bytes->[31] & 8) ? "Yes" : "No");
+	printl("Partial Array Self-Refresh?",
+		($bytes->[31] & 128) ? "Yes" : "No");
+	printl("Thermal Sensor Accuracy",
 		($bytes->[32] & 128) ? sprintf($bytes->[32] & 127) :
-					"Not implemented";
-	printl "SDRAM Device Type",
+					"Not implemented");
+	printl("SDRAM Device Type",
 		($bytes->[33] & 128) ? sprintf($bytes->[33] & 127) :
-					"Standard Monolithic";
+					"Standard Monolithic");
 	if ($bytes->[3] >= 1 && $bytes->[3] <= 6) {
 
-		prints "Physical Characteristics";
-		printl "Module Height (mm)", ($bytes->[60] & 31) + 15;
-		printl "Module Thickness (mm)", sprintf("%d front, %d back",
+		prints("Physical Characteristics");
+		printl("Module Height (mm)", ($bytes->[60] & 31) + 15);
+		printl("Module Thickness (mm)", sprintf("%d front, %d back",
 						($bytes->[61] & 15) + 1, 
-						(($bytes->[61] >> 4) & 15) +1);
-		printl "Module Width (mm)", ($bytes->[3] <= 2) ? 133.5 :
-					($bytes->[3] == 3) ? 67.6 : "TBD";
+						(($bytes->[61] >> 4) & 15) +1));
+		printl("Module Width (mm)", ($bytes->[3] <= 2) ? 133.5 :
+					($bytes->[3] == 3) ? 67.6 : "TBD");
 
 		my $alphabet = "ABCDEFGHJKLMNPRTUVWY";
 		my $ref = $bytes->[62] & 31;
@@ -1193,28 +1193,28 @@ sub decode_ddr3_sdram($)
 					    (substr $alphabet, $ref, 1);
 			}
 		}
-		printl "Module Reference Card", $ref_card;
+		printl("Module Reference Card", $ref_card);
 	}
 	if ($bytes->[3] == 1 || $bytes->[3] == 5) {
-		prints "Registered DIMM";
+		prints("Registered DIMM");
 
 		my @rows = ("Undefined", 1, 2, 4);
-		printl "# DRAM Rows", $rows[($bytes->[63] >> 2) & 3];
-		printl "# Registers", $rows[$bytes->[63] & 3];
-		printl "Register manufacturer",
-			manufacturer_ddr3($bytes->[65], $bytes->[66]);
-		printl "Register device type",
+		printl("# DRAM Rows", $rows[($bytes->[63] >> 2) & 3]);
+		printl("# Registers", $rows[$bytes->[63] & 3]);
+		printl("Register manufacturer",
+			manufacturer_ddr3($bytes->[65], $bytes->[66]));
+		printl("Register device type",
 				(($bytes->[68] & 7) == 0) ? "SSTE32882" :
-					"Undefined";
-		printl "Register revision", sprintf("0x%.2X", $bytes->[67]);
-		printl "Heat spreader characteristics",
+					"Undefined");
+		printl("Register revision", sprintf("0x%.2X", $bytes->[67]));
+		printl("Heat spreader characteristics",
 				($bytes->[64] < 128) ? "Not incorporated" :
-					sprintf("%.2X", ($bytes->[64] & 127));
+					sprintf("%.2X", ($bytes->[64] & 127)));
 		my $regs;
 		for (my $i = 0; $i < 8; $i++) {
 			$regs = sprintf("SSTE32882 RC%d/RC%d",
 					$i * 2, $i * 2 + 1);
-			printl $regs, sprintf("%.2X", $bytes->[$i + 69]);
+			printl($regs, sprintf("%.2X", $bytes->[$i + 69]));
 		}
 	}
 }
@@ -1225,17 +1225,17 @@ sub decode_direct_rambus($)
 	my $bytes = shift;
 
 #size computation
-	prints "Memory Characteristics";
+	prints("Memory Characteristics");
 
 	my $ii;
 
 	$ii = ($bytes->[4] & 0x0f) + ($bytes->[4] >> 4) + ($bytes->[5] & 0x07) - 13;
 
 	if ($ii > 0 && $ii < 16) {
-		printl "Size", (1 << $ii) . " MB";
+		printl("Size", (1 << $ii) . " MB");
 	} else {
-		printl "INVALID SIZE", sprintf("0x%02x, 0x%02x",
-					       $bytes->[4], $bytes->[5]);
+		printl("INVALID SIZE", sprintf("0x%02x, 0x%02x",
+					       $bytes->[4], $bytes->[5]));
 	}
 }
 
@@ -1245,17 +1245,17 @@ sub decode_rambus($)
 	my $bytes = shift;
 
 #size computation
-	prints "Memory Characteristics";
+	prints("Memory Characteristics");
 
 	my $ii;
 
 	$ii = ($bytes->[3] & 0x0f) + ($bytes->[3] >> 4) + ($bytes->[5] & 0x07) - 13;
 
 	if ($ii > 0 && $ii < 16) {
-		printl "Size", (1 << $ii) . " MB";
+		printl("Size", (1 << $ii) . " MB");
 	} else {
-		printl "INVALID SIZE", sprintf("0x%02x, 0x%02x",
-					       $bytes->[3], $bytes->[5]);
+		printl("INVALID SIZE", sprintf("0x%02x, 0x%02x",
+					       $bytes->[3], $bytes->[5]));
 	}
 }
 
@@ -1375,14 +1375,14 @@ sub decode_intel_spec_freq($)
 	my $bytes = shift;
 	my ($l, $temp);
 
-	prints "Intel Specification";
+	prints("Intel Specification");
 
 	$l = "Frequency";
 	if ($bytes->[126] == 0x66) { $temp = "66MHz"; }
 	elsif ($bytes->[126] == 100) { $temp = "100MHz or 133MHz"; }
 	elsif ($bytes->[126] == 133) { $temp = "133MHz"; }
 	else { $temp = "Undefined!"; }
-	printl $l, $temp;
+	printl($l, $temp);
 
 	$l = "Details for 100MHz Support";
 	$temp = "";
@@ -1397,7 +1397,7 @@ sub decode_intel_spec_freq($)
 	if ($bytes->[127] & 128) { $temp .= "CLK 0 Connected\n"; }
 	if (($bytes->[127] & 192) == 192) { $temp .= "Double-sided DIMM\n"; }
 	elsif (($bytes->[127] & 192) != 0) { $temp .= "Single-sided DIMM\n"; }
-	printl $l, $temp;
+	printl($l, $temp);
 }
 
 # Read various hex dump style formats: hexdump, hexdump -C, i2cdump, eeprog
@@ -1452,7 +1452,7 @@ sub read_hexdump($)
 	}
 	close F;
 	$header and die "Unable to parse any data from hexdump '$_[0]'";
-	$word and printc "Using $use_hexdump 16-bit hex dump";
+	$word and printc("Using $use_hexdump 16-bit hex dump");
 
 	# Cache the data for later use
 	$hexdump_cache{$_[0]} = \@bytes;
@@ -1624,10 +1624,10 @@ if ($opt_html && !$opt_bodyonly) {
 		  "</head><body>\n";
 }
 
-printc "decode-dimms version $revision";
-printh 'Memory Serial Presence Detect Decoder',
+printc("decode-dimms version $revision");
+printh('Memory Serial Presence Detect Decoder',
 'By Philip Edelbrock, Christian Zuckschwerdt, Burkart Lingner,
-Jean Delvare, Trent Piepho and others';
+Jean Delvare, Trent Piepho and others');
 
 
 my $dimm_count = 0;
@@ -1663,27 +1663,27 @@ for my $i ( 0 .. $#dimm_list ) {
 		$dimm_count++;
 
 		print "<b><u>" if $opt_html;
-		printl2 "\n\nDecoding EEPROM",
+		printl2("\n\nDecoding EEPROM",
 		        $use_hexdump ? $dimm_list[$i] : ($use_sysfs ?
 			"/sys/bus/i2c/drivers/eeprom/$dimm_list[$i]" :
-			"/proc/sys/dev/sensors/$dimm_list[$i]");
+			"/proc/sys/dev/sensors/$dimm_list[$i]"));
 		print "</u></b>" if $opt_html;
 		print "<table border=1>\n" if $opt_html;
 		if (!$use_hexdump) {
 			if (($use_sysfs && /^[^-]+-([^-]+)$/)
 			 || (!$use_sysfs && /^[^-]+-[^-]+-[^-]+-([^-]+)$/)) {
 				my $dimm_num = $1 - 49;
-				printl "Guessing DIMM is in", "bank $dimm_num";
+				printl("Guessing DIMM is in", "bank $dimm_num");
 			}
 		}
 
 # Decode first 3 bytes (0-2)
-		prints "SPD EEPROM Information";
+		prints("SPD EEPROM Information");
 
-		printl $l, ($chk_valid ?
+		printl($l, ($chk_valid ?
 			sprintf("OK (%s)", $chk_calc) :
 			sprintf("Bad\n(found %s, calculated %s)",
-				$chk_spd, $chk_calc));
+				$chk_spd, $chk_calc)));
 
 		my $temp;
 		if ($is_rambus) {
@@ -1691,11 +1691,11 @@ for my $i ( 0 .. $#dimm_list ) {
 			elsif ($bytes[0] == 2) { $temp = "1.0"; }
 			elsif ($bytes[0] == 0) { $temp = "Invalid"; }
 			else { $temp = "Reserved"; }
-			printl "SPD Revision", $temp;
+			printl("SPD Revision", $temp);
 		} else {
 			my ($spd_size, $spd_used) = spd_sizes(\@bytes);
-			printl "# of bytes written to SDRAM EEPROM", $spd_used;
-			printl "Total number of bytes in EEPROM", $spd_size;
+			printl("# of bytes written to SDRAM EEPROM", $spd_used);
+			printl("Total number of bytes in EEPROM", $spd_size);
 
 			# If there's more data than what we've read, let's
 			# read it now.  DDR3 will need this data.
@@ -1724,7 +1724,7 @@ for my $i ( 0 .. $#dimm_list ) {
 				$type = $type_list[$bytes[2]];
 			}
 		}
-		printl $l, $type;
+		printl($l, $type);
 
 # Decode next 61 bytes (3-63, depend on memory type)
 		$decode_callback{$type}->(\@bytes)
@@ -1750,6 +1750,6 @@ for my $i ( 0 .. $#dimm_list ) {
 		print "</table>\n" if $opt_html;
 	}
 }
-printl2 "\n\nNumber of SDRAM DIMMs detected and decoded", $dimm_count;
+printl2("\n\nNumber of SDRAM DIMMs detected and decoded", $dimm_count);
 
 print "</body></html>\n" if ($opt_html && !$opt_bodyonly);
