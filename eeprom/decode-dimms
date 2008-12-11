@@ -1289,27 +1289,36 @@ sub manufacture_date($$)
 sub decode_ddr3_mfg_data($)
 {
 	my $bytes = shift;
+	my ($l, $temp);
 
 	prints "Manufacturer Data";
 
 	printl "Module Manufacturer",
 		manufacturer_ddr3($bytes->[117], $bytes->[118]);
 
-	printl "DRAM Manufacturer",
-		manufacturer_ddr3($bytes->[148], $bytes->[149]);
+	if (spd_written(@{$bytes}[148..149])) {
+		printl "DRAM Manufacturer",
+			manufacturer_ddr3($bytes->[148], $bytes->[149]);
+	}
 
-	my $l = "Manufacturing Location";
-	my $temp = (chr($bytes->[119]) =~ m/^[\w\d]$/) ? chr($bytes->[119])
-	      : sprintf("0x%.2X", $bytes->[119]);
-	printl $l, $temp;
+	if (spd_written($bytes->[119])) {
+		$l = "Manufacturing Location Code";
+		my $temp = (chr($bytes->[119]) =~ m/^[\w\d]$/) ? chr($bytes->[119])
+		      : sprintf("0x%.2X", $bytes->[119]);
+		printl $l, $temp;
+	}
 
-	$l = "Manufacturing Date";
-	printl $l, manufacture_date($bytes->[120], $bytes->[121]);
+	if (spd_written(@{$bytes}[120..121])) {
+		$l = "Manufacturing Date";
+		printl $l, manufacture_date($bytes->[120], $bytes->[121]);
+	}
 
-	$l = "Assembly Serial Number";
-	$temp = sprintf("0x%02X%02X%02X%02X\n", $bytes->[122], $bytes->[123],
-		$bytes->[124], $bytes->[125]);
-	printl $l, $temp;
+	if (spd_written(@{$bytes}[122..125])) {
+		$l = "Assembly Serial Number";
+		$temp = sprintf("0x%02X%02X%02X%02X\n", $bytes->[122], $bytes->[123],
+			$bytes->[124], $bytes->[125]);
+		printl $l, $temp;
+	}
 
 	$l = "Part Number";
 	$temp = "";
@@ -1318,9 +1327,11 @@ sub decode_ddr3_mfg_data($)
 	};
 	printl $l, $temp;
 
-	$l = "Revision";
-	$temp = sprintf("0x%02X%02X\n", $bytes->[146], $bytes->[147]);
-	printl $l, $temp;
+	if (spd_written(@{$bytes}[146..147])) {
+		$l = "Revision Code";
+		$temp = sprintf("0x%02X%02X\n", $bytes->[146], $bytes->[147]);
+		printl $l, $temp;
+	}
 }
 
 # Parameter: EEPROM bytes 0-127 (using 64-98)
