@@ -709,7 +709,7 @@ sub decode_sdr_sdram($)
 sub decode_ddr_sdram($)
 {
 	my $bytes = shift;
-	my ($l, $temp);
+	my $temp;
 
 # SPD revision
 	if ($bytes->[62] != 0xff) {
@@ -720,7 +720,6 @@ sub decode_ddr_sdram($)
 # speed
 	prints("Memory Characteristics");
 
-	$l = "Maximum module speed";
 	$temp = ($bytes->[9] >> 4) + ($bytes->[9] & 0xf) * 0.1;
 	my $ddrclk = 2 * (1000 / $temp);
 	my $tbits = ($bytes->[7] * 256) + $bytes->[6];
@@ -729,7 +728,7 @@ sub decode_ddr_sdram($)
 	$pcclk += 100 if ($pcclk % 100) >= 50; # Round properly
 	$pcclk = $pcclk - ($pcclk % 100);
 	$ddrclk = int ($ddrclk);
-	printl($l, "${ddrclk}MHz (PC${pcclk})");
+	printl("Maximum module speed", "${ddrclk}MHz (PC${pcclk})");
 
 #size computation
 	my $k = 0;
@@ -888,7 +887,7 @@ sub ddr2_refresh_rate($)
 sub decode_ddr2_sdram($)
 {
 	my $bytes = shift;
-	my ($l, $temp);
+	my $temp;
 	my $ctime;
 
 # SPD revision
@@ -900,7 +899,6 @@ sub decode_ddr2_sdram($)
 # speed
 	prints("Memory Characteristics");
 
-	$l = "Maximum module speed";
 	$ctime = ddr2_sdram_ctime($bytes->[9]);
 	my $ddrclk = 2 * (1000 / $ctime);
 	my $tbits = ($bytes->[7] * 256) + $bytes->[6];
@@ -909,7 +907,7 @@ sub decode_ddr2_sdram($)
 	# Round down to comply with Jedec
 	$pcclk = $pcclk - ($pcclk % 100);
 	$ddrclk = int ($ddrclk);
-	printl($l, "${ddrclk}MHz (PC2-${pcclk})");
+	printl("Maximum module speed", "${ddrclk}MHz (PC2-${pcclk})");
 
 #size computation
 	my $k = 0;
@@ -1033,7 +1031,6 @@ sub decode_ddr2_sdram($)
 sub decode_ddr3_sdram($)
 {
 	my $bytes = shift;
-	my $l;
 	my $temp;
 	my $ctime;
 
@@ -1047,24 +1044,21 @@ sub decode_ddr3_sdram($)
 # speed
 	prints("Memory Characteristics");
 
-	$l = "Fine time base";
 	my $dividend = ($bytes->[9] >> 4) & 15;
 	my $divisor  = $bytes->[9] & 15;
-	printl($l, sprintf("%.3f", $dividend / $divisor) . " ps");
+	printl("Fine time base", sprintf("%.3f", $dividend / $divisor) . " ps");
 
-	$l = "Medium time base";
 	$dividend = $bytes->[10];
 	$divisor  = $bytes->[11];
 	my $mtb = $dividend / $divisor;
-	printl($l, tns3($mtb));
+	printl("Medium time base", tns3($mtb));
 
-	$l = "Maximum module speed";
 	$ctime = $bytes->[12] * $mtb;
 	my $ddrclk = 2 * (1000 / $ctime);
 	my $tbits = 1 << (($bytes->[8] & 7) + 3);
 	my $pcclk = int ($ddrclk * $tbits / 8);
 	$ddrclk = int ($ddrclk);
-	printl($l, "${ddrclk}MHz (PC3-${pcclk})");
+	printl("Maximum module speed", "${ddrclk}MHz (PC3-${pcclk})");
 
 # Size computation
 
@@ -1366,18 +1360,16 @@ sub decode_manufacturing_information($)
 sub decode_intel_spec_freq($)
 {
 	my $bytes = shift;
-	my ($l, $temp);
+	my $temp;
 
 	prints("Intel Specification");
 
-	$l = "Frequency";
 	if ($bytes->[126] == 0x66) { $temp = "66MHz"; }
 	elsif ($bytes->[126] == 100) { $temp = "100MHz or 133MHz"; }
 	elsif ($bytes->[126] == 133) { $temp = "133MHz"; }
 	else { $temp = "Undefined!"; }
-	printl($l, $temp);
+	printl("Frequency", $temp);
 
-	$l = "Details for 100MHz Support";
 	$temp = "";
 	if ($bytes->[127] & 1) { $temp .= "Intel Concurrent Auto-precharge\n"; }
 	if ($bytes->[127] & 2) { $temp .= "CAS Latency = 2\n"; }
@@ -1390,7 +1382,7 @@ sub decode_intel_spec_freq($)
 	if ($bytes->[127] & 128) { $temp .= "CLK 0 Connected\n"; }
 	if (($bytes->[127] & 192) == 192) { $temp .= "Double-sided DIMM\n"; }
 	elsif (($bytes->[127] & 192) != 0) { $temp .= "Single-sided DIMM\n"; }
-	printl($l, $temp);
+	printl("Details for 100MHz Support", $temp);
 }
 
 # Read various hex dump style formats: hexdump, hexdump -C, i2cdump, eeprog
@@ -1643,12 +1635,12 @@ for my $i ( 0 .. $#dimm_list ) {
 	 || $use_hexdump) {
 		my @bytes = readspd(0, 128, $dimm_list[$i]);
 		my $is_rambus = $bytes[0] < 4;		# Simple heuristic
-		my ($l, $chk_valid, $chk_spd, $chk_calc);
+		my ($label, $chk_valid, $chk_spd, $chk_calc);
 		if ($is_rambus || $bytes[2] < 9) {
-			($l, $chk_valid, $chk_spd, $chk_calc) =
+			($label, $chk_valid, $chk_spd, $chk_calc) =
 				checksum(\@bytes);
 		} else {
-			($l, $chk_valid, $chk_spd, $chk_calc) =
+			($label, $chk_valid, $chk_spd, $chk_calc) =
 				check_crc(\@bytes);
 		}
 
@@ -1673,7 +1665,7 @@ for my $i ( 0 .. $#dimm_list ) {
 # Decode first 3 bytes (0-2)
 		prints("SPD EEPROM Information");
 
-		printl($l, ($chk_valid ?
+		printl($label, ($chk_valid ?
 			sprintf("OK (%s)", $chk_calc) :
 			sprintf("Bad\n(found %s, calculated %s)",
 				$chk_spd, $chk_calc)));
@@ -1699,7 +1691,6 @@ for my $i ( 0 .. $#dimm_list ) {
 			}
 		}
 
-		$l = "Fundamental Memory type";
 		my $type = sprintf("Unknown (0x%02x)", $bytes[2]);
 		if ($is_rambus) {
 			if ($bytes[2] == 1) { $type = "Direct Rambus"; }
@@ -1717,7 +1708,7 @@ for my $i ( 0 .. $#dimm_list ) {
 				$type = $type_list[$bytes[2]];
 			}
 		}
-		printl($l, $type);
+		printl("Fundamental Memory type", $type);
 
 # Decode next 61 bytes (3-63, depend on memory type)
 		$decode_callback{$type}->(\@bytes)
