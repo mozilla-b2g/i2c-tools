@@ -523,7 +523,7 @@ sub decode_sdr_sdram($)
 	else { $temp = "Undefined!"; }
 	printl("Module Configuration Type", $temp);
 
-	if ($bytes->[12] > 126) { $temp = "Self Refreshing"; }
+	if ($bytes->[12] & 0x80) { $temp = "Self Refreshing"; }
 	else { $temp = "Not Self Refreshing"; }
 	printl("Refresh Type", $temp);
 
@@ -537,13 +537,13 @@ sub decode_sdr_sdram($)
 	else { $temp = "Undefined!"; }
 	printl("Refresh Rate", $temp);
 
-	if ($bytes->[13] > 126) { $temp = "Bank2 = 2 x Bank1"; }
+	if ($bytes->[13] & 0x80) { $temp = "Bank2 = 2 x Bank1"; }
 	else { $temp = "No Bank2 OR Bank2 = Bank1 width"; }
 	printl("Primary SDRAM Component Bank Config", $temp);
 	printl("Primary SDRAM Component Widths",
 	       value_or_undefined($bytes->[13] & 0x7f));
 
-	if ($bytes->[14] > 126) { $temp = "Bank2 = 2 x Bank1"; }
+	if ($bytes->[14] & 0x80) { $temp = "Bank2 = 2 x Bank1"; }
 	else { $temp = "No Bank2 OR Bank2 = Bank1 width"; }
 	printl("Error Checking SDRAM Component Bank Config", $temp);
 	printl("Error Checking SDRAM Component Widths",
