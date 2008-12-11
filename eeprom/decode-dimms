@@ -427,6 +427,11 @@ sub tns($) # print a time in ns
 	return sprintf("%3.2f ns", $_[0]);
 }
 
+sub tns3($) # print a time in ns, with 3 decimal digits
+{
+	return sprintf("%.3f ns", $_[0]);
+}
+
 # Parameter: EEPROM bytes 0-127 (using 3-62)
 sub decode_sdr_sdram($)
 {
@@ -1031,6 +1036,189 @@ sub decode_ddr2_sdram($)
 	printl "PLL Relock Time", $bytes->[46] . " us" if ($bytes->[46]);
 }
 
+# Parameter: EEPROM bytes 0-127 (using 3-76)
+sub decode_ddr3_sdram($)
+{
+	my $bytes = shift;
+	my $l;
+	my $temp;
+	my $ctime;
+
+	my @module_types = ("Undefined", "RDIMM", "UDIMM", "SO-DIMM",
+			    "Micro-DIMM", "Mini-RDIMM", "Mini-UDIMM");
+
+	printl "Module Type", ($bytes->[3] <= $#module_types) ?
+					$module_types[$bytes->[3]] :
+					sprint("Reserved (0x%.2X)", $bytes->[3]);
+
+# speed
+	prints "Memory Characteristics";
+
+	$l = "Fine time base";
+	my $dividend = ($bytes->[9] >> 4) & 15;
+	my $divisor  = $bytes->[9] & 15;
+	printl $l, sprintf("%.3f", $dividend / $divisor) . " ps";
+
+	$l = "Medium time base";
+	$dividend = $bytes->[10];
+	$divisor  = $bytes->[11];
+	my $mtb = $dividend / $divisor;
+	printl $l, tns3($mtb);
+
+	$l = "Maximum module speed";
+	$ctime = $bytes->[12] * $mtb;
+	my $ddrclk = 2 * (1000 / $ctime);
+	my $tbits = 1 << (($bytes->[8] & 7) + 3);
+	my $pcclk = int ($ddrclk * $tbits / 8);
+	$ddrclk = int ($ddrclk);
+	printl $l, "${ddrclk}MHz (PC3-${pcclk})";
+
+# Size computation
+
+	my $cap =  ($bytes->[4]       & 15) + 28;
+	$cap   +=  ($bytes->[8]       & 7)  + 3;
+	$cap   -=  ($bytes->[7]       & 7)  + 2;
+	$cap   -= 20 + 3;
+	my $k   = (($bytes->[7] >> 3) & 31) + 1;
+	printl "Size", ((1 << $cap) * $k) . " MB";
+
+	printl "Banks x Rows x Columns x Bits",
+	       join(' x ', 1 << ((($bytes->[4] >> 4) &  7) +  3),
+			   ((($bytes->[5] >> 3) & 31) + 12),
+			   ( ($bytes->[5]       &  7) +  9),
+			   ( 1 << (($bytes->[8] &  7) + 3)) );
+	printl "Ranks", $k;
+
+	printl "SDRAM Device Width", (1 << (($bytes->[7] & 7) + 2))." bits";
+
+	my $taa;
+	my $trcd;
+	my $trp;
+	my $tras;
+
+	$taa  = int($bytes->[16] / $bytes->[12]);
+	$trcd = int($bytes->[18] / $bytes->[12]);
+	$trp  = int($bytes->[20] / $bytes->[12]);
+	$tras = int((($bytes->[21] >> 4) * 256 + $bytes->[22]) / $bytes->[12]);
+
+	printl "tCL-tRCD-tRP-tRAS", join("-", $taa, $trcd, $trp, $tras);
+
+# latencies
+	my $highestCAS = 0;
+	my %cas;
+	my $ii;
+	my $cas_sup = ($bytes->[15] << 8) + $bytes->[14];
+	for ($ii = 0; $ii < 15; $ii++) {
+		if ($cas_sup & (1 << $ii)) {
+			$highestCAS = $ii + 4;
+			$cas{$highestCAS}++;
+		}
+	}
+	printl "Supported CAS Latencies (tCL)", cas_latencies(keys %cas);
+
+# more timing information
+	prints "Timing Parameters" ;
+
+	printl "Minimum Write Recovery time (tWR)", tns3($bytes->[17] * $mtb);
+	printl "Minimum Row Active to Row Active Delay (tRRD)",
+		tns3($bytes->[19] * $mtb);
+	printl "Minimum Active to Auto-Refresh Delay (tRC)",
+		tns3((((($bytes->[21] >> 4) & 15) << 8) + $bytes->[23]) * $mtb);
+	printl "Minimum Recovery Delay (tRFC)", 
+		tns3((($bytes->[25] << 8) + $bytes->[24]) * $mtb);
+	printl "Minimum Write to Read CMD Delay (tWTR)",
+		tns3($bytes->[26] * $mtb);
+	printl "Minimum Read to Pre-charge CMD Delay (tRTP)",
+		tns3($bytes->[27] * $mtb);
+	printl "Minimum Four Activate Window Delay (tFAW)",
+		tns3(((($bytes->[28] & 15) << 8) + $bytes->[29]) * $mtb);
+
+# miscellaneous stuff
+	prints "Optional Features";
+
+	my $volts = "1.5V";
+	if ($bytes->[6] & 1) {
+		$volts .= " tolerant";
+	}
+	if ($bytes->[6] & 2) {
+		$volts .= ", 1.35V ";
+	}
+	if ($bytes->[6] & 4) {
+		$volts .= ", 1.2X V";
+	}
+	printl "Operable voltages", $volts;
+	printl "RZQ/6 supported?", ($bytes->[30] & 1) ? "Yes" : "No";
+	printl "RZQ/7 supported?", ($bytes->[30] & 2) ? "Yes" : "No";
+	printl "DLL-Off Mode supported?", ($bytes->[30] & 128) ? "Yes" : "No";
+	printl "Operating temperature range", sprintf "0-%dC",
+		($bytes->[31] & 1) ? 95 : 85;
+	printl "Refresh Rate in extended temp range",
+		($bytes->[31] & 2) ? "2X" : "1X";
+	printl "Auto Self-Refresh?", ($bytes->[31] & 4) ? "Yes" : "No";
+	printl "On-Die Thermal Sensor readout?",
+		($bytes->[31] & 8) ? "Yes" : "No";
+	printl "Partial Array Self-Refresh?",
+		($bytes->[31] & 128) ? "Yes" : "No";
+	printl "Thermal Sensor Accuracy",
+		($bytes->[32] & 128) ? sprintf($bytes->[32] & 127) :
+					"Not implemented";
+	printl "SDRAM Device Type",
+		($bytes->[33] & 128) ? sprintf($bytes->[33] & 127) :
+					"Standard Monolithic";
+	if ($bytes->[3] >= 1 && $bytes->[3] <= 6) {
+
+		prints "Physical Characteristics";
+		printl "Module Height (mm)", ($bytes->[60] & 31) + 15;
+		printl "Module Thickness (mm)", sprintf("%d front, %d back",
+						($bytes->[61] & 15) + 1, 
+						(($bytes->[61] >> 4) & 15) +1);
+		printl "Module Width (mm)", ($bytes->[3] <= 2) ? 133.5 :
+					($bytes->[3] == 3) ? 67.6 : "TBD";
+
+		my $alphabet = "ABCDEFGHJKLMNPRTUVWY";
+		my $ref = $bytes->[62] & 31;
+		my $ref_card;
+		if ($ref == 31) {
+			$ref_card = "ZZ";
+		} else {
+			if ($bytes->[62] & 128) {
+				$ref += 31;
+			}
+			if ($ref < length $alphabet) {
+				$ref_card = substr $alphabet, $ref, 1;
+			} else {
+				my $ref1 = int($ref / (length $alphabet));
+				$ref -= (length $alphabet) * $ref1;
+				$ref_card = (substr $alphabet, $ref1, 1) .
+					    (substr $alphabet, $ref, 1);
+			}
+		}
+		printl "Module Reference Card", $ref_card;
+	}
+	if ($bytes->[3] == 1 || $bytes->[3] == 5) {
+		prints "Registered DIMM";
+
+		my @rows = ("Undefined", 1, 2, 4);
+		printl "# DRAM Rows", $rows[($bytes->[63] >> 2) & 3];
+		printl "# Registers", $rows[$bytes->[63] & 3];
+		printl "Register manufacturer",
+			manufacturer_ddr3($bytes->[65], $bytes->[66]);
+		printl "Register device type",
+				(($bytes->[68] & 7) == 0) ? "SSTE32882" :
+					"Undefined";
+		printl "Register revision", sprintf("0x%.2X", $bytes->[67]);
+		printl "Heat spreader characteristics",
+				($bytes->[64] < 128) ? "Not incorporated" :
+					sprintf("%.2X", ($bytes->[64] & 127));
+		my $regs;
+		for (my $i = 0; $i < 8; $i++) {
+			$regs = sprintf("SSTE32882 RC%d/RC%d",
+					$i * 2, $i * 2 + 1);
+			printl $regs, sprintf("%.2X", $bytes->[$i + 69]);
+		}
+	}
+}
+
 # Parameter: EEPROM bytes 0-127 (using 4-5)
 sub decode_direct_rambus($)
 {
@@ -1075,6 +1263,7 @@ sub decode_rambus($)
 	"SDR SDRAM"	=> \&decode_sdr_sdram,
 	"DDR SDRAM"	=> \&decode_ddr_sdram,
 	"DDR2 SDRAM"	=> \&decode_ddr2_sdram,
+	"DDR3 SDRAM"	=> \&decode_ddr3_sdram,
 	"Direct Rambus"	=> \&decode_direct_rambus,
 	"Rambus"	=> \&decode_rambus,
 );
@@ -1094,6 +1283,44 @@ sub manufacture_date($$)
 	} else {
 		return sprintf("0x%02X%02X\n", $year, $week);
 	}
+}
+
+# Parameter: EEPROM bytes 0-175 (using 117-149)
+sub decode_ddr3_mfg_data($)
+{
+	my $bytes = shift;
+
+	prints "Manufacturer Data";
+
+	printl "Module Manufacturer",
+		manufacturer_ddr3($bytes->[117], $bytes->[118]);
+
+	printl "DRAM Manufacturer",
+		manufacturer_ddr3($bytes->[148], $bytes->[149]);
+
+	my $l = "Manufacturing Location";
+	my $temp = (chr($bytes->[119]) =~ m/^[\w\d]$/) ? chr($bytes->[119])
+	      : sprintf("0x%.2X", $bytes->[119]);
+	printl $l, $temp;
+
+	$l = "Manufacturing Date";
+	printl $l, manufacture_date($bytes->[120], $bytes->[121]);
+
+	$l = "Assembly Serial Number";
+	$temp = sprintf("0x%02X%02X%02X%02X\n", $bytes->[122], $bytes->[123],
+		$bytes->[124], $bytes->[125]);
+	printl $l, $temp;
+
+	$l = "Part Number";
+	$temp = "";
+	for (my $i = 128; $i <= 145; $i++) {
+		$temp .= chr($bytes->[$i]);
+	};
+	printl $l, $temp;
+
+	$l = "Revision";
+	$temp = sprintf("0x%02X%02X\n", $bytes->[146], $bytes->[147]);
+	printl $l, $temp;
 }
 
 # Parameter: EEPROM bytes 0-127 (using 64-98)
@@ -1508,8 +1735,15 @@ for my $i ( 0 .. $#dimm_list ) {
 		$decode_callback{$type}->(\@bytes)
 			if exists $decode_callback{$type};
 
-# Decode next 35 bytes (64-98, common to all memory types)
-		decode_manufacturing_information(\@bytes);
+		if ($type eq "DDR3 SDRAM") {
+			# Decode DDR3-specific manufacturing data in bytes 
+			# 117-149
+			decode_ddr3_mfg_data(\@bytes)
+		} else {
+			# Decode next 35 bytes (64-98, common to most
+			# memory types)
+			decode_manufacturing_information(\@bytes);
+		}
 
 # Next 27 bytes (99-125) are manufacturer specific, can't decode
 
