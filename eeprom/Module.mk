@@ -11,11 +11,6 @@ EEPROM_DIR	:= eeprom
 
 EEPROM_TARGETS	:= decode-dimms decode-vaio ddcmon decode-edid
 
-# decode-xeon was not yet ported to the Linux 2.6 sysfs interface
-ifeq (,$(findstring /2.6., /$(KERNELVERSION)))
-EEPROM_TARGETS	+= decode-xeon
-endif
-
 #
 # Commands
 #

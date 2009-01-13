@@ -16,7 +16,3 @@ Linux kernel driver.
   which is part of the read-edid package. ddcmon prints general
   information, while decode-edid prints timing information for
   inclusion into your X11 configuration file.
-
-* decode-xeon (perl script)
-  ID ROM data decoding for Xeon processors. Support for sysfs is still
-  missing, so this script doesn't work with 2.6 kernels yet.
