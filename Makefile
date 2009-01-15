@@ -21,12 +21,12 @@ INSTALL_DIR	:= $(INSTALL) -m 755 -d
 INSTALL_PROGRAM	:= $(INSTALL) -m 755
 RM		:= rm -f
 
-CC	:= gcc
-CFLAGS	:= -Wall
+CC	?= gcc
 
-CFLAGS	+= -O2
+CFLAGS	?= -O2
 # When debugging, use the following instead
-#CFLAGS	+= -O -g
+#CFLAGS	:= -O -g
+CFLAGS	+= -Wall
 
 KERNELVERSION	:= $(shell uname -r)
 
