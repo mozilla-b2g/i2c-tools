@@ -36,5 +36,5 @@ all:
 
 EXTRA	:=
 #EXTRA	+= py-smbus
-SRCDIRS	:= eeprom include stub tools $(EXTRA)
+SRCDIRS	:= include eeprom stub tools $(EXTRA)
 include $(SRCDIRS:%=%/Module.mk)
