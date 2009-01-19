@@ -50,6 +50,11 @@ Optionally, you can run "make strip" prior to "make install" if you want
 smaller binaries. However, be aware that this will prevent any further
 attempt to debug the programs.
 
+If you wish to include sub-directories that are not enabled by default, then
+just set them via the EXTRA make variable. For example, to build py-smbus,
+do:
+  $ make EXTRA="py-smbus"
+
 
 DOCUMENTATION
 -------------
