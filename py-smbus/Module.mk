@@ -14,7 +14,7 @@ DISTUTILS := \
 	cd $(PY_SMBUS_DIR) && \
 	CPPFLAGS="$(CPPFLAGS) -I../include" $(PYTHON) setup.py
 
-all-python:
+all-python: $(INCLUDE_DIR)/linux/i2c-dev.h
 	$(DISTUTILS) build
 
 clean-python:
