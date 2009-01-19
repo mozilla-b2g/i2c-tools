@@ -1,10 +1,6 @@
 
 README: py-smbus
 
-Prerequisites:
-Be sure to build and install the lm-sensors userspace first.  This package
-requires one of the header files from that.
-
 To build:
 	$ python setup.py build
 
