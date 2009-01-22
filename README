@@ -1,9 +1,10 @@
 I2C TOOLS FOR LINUX
 ===================
 
-This package contains an heterogeneous set of I2C tools for Linux. These tools
-were originally part of the lm-sensors package but were finally split into
-their own package for convenience.
+This package contains an heterogeneous set of I2C tools for the Linux kernel.
+These tools were originally part of the lm-sensors project but were finally
+split into their own package for convenience. They compile, run and have been
+tested on GNU/Linux.
 
 
 CONTENTS
