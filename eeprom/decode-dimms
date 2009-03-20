@@ -1625,7 +1625,8 @@ sub get_dimm_list
 
 	if (opendir(local *DIR, $dir)) {
 		while (defined($file = readdir(DIR))) {
-			next if $file =~ m/^\./;
+			next if $use_sysfs && $file !~ /^\d+-\d+$/;
+			next if !$use_sysfs && $file !~ /^eeprom-/;
 			push @files, $file;
 		}
 		close(DIR);
@@ -1639,110 +1640,105 @@ sub get_dimm_list
 @dimm_list = get_dimm_list() unless $use_hexdump;
 
 for my $i (0 .. $#dimm_list) {
-	$_ = $dimm_list[$i];
-	if (($use_sysfs && /^\d+-\d+$/)
-	 || (!$use_sysfs && /^eeprom-/)
-	 || $use_hexdump) {
-		my @bytes = readspd(0, 128, $dimm_list[$i]);
-		my $is_rambus = $bytes[0] < 4;		# Simple heuristic
-		my ($label, $chk_valid, $chk_spd, $chk_calc);
-		if ($is_rambus || $bytes[2] < 9) {
-			($label, $chk_valid, $chk_spd, $chk_calc) =
-				checksum(\@bytes);
-		} else {
-			($label, $chk_valid, $chk_spd, $chk_calc) =
-				check_crc(\@bytes);
-		}
+	my @bytes = readspd(0, 128, $dimm_list[$i]);
+	my $is_rambus = $bytes[0] < 4;		# Simple heuristic
+	my ($label, $chk_valid, $chk_spd, $chk_calc);
+	if ($is_rambus || $bytes[2] < 9) {
+		($label, $chk_valid, $chk_spd, $chk_calc) =
+			checksum(\@bytes);
+	} else {
+		($label, $chk_valid, $chk_spd, $chk_calc) =
+			check_crc(\@bytes);
+	}
 
-		next unless $chk_valid || $opt_igncheck;
-		$dimm_count++;
+	next unless $chk_valid || $opt_igncheck;
+	$dimm_count++;
 
-		print "<b><u>" if $opt_html;
-		printl2("\n\nDecoding EEPROM",
-		        $use_hexdump ? $dimm_list[$i] : ($use_sysfs ?
-			"/sys/bus/i2c/drivers/eeprom/$dimm_list[$i]" :
-			"/proc/sys/dev/sensors/$dimm_list[$i]"));
-		print "</u></b>" if $opt_html;
-		print "<table border=1>\n" if $opt_html;
-		if (!$use_hexdump) {
-			if (($use_sysfs && /^[^-]+-([^-]+)$/)
-			 || (!$use_sysfs && /^[^-]+-[^-]+-[^-]+-([^-]+)$/)) {
-				my $dimm_num = $1 - 49;
-				printl("Guessing DIMM is in", "bank $dimm_num");
-			}
+	print "<b><u>" if $opt_html;
+	printl2("\n\nDecoding EEPROM",
+		$use_hexdump ? $dimm_list[$i] : ($use_sysfs ?
+		"/sys/bus/i2c/drivers/eeprom/$dimm_list[$i]" :
+		"/proc/sys/dev/sensors/$dimm_list[$i]"));
+	print "</u></b>" if $opt_html;
+	print "<table border=1>\n" if $opt_html;
+	if (!$use_hexdump) {
+		if (($use_sysfs && $dimm_list[$i] =~ /^[^-]+-([^-]+)$/)
+		 || (!$use_sysfs && $dimm_list[$i] =~ /^[^-]+-[^-]+-[^-]+-([^-]+)$/)) {
+			my $dimm_num = $1 - 49;
+			printl("Guessing DIMM is in", "bank $dimm_num");
 		}
+	}
 
 # Decode first 3 bytes (0-2)
-		prints("SPD EEPROM Information");
+	prints("SPD EEPROM Information");
 
-		printl($label, ($chk_valid ?
-			sprintf("OK (%s)", $chk_calc) :
-			sprintf("Bad\n(found %s, calculated %s)",
-				$chk_spd, $chk_calc)));
+	printl($label, ($chk_valid ?
+		sprintf("OK (%s)", $chk_calc) :
+		sprintf("Bad\n(found %s, calculated %s)",
+			$chk_spd, $chk_calc)));
 
-		my $temp;
-		if ($is_rambus) {
-			if ($bytes[0] == 1) { $temp = "0.7"; }
-			elsif ($bytes[0] == 2) { $temp = "1.0"; }
-			elsif ($bytes[0] == 0) { $temp = "Invalid"; }
-			else { $temp = "Reserved"; }
-			printl("SPD Revision", $temp);
-		} else {
-			my ($spd_size, $spd_used) = spd_sizes(\@bytes);
-			printl("# of bytes written to SDRAM EEPROM", $spd_used);
-			printl("Total number of bytes in EEPROM", $spd_size);
+	my $temp;
+	if ($is_rambus) {
+		if ($bytes[0] == 1) { $temp = "0.7"; }
+		elsif ($bytes[0] == 2) { $temp = "1.0"; }
+		elsif ($bytes[0] == 0) { $temp = "Invalid"; }
+		else { $temp = "Reserved"; }
+		printl("SPD Revision", $temp);
+	} else {
+		my ($spd_size, $spd_used) = spd_sizes(\@bytes);
+		printl("# of bytes written to SDRAM EEPROM", $spd_used);
+		printl("Total number of bytes in EEPROM", $spd_size);
 
-			# If there's more data than what we've read, let's
-			# read it now.  DDR3 will need this data.
-			if ($spd_used > @bytes) {
-				push (@bytes,
-				      readspd(@bytes, $spd_used - @bytes,
-					      $dimm_list[$i]));
-			}
+		# If there's more data than what we've read, let's
+		# read it now.  DDR3 will need this data.
+		if ($spd_used > @bytes) {
+			push (@bytes,
+			      readspd(@bytes, $spd_used - @bytes,
+				      $dimm_list[$i]));
 		}
+	}
 
-		my $type = sprintf("Unknown (0x%02x)", $bytes[2]);
-		if ($is_rambus) {
-			if ($bytes[2] == 1) { $type = "Direct Rambus"; }
-			elsif ($bytes[2] == 17) { $type = "Rambus"; }
-		} else {
-			my @type_list = (
-				"Reserved", "FPM DRAM",		# 0, 1
-				"EDO", "Pipelined Nibble",	# 2, 3
-				"SDR SDRAM", "Multiplexed ROM",	# 4, 5
-				"DDR SGRAM", "DDR SDRAM",	# 6, 7
-				"DDR2 SDRAM", "FB-DIMM",	# 8, 9
-				"FB-DIMM Probe", "DDR3 SDRAM",	# 10, 11
-			);
-			if ($bytes[2] < @type_list) {
-				$type = $type_list[$bytes[2]];
-			}
+	my $type = sprintf("Unknown (0x%02x)", $bytes[2]);
+	if ($is_rambus) {
+		if ($bytes[2] == 1) { $type = "Direct Rambus"; }
+		elsif ($bytes[2] == 17) { $type = "Rambus"; }
+	} else {
+		my @type_list = (
+			"Reserved", "FPM DRAM",		# 0, 1
+			"EDO", "Pipelined Nibble",	# 2, 3
+			"SDR SDRAM", "Multiplexed ROM",	# 4, 5
+			"DDR SGRAM", "DDR SDRAM",	# 6, 7
+			"DDR2 SDRAM", "FB-DIMM",	# 8, 9
+			"FB-DIMM Probe", "DDR3 SDRAM",	# 10, 11
+		);
+		if ($bytes[2] < @type_list) {
+			$type = $type_list[$bytes[2]];
 		}
-		printl("Fundamental Memory type", $type);
+	}
+	printl("Fundamental Memory type", $type);
 
 # Decode next 61 bytes (3-63, depend on memory type)
-		$decode_callback{$type}->(\@bytes)
-			if exists $decode_callback{$type};
+	$decode_callback{$type}->(\@bytes)
+		if exists $decode_callback{$type};
 
-		if ($type eq "DDR3 SDRAM") {
-			# Decode DDR3-specific manufacturing data in bytes
-			# 117-149
-			decode_ddr3_mfg_data(\@bytes)
-		} else {
-			# Decode next 35 bytes (64-98, common to most
-			# memory types)
-			decode_manufacturing_information(\@bytes);
-		}
+	if ($type eq "DDR3 SDRAM") {
+		# Decode DDR3-specific manufacturing data in bytes
+		# 117-149
+		decode_ddr3_mfg_data(\@bytes)
+	} else {
+		# Decode next 35 bytes (64-98, common to most
+		# memory types)
+		decode_manufacturing_information(\@bytes);
+	}
 
 # Next 27 bytes (99-125) are manufacturer specific, can't decode
 
 # Last 2 bytes (126-127) are reserved, Intel used them as an extension
-		if ($type eq "SDR SDRAM") {
-			decode_intel_spec_freq(\@bytes);
-		}
-
-		print "</table>\n" if $opt_html;
+	if ($type eq "SDR SDRAM") {
+		decode_intel_spec_freq(\@bytes);
 	}
+
+	print "</table>\n" if $opt_html;
 }
 printl2("\n\nNumber of SDRAM DIMMs detected and decoded", $dimm_count);
 
