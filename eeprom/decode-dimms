@@ -41,7 +41,7 @@ use strict;
 use POSIX qw(ceil);
 use Fcntl qw(:DEFAULT :seek);
 use vars qw($opt_html $opt_bodyonly $opt_side_by_side $opt_merge
-	    $opt_igncheck $use_sysfs $use_hexdump
+	    $opt_igncheck $use_sysfs $use_hexdump $sbs_col_width
 	    @vendors %decode_callback $revision @dimm $current %hexdump_cache);
 
 use constant LITTLEENDIAN	=> "little-endian";
@@ -392,7 +392,7 @@ sub real_printl($$) # print a line w/ label and values
 			splice(@values, 1);
 		}
 
-		my $format = "%-47s".(" %-19s" x (scalar @values - 1))." %s\n";
+		my $format = "%-47s".((" %-".$sbs_col_width."s") x (scalar @values - 1))." %s\n";
 		my $maxl = 0; # Keep track of the max number of lines
 
 		# It's a bit tricky because each value may span over more than
@@ -1875,6 +1875,28 @@ if ($opt_side_by_side) {
 		# Discard "Decoding EEPROM" entry from all outputs
 		for $current (0 .. $#dimm) {
 			shift(@{$dimm[$current]->{output}});
+		}
+	}
+}
+
+# Find out the longest value string to adjust the column width
+# Note: this could be improved a bit by not taking into account strings
+# which will end up being merged.
+$sbs_col_width = 15;
+if ($opt_side_by_side && !$opt_html) {
+	for $current (0 .. $#dimm) {
+		my @output = @{$dimm[$current]->{output}};
+		my $line;
+		my @strings;
+
+		for ($line = 0; $line < @output; $line++) {
+			my ($func, $label, $value) = @{$output[$line]};
+			push @strings, split("\n", $value) if defined $value;
+		}
+
+		foreach $line (@strings) {
+			my $len = length($line);
+			$sbs_col_width = $len if $len > $sbs_col_width;
 		}
 	}
 }
