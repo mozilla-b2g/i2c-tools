@@ -652,11 +652,13 @@ sub decode_sdr_sdram($)
 	else { $temp = "None"; }
 	printl("Supported WE Latencies", $temp);
 
+	my ($cycle_time, $access_time);
+
 	if (@cas >= 1) {
-		printl("Cycle Time at CAS ".$cas[$#cas], "$ctime ns");
+		$cycle_time = "$ctime ns at CAS ".$cas[$#cas];
 
 		$temp = ($bytes->[10] >> 4) + ($bytes->[10] & 0xf) * 0.1;
-		printl("Access Time at CAS ".$cas[$#cas], "$temp ns");
+		$access_time = "$temp ns at CAS ".$cas[$#cas];
 	}
 
 	if (@cas >= 2 && spd_written(@$bytes[23..24])) {
@@ -667,7 +669,7 @@ sub decode_sdr_sdram($)
 			$temp += ($bytes->[23] & 0xf) * 0.1;
 			$temp .= " ns";
 		}
-		printl("Cycle Time at CAS ".$cas[$#cas-1], $temp);
+		$cycle_time .= "\n$temp ns at CAS ".$cas[$#cas-1];
 
 		$temp = $bytes->[24] >> 4;
 		if ($temp == 0) { $temp = "Undefined!"; }
@@ -676,7 +678,7 @@ sub decode_sdr_sdram($)
 			$temp += ($bytes->[24] & 0xf) * 0.1;
 			$temp .= " ns";
 		}
-		printl("Access Time at CAS ".$cas[$#cas-1], $temp);
+		$access_time .= "\n$temp ns at CAS ".$cas[$#cas-1];
 	}
 
 	if (@cas >= 3 && spd_written(@$bytes[25..26])) {
@@ -686,7 +688,7 @@ sub decode_sdr_sdram($)
 			$temp += ($bytes->[25] & 0x3) * 0.25;
 			$temp .= " ns";
 		}
-		printl("Cycle Time at CAS ".$cas[$#cas-2], $temp);
+		$cycle_time .= "\n$temp ns at CAS ".$cas[$#cas-2];
 
 		$temp = $bytes->[26] >> 2;
 		if ($temp == 0) { $temp = "Undefined!"; }
@@ -694,8 +696,11 @@ sub decode_sdr_sdram($)
 			$temp += ($bytes->[26] & 0x3) * 0.25;
 			$temp .= " ns";
 		}
-		printl("Access Time at CAS ".$cas[$#cas-2], $temp);
+		$access_time .= "\n$temp ns at CAS ".$cas[$#cas-2];
 	}
+
+	printl_cond(defined $cycle_time, "Cycle Time", $cycle_time);
+	printl_cond(defined $access_time, "Access Time", $access_time);
 
 	$temp = "";
 	if ($bytes->[21] & 1) { $temp .= "Buffered Address/Control Inputs\n"; }
@@ -848,29 +853,30 @@ sub decode_ddr_sdram($)
 	printl("Supported WE Latencies", $temp);
 
 # timings
-	if (exists $cas{$highestCAS}) {
-		printl("Minimum Cycle Time at CAS $highestCAS",
-		       "$ctime ns");
+	my ($cycle_time, $access_time);
 
-		printl("Maximum Access Time at CAS $highestCAS",
-		       (($bytes->[10] >> 4) * 0.1 + ($bytes->[10] & 0xf) * 0.01) . " ns");
+	if (exists $cas{$highestCAS}) {
+		$cycle_time = "$ctime ns at CAS $highestCAS";
+		$access_time = (($bytes->[10] >> 4) * 0.1 + ($bytes->[10] & 0xf) * 0.01)
+			     . " ns at CAS $highestCAS";
 	}
 
 	if (exists $cas{$highestCAS-0.5} && spd_written(@$bytes[23..24])) {
-		printl("Minimum Cycle Time at CAS ".($highestCAS-0.5),
-		       (($bytes->[23] >> 4) + ($bytes->[23] & 0xf) * 0.1) . " ns");
-
-		printl("Maximum Access Time at CAS ".($highestCAS-0.5),
-		       (($bytes->[24] >> 4) * 0.1 + ($bytes->[24] & 0xf) * 0.01) . " ns");
+		$cycle_time .= "\n".(($bytes->[23] >> 4) + ($bytes->[23] & 0xf) * 0.1)
+			     . " ns at CAS ".($highestCAS-0.5);
+		$access_time .= "\n".(($bytes->[24] >> 4) * 0.1 + ($bytes->[24] & 0xf) * 0.01)
+			      . " ns at CAS ".($highestCAS-0.5);
 	}
 
 	if (exists $cas{$highestCAS-1} && spd_written(@$bytes[25..26])) {
-		printl("Minimum Cycle Time at CAS ".($highestCAS-1),
-		       (($bytes->[25] >> 4) + ($bytes->[25] & 0xf) * 0.1) . " ns");
-
-		printl("Maximum Access Time at CAS ".($highestCAS-1),
-		       (($bytes->[26] >> 4) * 0.1 + ($bytes->[26] & 0xf) * 0.01) . " ns");
+		$cycle_time .= "\n".(($bytes->[25] >> 4) + ($bytes->[25] & 0xf) * 0.1)
+			     . " ns at CAS ".($highestCAS-1);
+		$access_time .= "\n".(($bytes->[26] >> 4) * 0.1 + ($bytes->[26] & 0xf) * 0.01)
+			      . " ns at CAS ".($highestCAS-1);
 	}
+
+	printl_cond(defined $cycle_time, "Minimum Cycle Time", $cycle_time);
+	printl_cond(defined $access_time, "Maximum Access Time", $access_time);
 
 # module attributes
 	if ($bytes->[47] & 0x03) {
@@ -1034,26 +1040,31 @@ sub decode_ddr2_sdram($)
 	printl("Supported CAS Latencies (tCL)", cas_latencies(keys %cas));
 
 # timings
+	my ($cycle_time, $access_time);
+
 	if (exists $cas{$highestCAS}) {
-		printl("Minimum Cycle Time at CAS $highestCAS (tCK min)",
-		       tns($ctime));
-		printl("Maximum Access Time at CAS $highestCAS (tAC)",
-		       tns(ddr2_sdram_atime($bytes->[10])));
+		$cycle_time = tns($ctime) . " at CAS $highestCAS (tCK min)";
+		$access_time = tns(ddr2_sdram_atime($bytes->[10]))
+			     . " at CAS $highestCAS (tAC)";
 	}
 
 	if (exists $cas{$highestCAS-1} && spd_written(@$bytes[23..24])) {
-		printl("Minimum Cycle Time at CAS ".($highestCAS-1),
-		       tns(ddr2_sdram_ctime($bytes->[23])));
-		printl("Maximum Access Time at CAS ".($highestCAS-1),
-		       tns(ddr2_sdram_atime($bytes->[24])));
+		$cycle_time .= "\n".tns(ddr2_sdram_ctime($bytes->[23]))
+			     . " at CAS ".($highestCAS-1);
+		$access_time .= "\n".tns(ddr2_sdram_atime($bytes->[24]))
+			      . " at CAS ".($highestCAS-1);
 	}
 
 	if (exists $cas{$highestCAS-2} && spd_written(@$bytes[25..26])) {
-		printl("Minimum Cycle Time at CAS ".($highestCAS-2),
-		       tns(ddr2_sdram_ctime($bytes->[25])));
-		printl("Maximum Access Time at CAS ".($highestCAS-2),
-		       tns(ddr2_sdram_atime($bytes->[26])));
+		$cycle_time .= "\n".tns(ddr2_sdram_ctime($bytes->[25]))
+			     . " at CAS ".($highestCAS-2);
+		$access_time .= "\n".tns(ddr2_sdram_atime($bytes->[26]))
+			      . " at CAS ".($highestCAS-2);
 	}
+
+	printl_cond(defined $cycle_time, "Minimum Cycle Time", $cycle_time);
+	printl_cond(defined $access_time, "Maximum Access Time", $access_time);
+
 	printl("Maximum Cycle Time (tCK max)",
 	       tns(ddr2_sdram_ctime($bytes->[43])));
 
