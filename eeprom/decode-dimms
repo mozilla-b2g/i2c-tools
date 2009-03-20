@@ -41,7 +41,7 @@ use strict;
 use POSIX qw(ceil);
 use Fcntl qw(:DEFAULT :seek);
 use vars qw($opt_html $opt_bodyonly $opt_igncheck $use_sysfs $use_hexdump
-	    @vendors %decode_callback $revision @dimm_list %hexdump_cache);
+	    @vendors %decode_callback $revision @dimm %hexdump_cache);
 
 use constant LITTLEENDIAN	=> "little-endian";
 use constant BIGENDIAN		=> "big-endian";
@@ -1594,7 +1594,7 @@ EOF
 		exit;
 	}
 
-	push @dimm_list, $_ if $use_hexdump;
+	push @dimm, { file => $_ } if $use_hexdump;
 }
 
 if ($opt_html && !$opt_bodyonly) {
@@ -1627,20 +1627,24 @@ sub get_dimm_list
 		while (defined($file = readdir(DIR))) {
 			next if $use_sysfs && $file !~ /^\d+-[\da-f]+$/i;
 			next if !$use_sysfs && $file !~ /^eeprom-/;
-			push @files, "$dir/$file";
+			push @files, { file => "$dir/$file" };
 		}
 		close(DIR);
-		return sort @files;
+		return sort { $a->{file} cmp $b->{file} } @files;
 	} elsif (! -d '/sys/module/eeprom') {
 		print "No EEPROM found, are you sure the eeprom module is loaded?\n";
 		exit;
 	}
 }
 
-@dimm_list = get_dimm_list() unless $use_hexdump;
+# @dimm is a list of hashes. There's one hash for each EEPROM we found.
+# Each hash has the following keys:
+#  * file: Full path to the eeprom data file
+# Keys are added over time.
+@dimm = get_dimm_list() unless $use_hexdump;
 
-for my $i (0 .. $#dimm_list) {
-	my @bytes = readspd(0, 128, $dimm_list[$i]);
+for my $i (0 .. $#dimm) {
+	my @bytes = readspd(0, 128, $dimm[$i]->{file});
 	my $is_rambus = $bytes[0] < 4;		# Simple heuristic
 	my ($label, $chk_valid, $chk_spd, $chk_calc);
 	if ($is_rambus || $bytes[2] < 9) {
@@ -1655,11 +1659,11 @@ for my $i (0 .. $#dimm_list) {
 	$dimm_count++;
 
 	print "<b><u>" if $opt_html;
-	printl2("\n\nDecoding EEPROM", $dimm_list[$i]);
+	printl2("\n\nDecoding EEPROM", $dimm[$i]->{file});
 	print "</u></b>" if $opt_html;
 	print "<table border=1>\n" if $opt_html;
 	if (!$use_hexdump) {
-		if ($dimm_list[$i] =~ /-([\da-f]+)$/i) {
+		if ($dimm[$i]->{file} =~ /-([\da-f]+)$/i) {
 			my $dimm_num = hex($1) - 0x50 + 1;
 			if ($dimm_num >= 1 && $dimm_num <= 8) {
 				printl("Guessing DIMM is in", "bank $dimm_num");
@@ -1692,7 +1696,7 @@ for my $i (0 .. $#dimm_list) {
 		if ($spd_used > @bytes) {
 			push (@bytes,
 			      readspd(@bytes, $spd_used - @bytes,
-				      $dimm_list[$i]));
+				      $dimm[$i]->{file}));
 		}
 	}
 
