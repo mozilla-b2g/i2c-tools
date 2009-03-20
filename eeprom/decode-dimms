@@ -1640,22 +1640,30 @@ sub get_dimm_list
 # @dimm is a list of hashes. There's one hash for each EEPROM we found.
 # Each hash has the following keys:
 #  * file: Full path to the eeprom data file
+#  * bytes: The EEPROM data (array)
+#  * is_rambus: Whether this is a RAMBUS DIMM or not (boolean)
+#  * chk_label: The label to display for the checksum or CRC
+#  * chk_valid: Whether the checksum or CRC is valid or not (boolean)
+#  * chk_spd: The checksum or CRC value found in the EEPROM
+#  * chk_calc: The checksum or CRC computed from the EEPROM data
 # Keys are added over time.
 @dimm = get_dimm_list() unless $use_hexdump;
 
 for my $i (0 .. $#dimm) {
 	my @bytes = readspd(0, 128, $dimm[$i]->{file});
-	my $is_rambus = $bytes[0] < 4;		# Simple heuristic
-	my ($label, $chk_valid, $chk_spd, $chk_calc);
-	if ($is_rambus || $bytes[2] < 9) {
-		($label, $chk_valid, $chk_spd, $chk_calc) =
+	$dimm[$i]->{bytes} = \@bytes;
+	$dimm[$i]->{is_rambus} = $bytes[0] < 4;		# Simple heuristic
+	if ($dimm[$i]->{is_rambus} || $bytes[2] < 9) {
+		($dimm[$i]->{chk_label}, $dimm[$i]->{chk_valid},
+		 $dimm[$i]->{chk_spd}, $dimm[$i]->{chk_calc}) =
 			checksum(\@bytes);
 	} else {
-		($label, $chk_valid, $chk_spd, $chk_calc) =
+		($dimm[$i]->{chk_label}, $dimm[$i]->{chk_valid},
+		 $dimm[$i]->{chk_spd}, $dimm[$i]->{chk_calc}) =
 			check_crc(\@bytes);
 	}
 
-	next unless $chk_valid || $opt_igncheck;
+	next unless $dimm[$i]->{chk_valid} || $opt_igncheck;
 	$dimm_count++;
 
 	print "<b><u>" if $opt_html;
@@ -1674,13 +1682,13 @@ for my $i (0 .. $#dimm) {
 # Decode first 3 bytes (0-2)
 	prints("SPD EEPROM Information");
 
-	printl($label, ($chk_valid ?
-		sprintf("OK (%s)", $chk_calc) :
+	printl($dimm[$i]->{chk_label}, ($dimm[$i]->{chk_valid} ?
+		sprintf("OK (%s)", $dimm[$i]->{chk_calc}) :
 		sprintf("Bad\n(found %s, calculated %s)",
-			$chk_spd, $chk_calc)));
+			$dimm[$i]->{chk_spd}, $dimm[$i]->{chk_calc})));
 
 	my $temp;
-	if ($is_rambus) {
+	if ($dimm[$i]->{is_rambus}) {
 		if ($bytes[0] == 1) { $temp = "0.7"; }
 		elsif ($bytes[0] == 2) { $temp = "1.0"; }
 		elsif ($bytes[0] == 0) { $temp = "Invalid"; }
@@ -1701,7 +1709,7 @@ for my $i (0 .. $#dimm) {
 	}
 
 	my $type = sprintf("Unknown (0x%02x)", $bytes[2]);
-	if ($is_rambus) {
+	if ($dimm[$i]->{is_rambus}) {
 		if ($bytes[2] == 1) { $type = "Direct Rambus"; }
 		elsif ($bytes[2] == 17) { $type = "Rambus"; }
 	} else {
