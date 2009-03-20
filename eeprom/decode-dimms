@@ -1482,8 +1482,8 @@ sub readspd($$$)
 		return @bytes[$offset..($offset + $size - 1)];
 	} elsif ($use_sysfs) {
 		# Kernel 2.6 with sysfs
-		sysopen(HANDLE, "/sys/bus/i2c/drivers/eeprom/$dimm_i/eeprom", O_RDONLY)
-			or die "Cannot open /sys/bus/i2c/drivers/eeprom/$dimm_i/eeprom";
+		sysopen(HANDLE, "$dimm_i/eeprom", O_RDONLY)
+			or die "Cannot open $dimm_i/eeprom";
 		binmode HANDLE;
 		sysseek(HANDLE, $offset, SEEK_SET);
 		sysread(HANDLE, my $eeprom, $size);
@@ -1493,7 +1493,7 @@ sub readspd($$$)
 		# Kernel 2.4 with procfs
 		for my $i (0 .. ($size-1)/16) {
 			my $hexoff = sprintf('%02x', $offset + $i * 16);
-			push @bytes, split(" ", `cat /proc/sys/dev/sensors/$dimm_i/$hexoff`);
+			push @bytes, split(" ", `cat $dimm_i/$hexoff`);
 		}
 	}
 	return @bytes;
@@ -1627,7 +1627,7 @@ sub get_dimm_list
 		while (defined($file = readdir(DIR))) {
 			next if $use_sysfs && $file !~ /^\d+-[\da-f]+$/i;
 			next if !$use_sysfs && $file !~ /^eeprom-/;
-			push @files, $file;
+			push @files, "$dir/$file";
 		}
 		close(DIR);
 		return sort @files;
@@ -1655,10 +1655,7 @@ for my $i (0 .. $#dimm_list) {
 	$dimm_count++;
 
 	print "<b><u>" if $opt_html;
-	printl2("\n\nDecoding EEPROM",
-		$use_hexdump ? $dimm_list[$i] : ($use_sysfs ?
-		"/sys/bus/i2c/drivers/eeprom/$dimm_list[$i]" :
-		"/proc/sys/dev/sensors/$dimm_list[$i]"));
+	printl2("\n\nDecoding EEPROM", $dimm_list[$i]);
 	print "</u></b>" if $opt_html;
 	print "<table border=1>\n" if $opt_html;
 	if (!$use_hexdump) {
