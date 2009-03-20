@@ -1625,7 +1625,7 @@ sub get_dimm_list
 
 	if (opendir(local *DIR, $dir)) {
 		while (defined($file = readdir(DIR))) {
-			next if $use_sysfs && $file !~ /^\d+-\d+$/;
+			next if $use_sysfs && $file !~ /^\d+-[\da-f]+$/i;
 			next if !$use_sysfs && $file !~ /^eeprom-/;
 			push @files, $file;
 		}
@@ -1662,10 +1662,11 @@ for my $i (0 .. $#dimm_list) {
 	print "</u></b>" if $opt_html;
 	print "<table border=1>\n" if $opt_html;
 	if (!$use_hexdump) {
-		if (($use_sysfs && $dimm_list[$i] =~ /^[^-]+-([^-]+)$/)
-		 || (!$use_sysfs && $dimm_list[$i] =~ /^[^-]+-[^-]+-[^-]+-([^-]+)$/)) {
-			my $dimm_num = $1 - 49;
-			printl("Guessing DIMM is in", "bank $dimm_num");
+		if ($dimm_list[$i] =~ /-([\da-f]+)$/i) {
+			my $dimm_num = hex($1) - 0x50 + 1;
+			if ($dimm_num >= 1 && $dimm_num <= 8) {
+				printl("Guessing DIMM is in", "bank $dimm_num");
+			}
 		}
 	}
 
