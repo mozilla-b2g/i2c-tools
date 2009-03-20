@@ -1336,6 +1336,10 @@ sub manufacture_date($$)
 		# Note that this heuristic will break in year 2080
 		return sprintf("%d%02X-W%02X",
 				$year >= 0x80 ? 19 : 20, $year, $week);
+	# Fallback to binary format if it seems to make sense
+	} elsif ($year <= 99 && $week >= 1 && $week <= 53) {
+		return sprintf("%d%02d-W%02d",
+				$year >= 80 ? 19 : 20, $year, $week);
 	} else {
 		return sprintf("0x%02X%02X", $year, $week);
 	}

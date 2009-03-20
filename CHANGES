@@ -9,6 +9,7 @@ SVN
                 Fix decoding of SDR SDRAM bytes 12-14
                 Add side-by-side formatting option
                 Add merged cells formatting option
+                Try harder to decode the manufacturing date
   decode-xeon: Delete
   i2c-stub-from-dump: Use udev settle to speed up initialization
 
