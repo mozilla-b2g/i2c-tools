@@ -1614,8 +1614,12 @@ Jean Delvare, Trent Piepho and others');
 my $dimm_count = 0;
 my $dir;
 if (!$use_hexdump) {
-	if ($use_sysfs) { $dir = '/sys/bus/i2c/drivers/eeprom'; }
-	else { $dir = '/proc/sys/dev/sensors'; }
+	if ($use_sysfs) {
+		$dir = '/sys/bus/i2c/drivers/eeprom';
+	} else {
+		$dir = '/proc/sys/dev/sensors';
+	}
+
 	if (-d $dir) {
 		@dimm_list = split(/\s+/, `ls $dir`);
 	} elsif (! -d '/sys/module/eeprom') {
@@ -1624,7 +1628,7 @@ if (!$use_hexdump) {
 	}
 }
 
-for my $i ( 0 .. $#dimm_list ) {
+for my $i (0 .. $#dimm_list) {
 	$_ = $dimm_list[$i];
 	if (($use_sysfs && /^\d+-\d+$/)
 	 || (!$use_sysfs && /^eeprom-/)
