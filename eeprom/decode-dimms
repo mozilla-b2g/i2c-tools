@@ -1611,8 +1611,6 @@ printh('Memory Serial Presence Detect Decoder',
 Jean Delvare, Trent Piepho and others');
 
 
-my $dimm_count = 0;
-
 sub get_dimm_list
 {
 	my ($dir, $file, @files);
@@ -1662,9 +1660,22 @@ for my $i (0 .. $#dimm) {
 		 $dimm[$i]->{chk_spd}, $dimm[$i]->{chk_calc}) =
 			check_crc(\@bytes);
 	}
+}
 
-	next unless $dimm[$i]->{chk_valid} || $opt_igncheck;
-	$dimm_count++;
+# Checksum or CRC validation
+if (!$opt_igncheck) {
+	for (my $i = 0; $i < @dimm; ) {
+		if ($dimm[$i]->{chk_valid}) {
+			$i++;
+		} else {
+			splice(@dimm, $i, 1);
+		}
+	}
+}
+
+# Process the valid entries
+for my $i (0 .. $#dimm) {
+	my @bytes = @{$dimm[$i]->{bytes}};
 
 	print "<b><u>" if $opt_html;
 	printl2("\n\nDecoding EEPROM", $dimm[$i]->{file});
@@ -1750,6 +1761,6 @@ for my $i (0 .. $#dimm) {
 
 	print "</table>\n" if $opt_html;
 }
-printl2("\n\nNumber of SDRAM DIMMs detected and decoded", $dimm_count);
+printl2("\n\nNumber of SDRAM DIMMs detected and decoded", scalar @dimm);
 
 print "</body></html>\n" if ($opt_html && !$opt_bodyonly);
