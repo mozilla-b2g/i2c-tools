@@ -372,19 +372,23 @@ sub real_printl($$) # print a line w/ label and values
 {
 	my ($label, @values) = @_;
 	local $_;
+	my $same_values = same_values(@values);
+
+	# If all values are N/A, don't bother printing
+	return if $values[0] eq "N/A" and $same_values;
 
 	if ($opt_html) {
 		$label = html_encode($label);
 		@values = map { html_encode($_) } @values;
 		print "<tr><td valign=top>$label</td>";
-		if ($opt_merge && same_values(@values)) {
+		if ($opt_merge && $same_values) {
 			print "<td colspan=".(scalar @values).">$values[0]</td>";
 		} else {
 			print "<td>$_</td>" foreach @values;
 		}
 		print "</tr>\n";
 	} else {
-		if ($opt_merge && same_values(@values)) {
+		if ($opt_merge && $same_values) {
 			splice(@values, 1);
 		}
 
@@ -473,6 +477,13 @@ sub printl($$) # print a line w/ label and value
 	push @{$dimm[$current]->{output}}, \@output;
 }
 
+sub printl_cond($$$) # same as printl but conditional
+{
+	my ($cond, $label, $value) = @_;
+	return unless $cond || $opt_side_by_side;
+	printl($label, $cond ? $value : "N/A");
+}
+
 sub prints($) # print separator w/ given text
 {
 	my @output = (\&real_prints, @_);
@@ -523,8 +534,8 @@ sub decode_sdr_sdram($)
 	if ($ii > 0 && $ii <= 12 && $k > 0) {
 		printl("Size", ((1 << $ii) * $k) . " MB");
 	} else {
-		printl("INVALID SIZE", $bytes->[3] . "," . $bytes->[4] . "," .
-				       $bytes->[5] . "," . $bytes->[17]);
+		printl("Size", "INVALID: " . $bytes->[3] . "," . $bytes->[4] . "," .
+			       $bytes->[5] . "," . $bytes->[17]);
 	}
 
 	my @cas;
@@ -735,29 +746,23 @@ sub decode_sdr_sdram($)
 	if ($bytes->[31] == 0) { $temp .= "(Undefined! -- None Reported!)\n"; }
 	printl("Row Densities", $temp);
 
-	if (($bytes->[32] & 0xf) <= 9) {
-		$temp = (($bytes->[32] & 0x7f) >> 4) + ($bytes->[32] & 0xf) * 0.1;
-		printl("Command and Address Signal Setup Time",
-		       (($bytes->[32] >> 7) ? -$temp : $temp) . " ns");
-	}
+	$temp = (($bytes->[32] & 0x7f) >> 4) + ($bytes->[32] & 0xf) * 0.1;
+	printl_cond(($bytes->[32] & 0xf) <= 9,
+		    "Command and Address Signal Setup Time",
+		    (($bytes->[32] >> 7) ? -$temp : $temp) . " ns");
 
-	if (($bytes->[33] & 0xf) <= 9) {
-		$temp = (($bytes->[33] & 0x7f) >> 4) + ($bytes->[33] & 0xf) * 0.1;
-		printl("Command and Address Signal Hold Time",
-		       (($bytes->[33] >> 7) ? -$temp : $temp) . " ns");
-	}
+	$temp = (($bytes->[33] & 0x7f) >> 4) + ($bytes->[33] & 0xf) * 0.1;
+	printl_cond(($bytes->[33] & 0xf) <= 9,
+		    "Command and Address Signal Hold Time",
+		    (($bytes->[33] >> 7) ? -$temp : $temp) . " ns");
 
-	if (($bytes->[34] & 0xf) <= 9) {
-		$temp = (($bytes->[34] & 0x7f) >> 4) + ($bytes->[34] & 0xf) * 0.1;
-		printl("Data Signal Setup Time",
-		       (($bytes->[34] >> 7) ? -$temp : $temp) . " ns");
-	}
+	$temp = (($bytes->[34] & 0x7f) >> 4) + ($bytes->[34] & 0xf) * 0.1;
+	printl_cond(($bytes->[34] & 0xf) <= 9, "Data Signal Setup Time",
+		    (($bytes->[34] >> 7) ? -$temp : $temp) . " ns");
 
-	if (($bytes->[35] & 0xf) <= 9) {
-		$temp = (($bytes->[35] & 0x7f) >> 4) + ($bytes->[35] & 0xf) * 0.1;
-		printl("Data Signal Hold Time",
-		       (($bytes->[35] >> 7) ? -$temp : $temp) . " ns");
-	}
+	$temp = (($bytes->[35] & 0x7f) >> 4) + ($bytes->[35] & 0xf) * 0.1;
+	printl_cond(($bytes->[35] & 0xf) <= 9, "Data Signal Hold Time",
+		    (($bytes->[35] >> 7) ? -$temp : $temp) . " ns");
 }
 
 # Parameter: EEPROM bytes 0-127 (using 3-62)
@@ -767,10 +772,8 @@ sub decode_ddr_sdram($)
 	my $temp;
 
 # SPD revision
-	if ($bytes->[62] != 0xff) {
-		printl("SPD Revision", ($bytes->[62] >> 4) . "." .
-				       ($bytes->[62] & 0xf));
-	}
+	printl_cond($bytes->[62] != 0xff, "SPD Revision",
+		    ($bytes->[62] >> 4) . "." . ($bytes->[62] & 0xf));
 
 # speed
 	prints("Memory Characteristics");
@@ -797,8 +800,8 @@ sub decode_ddr_sdram($)
 	if ($ii > 0 && $ii <= 12 && $k > 0) {
 		printl("Size", ((1 << $ii) * $k) . " MB");
 	} else {
-		printl("INVALID SIZE", $bytes->[3] . ", " . $bytes->[4] . ", " .
-				       $bytes->[5] . ", " . $bytes->[17]);
+		printl("Size", "INVALID: " . $bytes->[3] . ", " . $bytes->[4] . ", " .
+			       $bytes->[5] . ", " . $bytes->[17]);
 	}
 
 	my $highestCAS = 0;
@@ -974,8 +977,8 @@ sub decode_ddr2_sdram($)
 	if($ii > 0 && $ii <= 12 && $k > 0) {
 		printl("Size", ((1 << $ii) * $k) . " MB");
 	} else {
-		printl("INVALID SIZE", $bytes->[3] . "," . $bytes->[4] . "," .
-				       $bytes->[5] . "," . $bytes->[17]);
+		printl("Size", "INVALID: " . $bytes->[3] . "," . $bytes->[4] . "," .
+			       $bytes->[5] . "," . $bytes->[17]);
 	}
 
 	printl("Banks x Rows x Columns x Bits",
@@ -1276,8 +1279,8 @@ sub decode_direct_rambus($)
 	if ($ii > 0 && $ii < 16) {
 		printl("Size", (1 << $ii) . " MB");
 	} else {
-		printl("INVALID SIZE", sprintf("0x%02x, 0x%02x",
-					       $bytes->[4], $bytes->[5]));
+		printl("Size", sprintf("INVALID: 0x%02x, 0x%02x",
+				       $bytes->[4], $bytes->[5]));
 	}
 }
 
@@ -1296,7 +1299,7 @@ sub decode_rambus($)
 	if ($ii > 0 && $ii < 16) {
 		printl("Size", (1 << $ii) . " MB");
 	} else {
-		printl("INVALID SIZE", sprintf("0x%02x, 0x%02x",
+		printl("Size", "INVALID: " . sprintf("0x%02x, 0x%02x",
 					       $bytes->[3], $bytes->[5]));
 	}
 }
@@ -1332,18 +1335,17 @@ sub printl_mfg_location_code($)
 	my $code = shift;
 	my $letter = chr($code);
 
-	return unless spd_written($code);
 	# Try the location code as ASCII first, as earlier specifications
 	# suggested this. As newer specifications don't mention it anymore,
 	# we still fall back to binary.
-	printl("Manufacturing Location Code",
-	       $letter =~ m/^[\w\d]$/ ? $letter : sprintf("0x%.2X", $code));
+	printl_cond(spd_written($code), "Manufacturing Location Code",
+		    $letter =~ m/^[\w\d]$/ ? $letter : sprintf("0x%.2X", $code));
 }
 
 sub printl_mfg_assembly_serial(@)
 {
-	return unless spd_written(@_);
-	printl("Assembly Serial Number", sprintf("0x%02X%02X%02X%02X", @_));
+	printl_cond(spd_written(@_), "Assembly Serial Number",
+		    sprintf("0x%02X%02X%02X%02X", @_));
 }
 
 # Parameter: EEPROM bytes 0-175 (using 117-149)
@@ -1392,21 +1394,17 @@ sub decode_manufacturing_information($)
 	($temp, $extra) = manufacturer(@{$bytes}[64..71]);
 	printl("Manufacturer", $temp);
 	$temp = manufacturer_data(@{$extra});
-	printl("Custom Manufacturer Data", $temp) if defined $temp;
+	printl_cond(defined $temp, "Custom Manufacturer Data", $temp);
 
 	printl_mfg_location_code($bytes->[72]);
 
 	printl("Part Number", part_number(@{$bytes}[73..90]));
 
-	if (spd_written(@{$bytes}[91..92])) {
-		printl("Revision Code",
-		       sprintf("0x%02X%02X", @{$bytes}[91..92]));
-	}
+	printl_cond(spd_written(@{$bytes}[91..92]), "Revision Code",
+		    sprintf("0x%02X%02X", @{$bytes}[91..92]));
 
-	if (spd_written(@{$bytes}[93..94])) {
-		printl("Manufacturing Date",
-		       manufacture_date($bytes->[93], $bytes->[94]));
-	}
+	printl_cond(spd_written(@{$bytes}[93..94]), "Manufacturing Date",
+	       manufacture_date($bytes->[93], $bytes->[94]));
 
 	printl_mfg_assembly_serial(@{$bytes}[95..98]);
 }
