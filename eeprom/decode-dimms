@@ -1612,8 +1612,11 @@ Jean Delvare, Trent Piepho and others');
 
 
 my $dimm_count = 0;
-my $dir;
-if (!$use_hexdump) {
+
+sub get_dimm_list
+{
+	my $dir;
+
 	if ($use_sysfs) {
 		$dir = '/sys/bus/i2c/drivers/eeprom';
 	} else {
@@ -1621,12 +1624,14 @@ if (!$use_hexdump) {
 	}
 
 	if (-d $dir) {
-		@dimm_list = split(/\s+/, `ls $dir`);
+		return split(/\s+/, `ls $dir`);
 	} elsif (! -d '/sys/module/eeprom') {
 		print "No EEPROM found, are you sure the eeprom module is loaded?\n";
 		exit;
 	}
 }
+
+@dimm_list = get_dimm_list() unless $use_hexdump;
 
 for my $i (0 .. $#dimm_list) {
 	$_ = $dimm_list[$i];
