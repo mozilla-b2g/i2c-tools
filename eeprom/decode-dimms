@@ -5,7 +5,7 @@
 # Copyright 1998, 1999 Philip Edelbrock <phil@netroedge.com>
 # modified by Christian Zuckschwerdt <zany@triq.net>
 # modified by Burkart Lingner <burkart@bollchen.de>
-# Copyright (C) 2005-2008  Jean Delvare <khali@linux-fr.org>
+# Copyright (C) 2005-2009  Jean Delvare <khali@linux-fr.org>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -40,8 +40,8 @@ require 5.004;
 use strict;
 use POSIX qw(ceil);
 use Fcntl qw(:DEFAULT :seek);
-use vars qw($opt_html $opt_bodyonly $opt_side_by_side $opt_igncheck
-	    $use_sysfs $use_hexdump
+use vars qw($opt_html $opt_bodyonly $opt_side_by_side $opt_merge
+	    $opt_igncheck $use_sysfs $use_hexdump
 	    @vendors %decode_callback $revision @dimm $current %hexdump_cache);
 
 use constant LITTLEENDIAN	=> "little-endian";
@@ -359,6 +359,15 @@ sub html_encode($)
 	return $text;
 }
 
+sub same_values(@)
+{
+	my $value = shift;
+	while (@_) {
+		return 0 unless $value eq shift;
+	}
+	return 1;
+}
+
 sub real_printl($$) # print a line w/ label and values
 {
 	my ($label, @values) = @_;
@@ -368,9 +377,17 @@ sub real_printl($$) # print a line w/ label and values
 		$label = html_encode($label);
 		@values = map { html_encode($_) } @values;
 		print "<tr><td valign=top>$label</td>";
-		print "<td>$_</td>" foreach @values;
+		if ($opt_merge && same_values(@values)) {
+			print "<td colspan=".(scalar @values).">$values[0]</td>";
+		} else {
+			print "<td>$_</td>" foreach @values;
+		}
 		print "</tr>\n";
 	} else {
+		if ($opt_merge && same_values(@values)) {
+			splice(@values, 1);
+		}
+
 		my $format = "%-47s".(" %-19s" x (scalar @values - 1))." %s\n";
 		my $maxl = 0; # Keep track of the max number of lines
 
@@ -1595,6 +1612,8 @@ foreach (@ARGV) {
 			"  -b, --bodyonly          Don't print html header\n",
 			"                          (useful for postprocessing the output)\n",
 			"      --side-by-side      Display all DIMMs side-by-side if possible\n",
+			"      --merge-cells       Merge neighbour cells with identical values\n",
+			"                          (side-by-side output only)\n",
 			"  -c, --checksum          Decode completely even if checksum fails\n",
 			"  -x,                     Read data from hexdump files\n",
 			"  -X,                     Same as -x except treat multibyte hex\n",
@@ -1621,6 +1640,10 @@ EOF
 	}
 	if ($_ eq '--side-by-side') {
 		$opt_side_by_side = 1;
+		next;
+	}
+	if ($_ eq '--merge-cells') {
+		$opt_merge = 1;
 		next;
 	}
 	if ($_ eq '-c' || $_ eq '--checksum') {
