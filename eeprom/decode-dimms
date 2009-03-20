@@ -347,7 +347,9 @@ sub cas_latencies(@)
 	return join ', ', map("${_}T", sort { $b <=> $a } @_);
 }
 
-sub printl($$) # print a line w/ label and value
+# Real printing functions
+
+sub real_printl($$) # print a line w/ label and value
 {
 	my ($label, $value) = @_;
 	if ($opt_html) {
@@ -379,7 +381,7 @@ sub printl2($$) # print a line w/ label and value (outside a table)
 	print "$label: $value\n";
 }
 
-sub prints($) # print separator w/ given text
+sub real_prints($) # print separator w/ given text
 {
 	my ($label) = @_;
 	if ($opt_html) {
@@ -421,6 +423,24 @@ sub printc($) # print comment
 		print "# $comment\n";
 	}
 }
+
+# Fake printing functions
+# These don't actually print anything, instead they store the desired
+# output for later processing.
+
+sub printl($$) # print a line w/ label and value
+{
+	my @output = (\&real_printl, @_);
+	push @{$dimm[$current]->{output}}, \@output;
+}
+
+sub prints($) # print separator w/ given text
+{
+	my @output = (\&real_prints, @_);
+	push @{$dimm[$current]->{output}}, \@output;
+}
+
+# Helper functions
 
 sub tns($) # print a time in ns
 {
@@ -1677,10 +1697,6 @@ if (!$opt_igncheck) {
 for $current (0 .. $#dimm) {
 	my @bytes = @{$dimm[$current]->{bytes}};
 
-	print "<b><u>" if $opt_html;
-	printl2("\n\nDecoding EEPROM", $dimm[$current]->{file});
-	print "</u></b>" if $opt_html;
-	print "<table border=1>\n" if $opt_html;
 	if (!$use_hexdump) {
 		if ($dimm[$current]->{file} =~ /-([\da-f]+)$/i) {
 			my $dimm_num = hex($1) - 0x50 + 1;
@@ -1757,6 +1773,19 @@ for $current (0 .. $#dimm) {
 # Last 2 bytes (126-127) are reserved, Intel used them as an extension
 	if ($type eq "SDR SDRAM") {
 		decode_intel_spec_freq(\@bytes);
+	}
+}
+
+# Print the decoded information for all DIMMs
+for $current (0 .. $#dimm) {
+	print "<b><u>" if $opt_html;
+	printl2("\n\nDecoding EEPROM", $dimm[$current]->{file});
+	print "</u></b>" if $opt_html;
+	print "<table border=1>\n" if $opt_html;
+
+	foreach (@{$dimm[$current]->{output}}) {
+		my ($func, @param) = @{$_};
+		$func->(@param);
 	}
 
 	print "</table>\n" if $opt_html;
