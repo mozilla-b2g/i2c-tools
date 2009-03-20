@@ -1615,7 +1615,7 @@ my $dimm_count = 0;
 
 sub get_dimm_list
 {
-	my $dir;
+	my ($dir, $file, @files);
 
 	if ($use_sysfs) {
 		$dir = '/sys/bus/i2c/drivers/eeprom';
@@ -1623,8 +1623,13 @@ sub get_dimm_list
 		$dir = '/proc/sys/dev/sensors';
 	}
 
-	if (-d $dir) {
-		return split(/\s+/, `ls $dir`);
+	if (opendir(local *DIR, $dir)) {
+		while (defined($file = readdir(DIR))) {
+			next if $file =~ m/^\./;
+			push @files, $file;
+		}
+		close(DIR);
+		return sort @files;
 	} elsif (! -d '/sys/module/eeprom') {
 		print "No EEPROM found, are you sure the eeprom module is loaded?\n";
 		exit;
