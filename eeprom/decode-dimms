@@ -40,7 +40,8 @@ require 5.004;
 use strict;
 use POSIX qw(ceil);
 use Fcntl qw(:DEFAULT :seek);
-use vars qw($opt_html $opt_bodyonly $opt_igncheck $use_sysfs $use_hexdump
+use vars qw($opt_html $opt_bodyonly $opt_side_by_side $opt_igncheck
+	    $use_sysfs $use_hexdump
 	    @vendors %decode_callback $revision @dimm $current %hexdump_cache);
 
 use constant LITTLEENDIAN	=> "little-endian";
@@ -358,17 +359,44 @@ sub html_encode($)
 	return $text;
 }
 
-sub real_printl($$) # print a line w/ label and value
+sub real_printl($$) # print a line w/ label and values
 {
-	my ($label, $value) = @_;
+	my ($label, @values) = @_;
+	local $_;
+
 	if ($opt_html) {
 		$label = html_encode($label);
-		$value = html_encode($value);
-		print "<tr><td valign=top>$label</td><td>$value</td></tr>\n";
+		@values = map { html_encode($_) } @values;
+		print "<tr><td valign=top>$label</td>";
+		print "<td>$_</td>" foreach @values;
+		print "</tr>\n";
 	} else {
-		my @values = split /\n/, $value;
-		printf "%-47s %s\n", $label, shift @values;
-		printf "%-47s %s\n", "", $_ foreach (@values);
+		my $format = "%-47s".(" %-19s" x (scalar @values - 1))." %s\n";
+		my $maxl = 0; # Keep track of the max number of lines
+
+		# It's a bit tricky because each value may span over more than
+		# one line. We can easily extract the values per column, but
+		# we need them per line at printing time. So we have to
+		# prepare a 2D array with all the individual string fragments.
+		my ($col, @lines);
+		for ($col = 0; $col < @values; $col++) {
+			my @cells = split /\n/, $values[$col];
+			$maxl = @cells if @cells > $maxl;
+			for (my $l = 0; $l < @cells; $l++) {
+				$lines[$l]->[$col] = $cells[$l];
+			}
+		}
+
+		# Also make sure there are no holes in the array
+		for (my $l = 0; $l < $maxl; $l++) {
+			for ($col = 0; $col < @values; $col++) {
+				$lines[$l]->[$col] = ""
+					if not defined $lines[$l]->[$col];
+			}
+		}
+
+		printf $format, $label, @{shift @lines};
+		printf $format, "", @{$_} foreach (@lines);
 	}
 }
 
@@ -384,10 +412,11 @@ sub printl2($$) # print a line w/ label and value (outside a table)
 
 sub real_prints($) # print separator w/ given text
 {
-	my ($label) = @_;
+	my ($label, $ncol) = @_;
+	$ncol = 1 unless $ncol;
 	if ($opt_html) {
 		$label = html_encode($label);
-		print "<tr><td align=center colspan=2><b>$label</b></td></tr>\n";
+		print "<tr><td align=center colspan=".(1+$ncol)."><b>$label</b></td></tr>\n";
 	} else {
 		print "\n---=== $label ===---\n";
 	}
@@ -1565,6 +1594,7 @@ foreach (@ARGV) {
 			"  -f, --format            Print nice html output\n",
 			"  -b, --bodyonly          Don't print html header\n",
 			"                          (useful for postprocessing the output)\n",
+			"      --side-by-side      Display all DIMMs side-by-side if possible\n",
 			"  -c, --checksum          Decode completely even if checksum fails\n",
 			"  -x,                     Read data from hexdump files\n",
 			"  -X,                     Same as -x except treat multibyte hex\n",
@@ -1589,6 +1619,10 @@ EOF
 		$opt_bodyonly = 1;
 		next;
 	}
+	if ($_ eq '--side-by-side') {
+		$opt_side_by_side = 1;
+		next;
+	}
 	if ($_ eq '-c' || $_ eq '--checksum') {
 		$opt_igncheck = 1;
 		next;
@@ -1607,7 +1641,7 @@ EOF
 		exit;
 	}
 
-	push @dimm, { file => $_ } if $use_hexdump;
+	push @dimm, { eeprom => $_, file => $_ } if $use_hexdump;
 }
 
 if ($opt_html && !$opt_bodyonly) {
@@ -1638,7 +1672,8 @@ sub get_dimm_list
 		while (defined($file = readdir(DIR))) {
 			next if $use_sysfs && $file !~ /^\d+-[\da-f]+$/i;
 			next if !$use_sysfs && $file !~ /^eeprom-/;
-			push @files, { file => "$dir/$file" };
+			push @files, { eeprom => "$file",
+				       file => "$dir/$file" };
 		}
 		close(DIR);
 		return sort { $a->{file} cmp $b->{file} } @files;
@@ -1650,6 +1685,7 @@ sub get_dimm_list
 
 # @dimm is a list of hashes. There's one hash for each EEPROM we found.
 # Each hash has the following keys:
+#  * eeprom: Name of the eeprom data file
 #  * file: Full path to the eeprom data file
 #  * bytes: The EEPROM data (array)
 #  * is_rambus: Whether this is a RAMBUS DIMM or not (boolean)
@@ -1689,6 +1725,10 @@ if (!$opt_igncheck) {
 # Process the valid entries
 for $current (0 .. $#dimm) {
 	my @bytes = @{$dimm[$current]->{bytes}};
+
+	if ($opt_side_by_side) {
+		printl("Decoding EEPROM", $dimm[$current]->{eeprom});
+	}
 
 	if (!$use_hexdump) {
 		if ($dimm[$current]->{file} =~ /-([\da-f]+)$/i) {
@@ -1769,19 +1809,73 @@ for $current (0 .. $#dimm) {
 	}
 }
 
+# Side-by-side output format is only possible if all DIMMs have a similar
+# output structure
+if ($opt_side_by_side) {
+	for $current (1 .. $#dimm) {
+		my @ref_output = @{$dimm[0]->{output}};
+		my @test_output = @{$dimm[$current]->{output}};
+		my $line;
+
+		if (scalar @ref_output != scalar @test_output) {
+			$opt_side_by_side = 0;
+			last;
+		}
+
+		for ($line = 0; $line < @ref_output; $line++) {
+			my ($ref_func, $ref_label, @ref_dummy) = @{$ref_output[$line]};
+			my ($test_func, $test_label, @test_dummy) = @{$test_output[$line]};
+
+			if ($ref_func != $test_func || $ref_label ne $test_label) {
+				$opt_side_by_side = 0;
+				last;
+			}
+		}
+	}
+
+	if (!$opt_side_by_side) {
+		printc("Side-by-side output only possible if all DIMMS are similar\n");
+
+		# Discard "Decoding EEPROM" entry from all outputs
+		for $current (0 .. $#dimm) {
+			shift(@{$dimm[$current]->{output}});
+		}
+	}
+}
+
 # Print the decoded information for all DIMMs
 for $current (0 .. $#dimm) {
-	print "<b><u>" if $opt_html;
-	printl2("\n\nDecoding EEPROM", $dimm[$current]->{file});
-	print "</u></b>" if $opt_html;
+	if ($opt_side_by_side) {
+		print "\n\n";
+	} else {
+		print "<b><u>" if $opt_html;
+		printl2("\n\nDecoding EEPROM", $dimm[$current]->{file});
+		print "</u></b>" if $opt_html;
+	}
 	print "<table border=1>\n" if $opt_html;
 
-	foreach (@{$dimm[$current]->{output}}) {
-		my ($func, @param) = @{$_};
+	my @output = @{$dimm[$current]->{output}};
+	for (my $line = 0; $line < @output; $line++) {
+		my ($func, @param) = @{$output[$line]};
+
+		if ($opt_side_by_side) {
+			foreach ($current+1 .. $#dimm) {
+				my @xoutput = @{$dimm[$_]->{output}};
+				if (@{$xoutput[$line]} == 3) {
+					# Line with data, stack all values
+					push @param, @{$xoutput[$line]}[2];
+				} else {
+					# Separator, make it span
+					push @param, scalar @dimm;
+				}
+			}
+		}
+
 		$func->(@param);
 	}
 
 	print "</table>\n" if $opt_html;
+	last if $opt_side_by_side;
 }
 printl2("\n\nNumber of SDRAM DIMMs detected and decoded", scalar @dimm);
 
