@@ -41,7 +41,7 @@ use strict;
 use POSIX qw(ceil);
 use Fcntl qw(:DEFAULT :seek);
 use vars qw($opt_html $opt_bodyonly $opt_igncheck $use_sysfs $use_hexdump
-	    @vendors %decode_callback $revision @dimm %hexdump_cache);
+	    @vendors %decode_callback $revision @dimm $current %hexdump_cache);
 
 use constant LITTLEENDIAN	=> "little-endian";
 use constant BIGENDIAN		=> "big-endian";
@@ -1674,15 +1674,15 @@ if (!$opt_igncheck) {
 }
 
 # Process the valid entries
-for my $i (0 .. $#dimm) {
-	my @bytes = @{$dimm[$i]->{bytes}};
+for $current (0 .. $#dimm) {
+	my @bytes = @{$dimm[$current]->{bytes}};
 
 	print "<b><u>" if $opt_html;
-	printl2("\n\nDecoding EEPROM", $dimm[$i]->{file});
+	printl2("\n\nDecoding EEPROM", $dimm[$current]->{file});
 	print "</u></b>" if $opt_html;
 	print "<table border=1>\n" if $opt_html;
 	if (!$use_hexdump) {
-		if ($dimm[$i]->{file} =~ /-([\da-f]+)$/i) {
+		if ($dimm[$current]->{file} =~ /-([\da-f]+)$/i) {
 			my $dimm_num = hex($1) - 0x50 + 1;
 			if ($dimm_num >= 1 && $dimm_num <= 8) {
 				printl("Guessing DIMM is in", "bank $dimm_num");
@@ -1693,13 +1693,13 @@ for my $i (0 .. $#dimm) {
 # Decode first 3 bytes (0-2)
 	prints("SPD EEPROM Information");
 
-	printl($dimm[$i]->{chk_label}, ($dimm[$i]->{chk_valid} ?
-		sprintf("OK (%s)", $dimm[$i]->{chk_calc}) :
+	printl($dimm[$current]->{chk_label}, ($dimm[$current]->{chk_valid} ?
+		sprintf("OK (%s)", $dimm[$current]->{chk_calc}) :
 		sprintf("Bad\n(found %s, calculated %s)",
-			$dimm[$i]->{chk_spd}, $dimm[$i]->{chk_calc})));
+			$dimm[$current]->{chk_spd}, $dimm[$current]->{chk_calc})));
 
 	my $temp;
-	if ($dimm[$i]->{is_rambus}) {
+	if ($dimm[$current]->{is_rambus}) {
 		if ($bytes[0] == 1) { $temp = "0.7"; }
 		elsif ($bytes[0] == 2) { $temp = "1.0"; }
 		elsif ($bytes[0] == 0) { $temp = "Invalid"; }
@@ -1715,12 +1715,12 @@ for my $i (0 .. $#dimm) {
 		if ($spd_used > @bytes) {
 			push (@bytes,
 			      readspd(@bytes, $spd_used - @bytes,
-				      $dimm[$i]->{file}));
+				      $dimm[$current]->{file}));
 		}
 	}
 
 	my $type = sprintf("Unknown (0x%02x)", $bytes[2]);
-	if ($dimm[$i]->{is_rambus}) {
+	if ($dimm[$current]->{is_rambus}) {
 		if ($bytes[2] == 1) { $type = "Direct Rambus"; }
 		elsif ($bytes[2] == 17) { $type = "Rambus"; }
 	} else {
