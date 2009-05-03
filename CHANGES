@@ -10,6 +10,7 @@ SVN
                 Add side-by-side formatting option
                 Add merged cells formatting option
                 Try harder to decode the manufacturing date
+                Handle read errors on sysfs
   decode-xeon: Delete
   i2c-stub-from-dump: Use udev settle to speed up initialization
 

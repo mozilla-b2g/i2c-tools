@@ -1557,8 +1557,10 @@ sub readspd($$$)
 		sysopen(HANDLE, "$dimm_i/eeprom", O_RDONLY)
 			or die "Cannot open $dimm_i/eeprom";
 		binmode HANDLE;
-		sysseek(HANDLE, $offset, SEEK_SET);
-		sysread(HANDLE, my $eeprom, $size);
+		sysseek(HANDLE, $offset, SEEK_SET)
+			or die "Cannot seek $dimm_i/eeprom";
+		sysread(HANDLE, my $eeprom, $size)
+			or die "Cannot read $dimm_i/eeprom";
 		close HANDLE;
 		@bytes = unpack("C*", $eeprom);
 	} else {
