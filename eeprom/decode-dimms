@@ -510,6 +510,21 @@ sub value_or_undefined
 	return $value;
 }
 
+# Common to SDR, DDR and DDR2 SDRAM
+sub sdram_voltage_interface_level($)
+{
+	my @levels = (
+		"TTL (5V tolerant)",		#  0
+		"LVTTL (not 5V tolerant)",	#  1
+		"HSTL 1.5V",			#  2
+		"SSTL 3.3V",			#  3
+		"SSTL 2.5V",			#  4
+		"SSTL 1.8V",			#  5
+	);
+	
+	return ($_[0] < @levels) ? $levels[$_[0]] : "Undefined!";
+}
+
 # Parameter: EEPROM bytes 0-127 (using 3-62)
 sub decode_sdr_sdram($)
 {
@@ -578,14 +593,8 @@ sub decode_sdr_sdram($)
 	else { $temp = ($bytes->[7] * 256) + $bytes->[6]; }
 	printl("Data Width", $temp);
 
-	if ($bytes->[8] == 0) { $temp = "5.0 Volt/TTL"; }
-	elsif ($bytes->[8] == 1) { $temp = "LVTTL"; }
-	elsif ($bytes->[8] == 2) { $temp = "HSTL 1.5"; }
-	elsif ($bytes->[8] == 3) { $temp = "SSTL 3.3"; }
-	elsif ($bytes->[8] == 4) { $temp = "SSTL 2.5"; }
-	elsif ($bytes->[8] == 255) { $temp = "New Table"; }
-	else { $temp = "Undefined!"; }
-	printl("Module Interface Signal Levels", $temp);
+	printl("Voltage Interface Level",
+	       sdram_voltage_interface_level($bytes->[8]));
 
 	if ($bytes->[11] == 0) { $temp = "No Parity"; }
 	elsif ($bytes->[11] == 1) { $temp = "Parity"; }
@@ -809,6 +818,9 @@ sub decode_ddr_sdram($)
 			       $bytes->[5] . ", " . $bytes->[17]);
 	}
 
+	printl("Voltage Interface Level",
+	       sdram_voltage_interface_level($bytes->[8]));
+
 	my $highestCAS = 0;
 	my %cas;
 	for ($ii = 0; $ii < 7; $ii++) {
@@ -1001,9 +1013,8 @@ sub decode_ddr2_sdram($)
 
 	printl("DRAM Package", $bytes->[5] & 0x10 ? "Stack" : "Planar");
 
-	my @volts = ("TTL (5V Tolerant)", "LVTTL", "HSTL 1.5V",
-		     "SSTL 3.3V", "SSTL 2.5V", "SSTL 1.8V", "TBD");
-	printl("Voltage Interface Level", $volts[$bytes->[8]]);
+	printl("Voltage Interface Level",
+	       sdram_voltage_interface_level($bytes->[8]));
 
 	printl("Refresh Rate", ddr2_refresh_rate($bytes->[12]));
 
