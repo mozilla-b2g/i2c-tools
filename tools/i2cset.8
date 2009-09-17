@@ -11,7 +11,8 @@ i2cset \- set I2C registers
 .I i2cbus
 .I chip-address
 .I data-address
-.RI [ "value " [ "mode" ]]
+.RI [ value ]
+.RI [ mode ]
 .br
 .B i2cset
 .B -V
@@ -73,6 +74,9 @@ respectively. A \fBp\fP can also be appended to the \fImode\fR parameter to
 enable PEC. If the \fImode\fR parameter is omitted, i2cset defaults to byte
 mode without PEC. The \fIvalue\fR provided must be within range for the
 specified data type (0x00-0xFF for bytes, 0x0000-0xFFFF for words).
+Another possible mode is \fBc\fP, which doesn't write any value (so-called
+short write). You usually don't have to specify this mode, as it is the
+default when no value is provided, unless you also want to enable PEC.
 
 .SH WARNING
 i2cset can be extremely dangerous if used improperly. It can confuse your

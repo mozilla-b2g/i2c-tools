@@ -2,7 +2,7 @@
     i2cset.c - A user-space program to write an I2C register.
     Copyright (C) 2001-2003  Frodo Looijaard <frodol@dds.nl>, and
                              Mark D. Studebaker <mdsxyz123@yahoo.com>
-    Copyright (C) 2004-2008  Jean Delvare <khali@linux-fr.org>
+    Copyright (C) 2004-2009  Jean Delvare <khali@linux-fr.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,12 +35,13 @@ static void help(void) __attribute__ ((noreturn));
 static void help(void)
 {
 	fprintf(stderr,
-	        "Usage: i2cset [-f] [-y] [-m MASK] I2CBUS CHIP-ADDRESS DATA-ADDRESS [VALUE [MODE]]\n"
+	        "Usage: i2cset [-f] [-y] [-m MASK] I2CBUS CHIP-ADDRESS DATA-ADDRESS [VALUE] [MODE]\n"
 		"  I2CBUS is an integer or an I2C bus name\n"
 		"  ADDRESS is an integer (0x03 - 0x77)\n"
 		"  MODE is one of:\n"
-		"    b (byte, default)\n"
-		"    w (word)\n"
+		"    c (byte, no value)\n"
+		"    b (byte data, default)\n"
+		"    w (word data)\n"
 		"    Append p for SMBus PEC\n");
 	exit(1);
 }
@@ -180,11 +181,18 @@ int main(int argc, char *argv[])
 	}
 
 	if (argc > flags + 4) {
-		size = I2C_SMBUS_BYTE_DATA;
-		value = strtol(argv[flags+4], &end, 0);
-		if (*end || value < 0) {
-			fprintf(stderr, "Error: Data value invalid!\n");
-			help();
+		if (!strcmp(argv[flags+4], "c")
+		 || !strcmp(argv[flags+4], "cp")) {
+			size = I2C_SMBUS_BYTE;
+			value = -1;
+			pec = argv[flags+4][1] == 'p';
+		} else {
+			size = I2C_SMBUS_BYTE_DATA;
+			value = strtol(argv[flags+4], &end, 0);
+			if (*end || value < 0) {
+				fprintf(stderr, "Error: Data value invalid!\n");
+				help();
+			}
 		}
 	} else {
 		size = I2C_SMBUS_BYTE;
