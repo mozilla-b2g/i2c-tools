@@ -1,20 +1,20 @@
-.TH I2C-STUB-FROM-DUMP 8 "April 2008"
+.TH I2C-STUB-FROM-DUMP 8 "March 2010"
 .SH NAME
-i2c-stub-from-dump \- feed i2c-stub with a dump file
+i2c-stub-from-dump \- feed i2c-stub with dump files
 
 .SH SYNOPSIS
 .B i2c-stub-from-dump 
-.I address
-.I dump-file
+.IR address [, address ,...]
+.IR dump-file " [" dump-file " ...]"
 
 .SH DESCRIPTION
 i2c-stub-from-dump is a small helper script for the i2c-stub kernel driver.
-It lets you setup a fake I2C chip on the i2c-stub bus based on a dump of
-the chip you want to emulate.
+It lets you setup one or more fake I2C chips on the i2c-stub bus based on
+dumps of the chips you want to emulate.
 
 i2c-stub-from-dump requires i2cdetect and i2cset to be installed and
 reachable through the user's PATH. The former is used to find out the i2c-stub
-bus number, while the latter is used to write to the fake I2C chip.
+bus number, while the latter is used to write to the fake I2C chips.
 
 .SH EXAMPLE
 You have an I2C chip on system A. You would like to do some development on its

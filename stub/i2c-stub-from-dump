@@ -22,7 +22,7 @@
 # a device you do not have access to, but of which you have a dump.
 
 use strict;
-use vars qw($bus_nr $addr $err);
+use vars qw($bus_nr @addr $err);
 
 # Kernel version detection code by Mark M. Hoffman,
 # copied from sensors-detect.
@@ -64,7 +64,7 @@ sub get_i2c_stub_bus_number
 # Unload i2c-stub if we need an address it doesn't offer
 sub check_chip_addr {
 	my $chip_addr_file = shift;
-	my $addr = shift;
+	my @addr = @{shift()};
 	local $_;
 
 	open(CHIP_ADDR, $chip_addr_file) || return;
@@ -73,9 +73,12 @@ sub check_chip_addr {
 	my %stub_addr = map { $_ => 1 } split ',';
 	close(CHIP_ADDR);
 
-	unless (exists $stub_addr{$addr}) {
-		print STDERR "Cycling i2c-stub to get the address we need\n";
-		system("/sbin/rmmod", "i2c-stub");
+	foreach my $addr (@addr) {
+		unless (exists $stub_addr{$addr}) {
+			print STDERR "Cycling i2c-stub to get the address we need\n";
+			system("/sbin/rmmod", "i2c-stub");
+			return;
+		}
 	}
 }
 
@@ -83,11 +86,11 @@ sub check_chip_addr {
 sub load_kernel_drivers
 {
 	local $_;
-	my $addr = oct shift;
+	my @addr = @{shift()};
 	my $nr;
 
 	# i2c-stub may be loaded without the address we want
-	check_chip_addr("/sys/module/i2c_stub/parameters/chip_addr", $addr);
+	check_chip_addr("/sys/module/i2c_stub/parameters/chip_addr", \@addr);
 
 	# Maybe everything is already loaded
 	$nr = get_i2c_stub_bus_number();
@@ -95,7 +98,8 @@ sub load_kernel_drivers
 
 	system("/sbin/modprobe", "i2c-dev") == 0 || exit 1;
 	if (kernel_version_at_least(2, 6, 19)) {
-		system("/sbin/modprobe", "i2c-stub", "chip_addr=$addr") == 0 || exit 1;
+		system("/sbin/modprobe", "i2c-stub",
+		       "chip_addr=".join(',', @addr)) == 0 || exit 1;
 	} else {
 		system("/sbin/modprobe", "i2c-stub") == 0 || exit 1;
 	}
@@ -180,26 +184,46 @@ if ($>) {
 	exit 1;
 }
 
-if (@ARGV != 2) {
-	print STDERR "Usage: i2c-stub-from-dump <addr> <dump file>\n";
+if (@ARGV < 2) {
+	print STDERR "Usage: i2c-stub-from-dump <addr>[,<addr>,...] <dump file> [<dump file> ...]\n";
 	exit 1;
 }
 
 # Check the parameters
-$addr = $ARGV[0];
-if ($addr !~ m/^0x[0-7][0-9a-f]$/i) {
-	print STDERR "Invalid address $addr\n";
-	exit 1;
+@addr = split(/,/, shift @ARGV);
+foreach (@addr) {
+	unless (m/^0x[0-7][0-9a-f]$/i) {
+		print STDERR "Invalid address $_\n";
+		exit 1;
+	}
+	$_ = oct $_;
+}
+
+if (@addr < @ARGV) {
+	print STDERR "Fewer addresses than dumps provided\n";
+	exit 4;
 }
 
 initialize_kernel_version();
+if (@addr > 1 && !kernel_version_at_least(2, 6, 24)) {
+	print STDERR "Multiple addresses not supported by this kernel version\n";
+	exit 5;
+}
 
-$bus_nr = load_kernel_drivers($addr);
+$bus_nr = load_kernel_drivers(\@addr);
 
 # We don't want to see the output of 256 i2cset
 open(SAVEOUT, ">&STDOUT");
 open(STDOUT, ">/dev/null");
-$err = process_dump(oct $addr, $ARGV[1]);
+foreach (@addr) {
+	if (!@ARGV) {
+		printf STDERR "Skipping \%d-\%04x, no dump file privided\n",
+		       $bus_nr, $_;
+		next;
+	}
+	$err = process_dump($_, shift @ARGV);
+	last if $err;
+}
 close(STDOUT);
 
 exit($err);
