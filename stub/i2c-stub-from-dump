@@ -61,6 +61,24 @@ sub get_i2c_stub_bus_number
 	return $nr;
 }
 
+# Unload i2c-stub if we need an address it doesn't offer
+sub check_chip_addr {
+	my $chip_addr_file = shift;
+	my $addr = shift;
+	local $_;
+
+	open(CHIP_ADDR, $chip_addr_file) || return;
+	$_ = <CHIP_ADDR>;
+	chomp;
+	my %stub_addr = map { $_ => 1 } split ',';
+	close(CHIP_ADDR);
+
+	unless (exists $stub_addr{$addr}) {
+		print STDERR "Cycling i2c-stub to get the address we need\n";
+		system("/sbin/rmmod", "i2c-stub");
+	}
+}
+
 # Load the required kernel drivers if needed
 sub load_kernel_drivers
 {
@@ -68,25 +86,12 @@ sub load_kernel_drivers
 	my $addr = oct shift;
 	my $nr;
 
+	# i2c-stub may be loaded without the address we want
+	check_chip_addr("/sys/module/i2c_stub/parameters/chip_addr", $addr);
+
 	# Maybe everything is already loaded
 	$nr = get_i2c_stub_bus_number();
-	if (defined $nr) {
-		if (kernel_version_at_least(2, 6, 19)) {
-			# Check if the chip address we need is there
-			open(CHIP_ADDR, "/sys/module/i2c_stub/parameters/chip_addr");
-			$_ = <CHIP_ADDR>;
-			chomp;
-			my @stub_addr = split ',';
-			close(CHIP_ADDR);
-
-			foreach (@stub_addr) {
-				return $nr if $addr == $_;
-			}
-			printf STDERR "i2c-stub already loaded without support for address 0x%02x\n", $addr;
-			exit 2;
-		}
-		return $nr;
-	}
+	return $nr if defined $nr;
 
 	system("/sbin/modprobe", "i2c-dev") == 0 || exit 1;
 	if (kernel_version_at_least(2, 6, 19)) {
