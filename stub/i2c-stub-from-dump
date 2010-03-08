@@ -22,7 +22,7 @@
 # a device you do not have access to, but of which you have a dump.
 
 use strict;
-use vars qw($bus_nr $addr $bytes $words $err);
+use vars qw($bus_nr $addr $err);
 
 # Kernel version detection code by Mark M. Hoffman,
 # copied from sensors-detect.
@@ -116,8 +116,9 @@ sub load_kernel_drivers
 
 sub process_dump
 {
-	my $dump = shift;
+	my ($addr, $dump) = @_;
 	my $err = 0;
+	my ($bytes, $words);
 
 	open(DUMP, $dump) || die "Can't open $dump: $!\n";
  OUTER_LOOP:
@@ -156,6 +157,21 @@ sub process_dump
 	}
 	close(DUMP);
 
+	if ($bytes) {
+		printf SAVEOUT "$bytes byte values written to \%d-\%04x\n",
+			$bus_nr, $addr;
+	}
+
+	if ($words) {
+		printf SAVEOUT "$words word values written to \%d-\%04x\n",
+			$bus_nr, $addr;
+	}
+
+	if (!$err && !$bytes && !$words) {
+		printf SAVEOUT "Only garbage found in dump file $dump\n";
+		$err = 1;
+	}
+
 	return $err;
 }
 
@@ -179,27 +195,11 @@ if ($addr !~ m/^0x[0-7][0-9a-f]$/i) {
 initialize_kernel_version();
 
 $bus_nr = load_kernel_drivers($addr);
-$bytes = $words = 0;
 
 # We don't want to see the output of 256 i2cset
 open(SAVEOUT, ">&STDOUT");
 open(STDOUT, ">/dev/null");
-$err = process_dump($ARGV[1]);
+$err = process_dump(oct $addr, $ARGV[1]);
 close(STDOUT);
-
-if ($bytes) {
-	printf SAVEOUT "$bytes byte values written to \%d-\%04x\n",
-		$bus_nr, oct($addr);
-}
-
-if ($words) {
-	printf SAVEOUT "$words word values written to \%d-\%04x\n",
-		$bus_nr, oct($addr);
-}
-
-if (!$err && ($bytes + $words == 0)) {
-	printf SAVEOUT "Only garbage found in dump file $ARGV[1]\n";
-	exit(1);
-}
 
 exit($err);
