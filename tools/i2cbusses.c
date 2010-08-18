@@ -378,7 +378,7 @@ int open_i2c_dev(const int i2cbus, char *filename, const int quiet)
 	sprintf(filename, "/dev/i2c/%d", i2cbus);
 	file = open(filename, O_RDWR);
 
-	if (file < 0 && errno == ENOENT) {
+	if (file < 0 && (errno == ENOENT || errno == ENOTDIR)) {
 		sprintf(filename, "/dev/i2c-%d", i2cbus);
 		file = open(filename, O_RDWR);
 	}

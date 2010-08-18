@@ -18,6 +18,7 @@ SVN
   i2c-stub-from-dump: Use udev settle to speed up initialization
                       Unload i2c-stub automatically if needed
                       Add support for multiple dumps
+  tools: Properly handle /dev/i2c not being a directory
 
 3.0.2 (2008-11-29)
   i2c-dev.h: Drop I2C_FUNC_SMBUS_*I2C_BLOCK_2 defines
