@@ -317,13 +317,13 @@ int main(int argc, char *argv[])
 
 	if (mode != MODE_READ && !(funcs & I2C_FUNC_SMBUS_QUICK)) {
 		fprintf(stderr, "Error: Can't use SMBus Quick Write command "
-			"on this bus (ISA bus?)\n");
+			"on this bus\n");
 		close(file);
 		exit(1);
 	}
 	if (mode != MODE_QUICK && !(funcs & I2C_FUNC_SMBUS_READ_BYTE)) {
 		fprintf(stderr, "Error: Can't use SMBus Read Byte command "
-			"on this bus (ISA bus?)\n");
+			"on this bus\n");
 		close(file);
 		exit(1);
 	}

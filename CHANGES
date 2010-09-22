@@ -14,6 +14,7 @@ SVN
                 Decode voltage interface level of DDR SDRAM
   decode-xeon: Delete
   eepromer: Fix array initialization overrun
+  i2cdetect: Drop legacy reference to ISA bus
   i2cset: Add support for short writes with PEC
   i2c-stub-from-dump: Use udev settle to speed up initialization
                       Unload i2c-stub automatically if needed
