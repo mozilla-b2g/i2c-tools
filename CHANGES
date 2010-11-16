@@ -4,6 +4,7 @@ i2c-tools CHANGES
 SVN
   Makefile: Let the environment set CC and CFLAGS
             Integrate py-smbus into the build system
+  README: Point users to the linux-i2c mailing list
   decode-dimms: Handle CRC of FB-DIMM and DDR3 SDRAM memory modules
                 Add support for DDR3 SDRAM
                 Fix decoding of SDR SDRAM bytes 12-14

@@ -65,3 +65,12 @@ See these manual pages for command line interface details and tool specific
 information.
 
 The other tools come with simple text documentation, which isn't installed.
+
+
+QUESTIONS AND BUG REPORTS
+-------------------------
+
+Please post your questions and bug reports to the linux-i2c mailing list:
+  linux-i2c@vger.kernel.org
+For additional information about this list, see:
+  http://vger.kernel.org/vger-lists.html#linux-i2c
