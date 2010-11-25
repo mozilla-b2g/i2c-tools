@@ -332,16 +332,16 @@ done:
  */
 int lookup_i2c_bus(const char *i2cbus_arg)
 {
-	long i2cbus;
+	unsigned long i2cbus;
 	char *end;
 
-	i2cbus = strtol(i2cbus_arg, &end, 0);
+	i2cbus = strtoul(i2cbus_arg, &end, 0);
 	if (*end || !*i2cbus_arg) {
 		/* Not a number, maybe a name? */
 		return lookup_i2c_bus_by_name(i2cbus_arg);
 	}
-	if (i2cbus < 0 || i2cbus > 0xff) {
-		fprintf(stderr, "Error: I2C bus out of range (0-255)!\n");
+	if (i2cbus > INT_MAX) {
+		fprintf(stderr, "Error: I2C bus out of range!\n");
 		return -2;
 	}
 
