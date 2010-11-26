@@ -1,8 +1,8 @@
 /*
     i2cdetect.c - a user-space program to scan for I2C devices
-    Copyright (C) 1999-2004  Frodo Looijaard <frodol@dds.nl>,
-                             Mark D. Studebaker <mdsxyz123@yahoo.com> and
-                             Jean Delvare <khali@linux-fr.org>
+    Copyright (C) 1999-2004  Frodo Looijaard <frodol@dds.nl>, and
+                             Mark D. Studebaker <mdsxyz123@yahoo.com>
+    Copyright (C) 2004-2010  Jean Delvare <khali@linux-fr.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -295,7 +295,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	file = open_i2c_dev(i2cbus, filename, 0);
+	file = open_i2c_dev(i2cbus, filename, sizeof(filename), 0);
 	if (file < 0) {
 		exit(1);
 	}

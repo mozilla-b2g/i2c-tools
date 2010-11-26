@@ -1,6 +1,6 @@
 /*
     i2cget.c - A user-space program to read an I2C register.
-    Copyright (C) 2005-2008  Jean Delvare <khali@linux-fr.org>
+    Copyright (C) 2005-2010  Jean Delvare <khali@linux-fr.org>
 
     Based on i2cset.c:
     Copyright (C) 2001-2003  Frodo Looijaard <frodol@dds.nl>, and
@@ -212,7 +212,7 @@ int main(int argc, char *argv[])
 		pec = argv[flags+4][1] == 'p';
 	}
 
-	file = open_i2c_dev(i2cbus, filename, 0);
+	file = open_i2c_dev(i2cbus, filename, sizeof(filename), 0);
 	if (file < 0
 	 || check_funcs(file, size, daddress, pec)
 	 || set_slave_addr(file, address, force))

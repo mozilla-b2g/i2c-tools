@@ -4,7 +4,7 @@
                devices.
     Copyright (c) 1999-2003  Frodo Looijaard <frodol@dds.nl> and
                              Mark D. Studebaker <mdsxyz123@yahoo.com>
-    Copyright (C) 2008       Jean Delvare <khali@linux-fr.org>
+    Copyright (C) 2008-2010  Jean Delvare <khali@linux-fr.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
     MA 02110-1301 USA.
 */
 
-/* For strdup */
+/* For strdup and snprintf */
 #define _BSD_SOURCE 1
 
 #include <sys/types.h>
@@ -67,7 +67,7 @@ static enum adt i2c_get_funcs(int i2cbus)
 	char filename[20];
 	enum adt ret;
 
-	file = open_i2c_dev(i2cbus, filename, 1);
+	file = open_i2c_dev(i2cbus, filename, sizeof(filename), 1);
 	if (file < 0)
 		return adt_unknown;
 
@@ -340,7 +340,7 @@ int lookup_i2c_bus(const char *i2cbus_arg)
 		/* Not a number, maybe a name? */
 		return lookup_i2c_bus_by_name(i2cbus_arg);
 	}
-	if (i2cbus > INT_MAX) {
+	if (i2cbus > 0xFFFFF) {
 		fprintf(stderr, "Error: I2C bus out of range!\n");
 		return -2;
 	}
@@ -371,11 +371,12 @@ int parse_i2c_address(const char *address_arg)
 	return address;
 }
 
-int open_i2c_dev(const int i2cbus, char *filename, const int quiet)
+int open_i2c_dev(int i2cbus, char *filename, size_t size, int quiet)
 {
 	int file;
 
-	sprintf(filename, "/dev/i2c/%d", i2cbus);
+	snprintf(filename, size, "/dev/i2c/%d", i2cbus);
+	filename[size - 1] = '\0';
 	file = open(filename, O_RDWR);
 
 	if (file < 0 && (errno == ENOENT || errno == ENOTDIR)) {
