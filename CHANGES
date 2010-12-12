@@ -1,6 +1,9 @@
 i2c-tools CHANGES
 -----------------
 
+SVN
+  i2c-dev.h: Make value arrays const for block write functions
+
 3.0.3 (2010-12-12)
   Makefile: Let the environment set CC and CFLAGS
             Integrate py-smbus into the build system
