@@ -1,7 +1,7 @@
 i2c-tools CHANGES
 -----------------
 
-SVN
+3.0.3 (2010-12-12)
   Makefile: Let the environment set CC and CFLAGS
             Integrate py-smbus into the build system
   README: Point users to the linux-i2c mailing list
