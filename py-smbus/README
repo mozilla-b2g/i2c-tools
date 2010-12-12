@@ -3,6 +3,8 @@ README: py-smbus
 
 To build:
 	$ python setup.py build
+On most GNU/Linux distributions, you'll need to install the python-devel
+package for the build to succeed.
 
 To install (will also build if necessary):
 	$ python setup.py install
