@@ -16,15 +16,12 @@ SVN
   decode-xeon: Delete
   eepromer: Fix array initialization overrun
   i2cdetect: Drop legacy reference to ISA bus
-             Increase limit on I2C bus number
-  i2cdump: Increase limit on I2C bus number
-  i2cget: Increase limit on I2C bus number
   i2cset: Add support for short writes with PEC
-          Increase limit on I2C bus number
   i2c-stub-from-dump: Use udev settle to speed up initialization
                       Unload i2c-stub automatically if needed
                       Add support for multiple dumps
   tools: Properly handle /dev/i2c not being a directory
+         Increase limit on I2C bus number
 
 3.0.2 (2008-11-29)
   i2c-dev.h: Drop I2C_FUNC_SMBUS_*I2C_BLOCK_2 defines
