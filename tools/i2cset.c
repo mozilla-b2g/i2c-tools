@@ -35,13 +35,15 @@ static void help(void) __attribute__ ((noreturn));
 static void help(void)
 {
 	fprintf(stderr,
-	        "Usage: i2cset [-f] [-y] [-m MASK] I2CBUS CHIP-ADDRESS DATA-ADDRESS [VALUE] [MODE]\n"
+	        "Usage: i2cset [-f] [-y] [-m MASK] I2CBUS CHIP-ADDRESS DATA-ADDRESS [VALUE] ... [MODE]\n"
 		"  I2CBUS is an integer or an I2C bus name\n"
 		"  ADDRESS is an integer (0x03 - 0x77)\n"
 		"  MODE is one of:\n"
 		"    c (byte, no value)\n"
 		"    b (byte data, default)\n"
 		"    w (word data)\n"
+		"    i (I2C block data)\n"
+		"    s (SMBus block data)\n"
 		"    Append p for SMBus PEC\n");
 	exit(1);
 }
@@ -78,6 +80,19 @@ static int check_funcs(int file, int size, int pec)
 			return -1;
 		}
 		break;
+
+	case I2C_SMBUS_BLOCK_DATA:
+		if (!(funcs & I2C_FUNC_SMBUS_WRITE_BLOCK_DATA)) {
+			fprintf(stderr, MISSING_FUNC_FMT, "SMBus block write");
+			return -1;
+		}
+		break;
+	case I2C_SMBUS_I2C_BLOCK_DATA:
+		if (!(funcs & I2C_FUNC_SMBUS_WRITE_I2C_BLOCK)) {
+			fprintf(stderr, MISSING_FUNC_FMT, "I2C block write");
+			return -1;
+		}
+		break;
 	}
 
 	if (pec
@@ -90,7 +105,8 @@ static int check_funcs(int file, int size, int pec)
 }
 
 static int confirm(const char *filename, int address, int size, int daddress,
-		   int value, int vmask, int pec)
+		   int value, int vmask, const unsigned char *block, int len,
+		   int pec)
 {
 	int dont = 0;
 
@@ -109,7 +125,16 @@ static int confirm(const char *filename, int address, int size, int daddress,
 		"0x%02x, data address\n0x%02x, ", filename, address, daddress);
 	if (size == I2C_SMBUS_BYTE)
 		fprintf(stderr, "no data.\n");
-	else
+	else if (size == I2C_SMBUS_BLOCK_DATA ||
+		 size == I2C_SMBUS_I2C_BLOCK_DATA) {
+		int i;
+
+		fprintf(stderr, "data");
+		for (i = 0; i < len; i++)
+			fprintf(stderr, " 0x%02x", block[i]);
+		fprintf(stderr, ", mode %s.\n", size == I2C_SMBUS_BLOCK_DATA
+			? "smbus block" : "i2c block");
+	} else
 		fprintf(stderr, "data 0x%02x%s, mode %s.\n", value,
 			vmask ? " (masked)" : "",
 			size == I2C_SMBUS_BYTE_DATA ? "byte" : "word");
@@ -136,6 +161,8 @@ int main(int argc, char *argv[])
 	int pec = 0;
 	int flags = 0;
 	int force = 0, yes = 0, version = 0, readback = 0;
+	unsigned char block[I2C_SMBUS_BLOCK_MAX];
+	int len;
 
 	/* handle (optional) flags first */
 	while (1+flags < argc && argv[1+flags][0] == '-') {
@@ -178,6 +205,34 @@ int main(int argc, char *argv[])
 	if (*end || daddress < 0 || daddress > 0xff) {
 		fprintf(stderr, "Error: Data address invalid!\n");
 		help();
+	}
+
+	/* check for block data */
+	len = 0;
+	if (argc > flags + 5) {
+		switch (argv[argc-1][0]) {
+		case 's': size = I2C_SMBUS_BLOCK_DATA; break;
+		case 'i': size = I2C_SMBUS_I2C_BLOCK_DATA; break;
+		default:
+			size = 0;
+			break;
+		}
+		if (size == I2C_SMBUS_BLOCK_DATA || size == I2C_SMBUS_I2C_BLOCK_DATA) {
+			pec = argv[argc-1][1] == 'p';
+			if (pec && size == I2C_SMBUS_I2C_BLOCK_DATA) {
+				fprintf(stderr, "Error: PEC not supported for I2C block writes!\n");
+				help();
+			}
+			for (len = 0; len < (int)sizeof(block) && len + flags + 5 < argc; len++) {
+				value = strtol(argv[flags + len + 4], &end, 0);
+				if (*end || value < 0 || value > 0xff) {
+                                	fprintf(stderr, "Error: Block data value invalid!\n");
+                                	help();
+                        	}
+				block[len] = value;
+			}
+			goto dofile;
+		}
 	}
 
 	if (argc > flags + 4) {
@@ -236,6 +291,7 @@ int main(int argc, char *argv[])
 		help();
 	}
 
+dofile:
 	file = open_i2c_dev(i2cbus, filename, sizeof(filename), 0);
 	if (file < 0
 	 || check_funcs(file, size, pec)
@@ -243,7 +299,7 @@ int main(int argc, char *argv[])
 		exit(1);
 
 	if (!yes && !confirm(filename, address, size, daddress,
-			     value, vmask, pec))
+			     value, vmask, block, len, pec))
 		exit(0);
 
 	if (vmask) {
@@ -299,8 +355,15 @@ int main(int argc, char *argv[])
 	case I2C_SMBUS_WORD_DATA:
 		res = i2c_smbus_write_word_data(file, daddress, value);
 		break;
+	case I2C_SMBUS_BLOCK_DATA:
+		res = i2c_smbus_write_block_data(file, daddress, len, block);
+		break;
+	case I2C_SMBUS_I2C_BLOCK_DATA:
+		res = i2c_smbus_write_i2c_block_data(file, daddress, len, block);
+		break;
 	default: /* I2C_SMBUS_BYTE_DATA */
 		res = i2c_smbus_write_byte_data(file, daddress, value);
+		break;
 	}
 	if (res < 0) {
 		fprintf(stderr, "Error: Write failed\n");

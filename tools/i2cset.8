@@ -12,6 +12,7 @@ i2cset \- set I2C registers
 .I chip-address
 .I data-address
 .RI [ value ]
+.RI ...
 .RI [ mode ]
 .br
 .B i2cset
@@ -62,18 +63,24 @@ address of the chip on that bus, and is an integer between 0x03 and 0x77.
 integer between 0x00 and 0xFF.
 .PP
 The \fIvalue\fR parameter, if specified, is the value to write to that
-location on the chip. If this parameter is omited, then a short write is
+location on the chip. If this parameter is omitted, then a short write is
 issued. For most chips, it simply sets an internal pointer to the target
 location, but doesn't actually write to that location. For a few chips
 though, in particular simple ones with a single register, this short write
-is an actual write.
+is an actual write. If the mode parameter is \fBs\fP or \fBi\fP, multiple
+values can be specified.
 .PP
-The \fImode\fR parameter, if specified, is one of the letters \fBb\fP or
-\fBw\fP, corresponding to a write size of a single byte or a 16-bit word,
-respectively. A \fBp\fP can also be appended to the \fImode\fR parameter to
-enable PEC. If the \fImode\fR parameter is omitted, i2cset defaults to byte
+The \fImode\fR parameter, if specified, is one of the letters \fBb\fP,
+\fBw\fP, \fBs\fP, or \fBi\fP, corresponding to a write size of a single byte,
+a 16-bit word, a SMBus block write, or an I2C block write, respectively.
+For SMBus and I2C block writes, the write size is determined by the number
+of \fIvalue\fR parameters.
+Except for I2C block writes, a \fBp\fP can also be appended to the \fImode\fR
+parameter to enable PEC.
+If the \fImode\fR parameter is omitted, i2cset defaults to byte
 mode without PEC. The \fIvalue\fR provided must be within range for the
-specified data type (0x00-0xFF for bytes, 0x0000-0xFFFF for words).
+specified data type (0x00-0xFF for byte and block writes, 0x0000-0xFFFF
+for words).
 Another possible mode is \fBc\fP, which doesn't write any value (so-called
 short write). You usually don't have to specify this mode, as it is the
 default when no value is provided, unless you also want to enable PEC.
