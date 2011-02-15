@@ -223,7 +223,11 @@ int main(int argc, char *argv[])
 				fprintf(stderr, "Error: PEC not supported for I2C block writes!\n");
 				help();
 			}
-			for (len = 0; len < (int)sizeof(block) && len + flags + 5 < argc; len++) {
+			if (argc > (int)sizeof(block) + flags + 5) {
+				fprintf(stderr, "Error: Too many arguments!\n");
+				help();
+			}
+			for (len = 0; len + flags + 5 < argc; len++) {
 				value = strtol(argv[flags + len + 4], &end, 0);
 				if (*end || value < 0 || value > 0xff) {
                                 	fprintf(stderr, "Error: Block data value invalid!\n");
