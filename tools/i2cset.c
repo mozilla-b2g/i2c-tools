@@ -223,6 +223,10 @@ int main(int argc, char *argv[])
 				fprintf(stderr, "Error: PEC not supported for I2C block writes!\n");
 				help();
 			}
+			if (maskp) {
+				fprintf(stderr, "Error: Mask not supported for block writes!\n");
+				help();
+			}
 			if (argc > (int)sizeof(block) + flags + 5) {
 				fprintf(stderr, "Error: Too many arguments!\n");
 				help();
