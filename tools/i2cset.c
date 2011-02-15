@@ -240,6 +240,9 @@ int main(int argc, char *argv[])
 				block[len] = value;
 			}
 			goto dofile;
+		} else if (argc != flags + 6) {
+			fprintf(stderr, "Error: Too many arguments!\n");
+			help();
 		}
 	}
 
