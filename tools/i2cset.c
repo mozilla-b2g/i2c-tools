@@ -300,6 +300,11 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "Error: Data value mask invalid!\n");
 			help();
 		}
+		if (((size == I2C_SMBUS_BYTE || size == I2C_SMBUS_BYTE_DATA)
+		     && vmask > 0xff) || vmask > 0xffff) {
+			fprintf(stderr, "Error: Data value mask out of range!\n");
+			help();
+		}
 	}
 
 	file = open_i2c_dev(i2cbus, filename, sizeof(filename), 0);
