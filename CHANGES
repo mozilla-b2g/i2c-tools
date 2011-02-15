@@ -4,6 +4,7 @@ i2c-tools CHANGES
 SVN
   i2c-dev.h: Make value arrays const for block write functions
   i2cset: Add support for SMBus and I2C block writes
+          Removed obsolete method to specify value mask
 
 3.0.3 (2010-12-12)
   Makefile: Let the environment set CC and CFLAGS

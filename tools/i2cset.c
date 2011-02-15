@@ -265,18 +265,6 @@ int main(int argc, char *argv[])
 		pec = argv[flags+5][1] == 'p';
 	}
 
-	/* Old method to provide the value mask, deprecated and no longer
-	   documented but still supported for compatibility */
-	if (argc > flags + 6) {
-		if (maskp) {
-			fprintf(stderr, "Error: Data value mask provided twice!\n");
-			help();
-		}
-		fprintf(stderr, "Warning: Using deprecated way to set the data value mask!\n");
-		fprintf(stderr, "         Please switch to using -m.\n");
-		maskp = argv[flags+6];
-	}
-
 	if (maskp) {
 		vmask = strtol(maskp, &end, 0);
 		if (*end || vmask == 0) {
