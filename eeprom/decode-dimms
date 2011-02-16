@@ -525,6 +525,18 @@ sub sdram_voltage_interface_level($)
 	return ($_[0] < @levels) ? $levels[$_[0]] : "Undefined!";
 }
 
+# Common to SDR and DDR SDRAM
+sub sdram_module_configuration_type($)
+{
+	my @types = (
+		"No Parity",			# 0
+		"Parity",			# 1
+		"ECC",				# 2
+	);
+
+	return ($_[0] < @types) ? $types[$_[0]] : "Undefined!";
+}
+
 # Parameter: EEPROM bytes 0-127 (using 3-62)
 sub decode_sdr_sdram($)
 {
@@ -596,25 +608,10 @@ sub decode_sdr_sdram($)
 	printl("Voltage Interface Level",
 	       sdram_voltage_interface_level($bytes->[8]));
 
-	if ($bytes->[11] == 0) { $temp = "No Parity"; }
-	elsif ($bytes->[11] == 1) { $temp = "Parity"; }
-	elsif ($bytes->[11] == 2) { $temp = "ECC";  }
-	else { $temp = "Undefined!"; }
-	printl("Module Configuration Type", $temp);
+	printl("Module Configuration Type",
+	       sdram_module_configuration_type($bytes->[11]));
 
-	if ($bytes->[12] & 0x80) { $temp = "Self Refreshing"; }
-	else { $temp = "Not Self Refreshing"; }
-	printl("Refresh Type", $temp);
-
-	$temp = $bytes->[12] & 0x7f;
-	if ($temp == 0) { $temp = "Normal (15.625 us)"; }
-	elsif ($temp == 1) { $temp = "Reduced (3.9 us)"; }
-	elsif ($temp == 2) { $temp = "Reduced (7.8 us)"; }
-	elsif ($temp == 3) { $temp = "Extended (31.3 us)"; }
-	elsif ($temp == 4) { $temp = "Extended (62.5 us)"; }
-	elsif ($temp == 5) { $temp = "Extended (125 us)"; }
-	else { $temp = "Undefined!"; }
-	printl("Refresh Rate", $temp);
+	printl("Refresh Rate", ddr2_refresh_rate($bytes->[12]));
 
 	if ($bytes->[13] & 0x80) { $temp = "Bank2 = 2 x Bank1"; }
 	else { $temp = "No Bank2 OR Bank2 = Bank1 width"; }
@@ -821,6 +818,11 @@ sub decode_ddr_sdram($)
 	printl("Voltage Interface Level",
 	       sdram_voltage_interface_level($bytes->[8]));
 
+	printl("Module Configuration Type",
+	       sdram_module_configuration_type($bytes->[11]));
+
+	printl("Refresh Rate", ddr2_refresh_rate($bytes->[12]));
+
 	my $highestCAS = 0;
 	my %cas;
 	for ($ii = 0; $ii < 7; $ii++) {
@@ -949,6 +951,7 @@ sub ddr2_module_types($)
 	return @suptypes;
 }
 
+# Common to SDR, DDR and DDR2 SDRAM
 sub ddr2_refresh_rate($)
 {
 	my $byte = shift;

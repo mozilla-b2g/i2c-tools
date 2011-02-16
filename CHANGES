@@ -2,6 +2,8 @@ i2c-tools CHANGES
 -----------------
 
 SVN
+  decode-dimms: Decode module configuration type of DDR SDRAM
+                Decode refresh rate of DDR SDRAM
   i2c-dev.h: Make value arrays const for block write functions
   i2cset: Add support for SMBus and I2C block writes
           Removed obsolete method to specify value mask
