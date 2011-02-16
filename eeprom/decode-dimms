@@ -5,7 +5,7 @@
 # Copyright 1998, 1999 Philip Edelbrock <phil@netroedge.com>
 # modified by Christian Zuckschwerdt <zany@triq.net>
 # modified by Burkart Lingner <burkart@bollchen.de>
-# Copyright (C) 2005-2009  Jean Delvare <khali@linux-fr.org>
+# Copyright (C) 2005-2011  Jean Delvare <khali@linux-fr.org>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -1710,24 +1710,55 @@ printh('Memory Serial Presence Detect Decoder',
 Jean Delvare, Trent Piepho and others');
 
 
+# From a sysfs device path and an attribute name, return the attribute
+# value, or undef (stolen from sensors-detect)
+sub sysfs_device_attribute
+{
+	my ($device, $attr) = @_;
+	my $value;
+
+	open(local *FILE, "$device/$attr") or return "";
+	$value = <FILE>;
+	close(FILE);
+	return unless defined $value;
+
+	chomp($value);
+	return $value;
+}
+
 sub get_dimm_list
 {
-	my ($dir, $file, @files);
+	my (@dirs, $dir, $file, @files);
 
 	if ($use_sysfs) {
-		$dir = '/sys/bus/i2c/drivers/eeprom';
+		@dirs = ('/sys/bus/i2c/drivers/eeprom', '/sys/bus/i2c/drivers/at24');
 	} else {
-		$dir = '/proc/sys/dev/sensors';
+		@dirs = ('/proc/sys/dev/sensors');
 	}
 
-	if (opendir(local *DIR, $dir)) {
+	foreach $dir (@dirs) {
+		next unless opendir(local *DIR, $dir);
 		while (defined($file = readdir(DIR))) {
-			next if $use_sysfs && $file !~ /^\d+-[\da-f]+$/i;
-			next if !$use_sysfs && $file !~ /^eeprom-/;
+			if ($use_sysfs) {
+				# We look for I2C devices like 0-0050 or 2-0051
+				next unless $file =~ /^\d+-[\da-f]+$/i;
+				next unless -d "$dir/$file";
+
+				# Device name must be eeprom (driver eeprom)
+				# or spd (driver at24)
+				my $attr = sysfs_device_attribute("$dir/$file", "name");
+				next unless defined $attr &&
+					    ($attr eq "eeprom" || $attr eq "spd");
+			} else {
+				next unless $file =~ /^eeprom-/;
+			}
 			push @files, { eeprom => "$file",
 				       file => "$dir/$file" };
 		}
 		close(DIR);
+	}
+
+	if (@files) {
 		return sort { $a->{file} cmp $b->{file} } @files;
 	} elsif (! -d '/sys/module/eeprom') {
 		print "No EEPROM found, are you sure the eeprom module is loaded?\n";
