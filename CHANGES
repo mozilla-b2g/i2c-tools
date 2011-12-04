@@ -1,7 +1,7 @@
 i2c-tools CHANGES
 -----------------
 
-SVN
+3.1.0 (2011-12-04)
   decode-dimms: Decode module configuration type of DDR SDRAM
                 Decode refresh rate of DDR SDRAM
                 Add support for the at24 kernel driver
