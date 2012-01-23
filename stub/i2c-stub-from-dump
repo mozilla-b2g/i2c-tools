@@ -127,7 +127,7 @@ sub process_dump
 	open(DUMP, $dump) || die "Can't open $dump: $!\n";
  OUTER_LOOP:
 	while (<DUMP>) {
-		if (m/^([0-9a-f]0):(( [0-9a-fX]{2}){16})/) {
+		if (m/^([0-9a-f]0) ?[:|](( [0-9a-fX]{2}){16})/i) {
 			# Byte dump
 			my $offset = hex($1);
 			my @values = split(/ /, $2);
@@ -142,7 +142,7 @@ sub process_dump
 				}
 				$bytes++;
 			}
-		} elsif (m/^([0-9a-f][08]):(( [0-9a-fX]{4}){8})/) {
+		} elsif (m/^([0-9a-f][08]) ?[:|](( [0-9a-fX]{4}){8})/i) {
 			# Word dump
 			my $offset = hex($1);
 			my @values = split(/ /, $2);

@@ -1,6 +1,9 @@
 i2c-tools CHANGES
 -----------------
 
+SVN HEAD
+  i2c-stub-from-dump: Be more tolerant on input dump format
+
 3.1.0 (2011-12-04)
   decode-dimms: Decode module configuration type of DDR SDRAM
                 Decode refresh rate of DDR SDRAM
