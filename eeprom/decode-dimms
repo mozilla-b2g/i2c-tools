@@ -525,16 +525,21 @@ sub sdram_voltage_interface_level($)
 	return ($_[0] < @levels) ? $levels[$_[0]] : "Undefined!";
 }
 
-# Common to SDR and DDR SDRAM
+# Common to SDR, DDR and DDR2 SDRAM
 sub sdram_module_configuration_type($)
 {
-	my @types = (
-		"No Parity",			# 0
-		"Parity",			# 1
-		"ECC",				# 2
-	);
+	my $byte = $_[0] & 0x07;
+	my @edc;
 
-	return ($_[0] < @types) ? $types[$_[0]] : "Undefined!";
+	return "No Parity" if $byte == 0;
+
+	# Data ECC includes Data Parity so don't print both
+	push @edc, "Data Parity" if ($byte & 0x03) == 0x01;
+	push @edc, "Data ECC" if ($byte & 0x02);
+	# New in DDR2 specification
+	push @edc, "Address/Command Parity" if ($byte & 0x04);
+
+	return join ", ", @edc;
 }
 
 # Parameter: EEPROM bytes 0-127 (using 3-62)
@@ -1018,6 +1023,9 @@ sub decode_ddr2_sdram($)
 
 	printl("Voltage Interface Level",
 	       sdram_voltage_interface_level($bytes->[8]));
+
+	printl("Module Configuration Type",
+	       sdram_module_configuration_type($bytes->[11]));
 
 	printl("Refresh Rate", ddr2_refresh_rate($bytes->[12]));
 
