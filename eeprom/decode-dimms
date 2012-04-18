@@ -1169,6 +1169,8 @@ sub decode_ddr3_sdram($)
 
 	printl("SDRAM Device Width", (1 << (($bytes->[7] & 7) + 2))." bits");
 
+	printl("Bus Width Extension", ($bytes->[8] & 24)." bits");
+
 	my $taa;
 	my $trcd;
 	my $trp;

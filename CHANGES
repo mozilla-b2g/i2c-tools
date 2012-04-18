@@ -2,6 +2,8 @@ i2c-tools CHANGES
 -----------------
 
 SVN HEAD
+  decode-dumms: Decode module configuration type of DDR2 SDRAM
+                Decode bus width extension of DDR3 SDRAM
   i2c-stub-from-dump: Be more tolerant on input dump format
 
 3.1.0 (2011-12-04)
