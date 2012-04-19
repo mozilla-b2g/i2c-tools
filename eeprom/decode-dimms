@@ -40,6 +40,7 @@ require 5.004;
 use strict;
 use POSIX qw(ceil);
 use Fcntl qw(:DEFAULT :seek);
+use File::Basename;
 use vars qw($opt_html $opt_bodyonly $opt_side_by_side $opt_merge
 	    $opt_igncheck $use_sysfs $use_hexdump $sbs_col_width
 	    @vendors %decode_callback $revision @dimm $current %hexdump_cache);
@@ -1703,7 +1704,7 @@ EOF
 		exit;
 	}
 
-	push @dimm, { eeprom => $_, file => $_ } if $use_hexdump;
+	push @dimm, { eeprom => basename($_), file => $_ } if $use_hexdump;
 }
 
 if ($opt_html && !$opt_bodyonly) {
