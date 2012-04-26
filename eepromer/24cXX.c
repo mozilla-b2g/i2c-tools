@@ -18,11 +18,14 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <linux/fs.h>
+#include <linux/i2c.h>
+#include <linux/i2c-dev.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <errno.h>
 #include <assert.h>
 #include <string.h>
+#include <i2c/smbus.h>
 #include "24cXX.h"
 
 static int i2c_write_1b(struct eeprom *e, __u8 buf)

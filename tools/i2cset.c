@@ -2,7 +2,7 @@
     i2cset.c - A user-space program to write an I2C register.
     Copyright (C) 2001-2003  Frodo Looijaard <frodol@dds.nl>, and
                              Mark D. Studebaker <mdsxyz123@yahoo.com>
-    Copyright (C) 2004-2010  Jean Delvare <khali@linux-fr.org>
+    Copyright (C) 2004-2012  Jean Delvare <khali@linux-fr.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,12 +20,15 @@
     MA 02110-1301 USA.
 */
 
+#include <sys/ioctl.h>
 #include <errno.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <linux/i2c.h>
 #include <linux/i2c-dev.h>
+#include <i2c/smbus.h>
 #include "i2cbusses.h"
 #include "util.h"
 #include "../version.h"

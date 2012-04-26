@@ -2,6 +2,7 @@
 This program is hereby placed into the public domain.
 Of course the program is provided without warranty of any kind.
 */
+#include <sys/ioctl.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,6 +10,7 @@ Of course the program is provided without warranty of any kind.
 #include <fcntl.h>
 #include <string.h>
 #include <time.h>
+#include <linux/i2c.h>
 #include <linux/i2c-dev.h>
 
 /*

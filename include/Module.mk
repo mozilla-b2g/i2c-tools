@@ -1,6 +1,6 @@
 # Linux I2C header files
 #
-# Copyright (C) 2007  Jean Delvare <khali@linux-fr.org>
+# Copyright (C) 2007, 2012  Jean Delvare <khali@linux-fr.org>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -9,14 +9,14 @@
 
 INCLUDE_DIR	:= include
 
-INCLUDE_TARGETS	:= linux/i2c-dev.h
+INCLUDE_TARGETS	:= i2c/smbus.h
 
 #
 # Commands
 #
 
 install-include: $(addprefix $(INCLUDE_DIR)/,$(INCLUDE_TARGETS))
-	$(INSTALL_DIR) $(DESTDIR)$(incdir)/linux
+	$(INSTALL_DIR) $(DESTDIR)$(incdir)/i2c
 	for file in $(INCLUDE_TARGETS) ; do \
 	$(INSTALL_DATA) $(INCLUDE_DIR)/$$file $(DESTDIR)$(incdir)/$$file ; done
 

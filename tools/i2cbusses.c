@@ -4,7 +4,7 @@
                devices.
     Copyright (c) 1999-2003  Frodo Looijaard <frodol@dds.nl> and
                              Mark D. Studebaker <mdsxyz123@yahoo.com>
-    Copyright (C) 2008-2010  Jean Delvare <khali@linux-fr.org>
+    Copyright (C) 2008-2012  Jean Delvare <khali@linux-fr.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/param.h>	/* for NAME_MAX */
+#include <sys/ioctl.h>
 #include <string.h>
 #include <strings.h>	/* for strcasecmp() */
 #include <stdio.h>
@@ -38,6 +39,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include "i2cbusses.h"
+#include <linux/i2c.h>
 #include <linux/i2c-dev.h>
 
 enum adt { adt_dummy, adt_isa, adt_i2c, adt_smbus, adt_unknown };
