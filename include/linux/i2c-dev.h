@@ -20,10 +20,8 @@
     MA 02110-1301 USA.
 */
 
-/* $Id$ */
-
-#ifndef LIB_I2CDEV_H
-#define LIB_I2CDEV_H
+#ifndef _LINUX_I2C_DEV_H
+#define _LINUX_I2C_DEV_H
 
 #include <linux/types.h>
 #include <sys/ioctl.h>
@@ -111,51 +109,47 @@ union i2c_smbus_data {
 #define I2C_SMBUS_I2C_BLOCK_DATA    8
 
 
-/* ----- commands for the ioctl like i2c_command call:
- * note that additional calls are defined in the algorithm and hw 
- *	dependent layers - these can be listed here, or see the 
- *	corresponding header files.
+/* /dev/i2c-X ioctl commands.  The ioctl's parameter is always an
+ * unsigned long, except for:
+ *	- I2C_FUNCS, takes pointer to an unsigned long
+ *	- I2C_RDWR, takes pointer to struct i2c_rdwr_ioctl_data
+ *	- I2C_SMBUS, takes pointer to struct i2c_smbus_ioctl_data
  */
-				/* -> bit-adapter specific ioctls	*/
-#define I2C_RETRIES	0x0701	/* number of times a device address      */
-				/* should be polled when not            */
-                                /* acknowledging 			*/
-#define I2C_TIMEOUT	0x0702	/* set timeout - call with int 		*/
+#define I2C_RETRIES	0x0701	/* number of times a device address should
+				   be polled when not acknowledging */
+#define I2C_TIMEOUT	0x0702	/* set timeout in units of 10 ms */
 
+/* NOTE: Slave address is 7 or 10 bits, but 10-bit addresses
+ * are NOT supported! (due to code brokenness)
+ */
+#define I2C_SLAVE	0x0703	/* Use this slave address */
+#define I2C_SLAVE_FORCE	0x0706	/* Use this slave address, even if it
+				   is already in use by a driver! */
+#define I2C_TENBIT	0x0704	/* 0 for 7 bit addrs, != 0 for 10 bit */
 
-/* this is for i2c-dev.c	*/
-#define I2C_SLAVE	0x0703	/* Change slave address			*/
-				/* Attn.: Slave address is 7 or 10 bits */
-#define I2C_SLAVE_FORCE	0x0706	/* Change slave address			*/
-				/* Attn.: Slave address is 7 or 10 bits */
-				/* This changes the address, even if it */
-				/* is already taken!			*/
-#define I2C_TENBIT	0x0704	/* 0 for 7 bit addrs, != 0 for 10 bit	*/
+#define I2C_FUNCS	0x0705	/* Get the adapter functionality mask */
 
-#define I2C_FUNCS	0x0705	/* Get the adapter functionality */
-#define I2C_RDWR	0x0707	/* Combined R/W transfer (one stop only)*/
-#define I2C_PEC		0x0708	/* != 0 for SMBus PEC                   */
+#define I2C_RDWR	0x0707	/* Combined R/W transfer (one STOP only) */
 
-#define I2C_SMBUS	0x0720	/* SMBus-level access */
+#define I2C_PEC		0x0708	/* != 0 to use PEC with SMBus */
+#define I2C_SMBUS	0x0720	/* SMBus transfer */
 
-/* -- i2c.h -- */
-
-
-/* Note: 10-bit addresses are NOT supported! */
 
 /* This is the structure as used in the I2C_SMBUS ioctl call */
 struct i2c_smbus_ioctl_data {
-	char read_write;
+	__u8 read_write;
 	__u8 command;
-	int size;
+	__u32 size;
 	union i2c_smbus_data *data;
 };
 
 /* This is the structure as used in the I2C_RDWR ioctl call */
 struct i2c_rdwr_ioctl_data {
 	struct i2c_msg *msgs;	/* pointers to i2c_msgs */
-	int nmsgs;		/* number of i2c_msgs */
+	__u32 nmsgs;			/* number of i2c_msgs */
 };
+
+#define  I2C_RDRW_IOCTL_MAX_MSGS	42
 
 
 static inline __s32 i2c_smbus_access(int file, char read_write, __u8 command, 
@@ -332,4 +326,4 @@ static inline __s32 i2c_smbus_block_process_call(int file, __u8 command,
 }
 
 
-#endif /* LIB_I2CDEV_H */
+#endif /* _LINUX_I2C_DEV_H */
