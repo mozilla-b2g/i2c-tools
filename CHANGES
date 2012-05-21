@@ -2,6 +2,7 @@ i2c-tools CHANGES
 -----------------
 
 SVN HEAD
+  README: Clarify licenses
   decode-dimms: Decode module configuration type of DDR2 SDRAM
                 Decode bus width extension of DDR3 SDRAM
   i2c-dev.h: Minimize differences with kernel flavor

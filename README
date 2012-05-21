@@ -46,6 +46,15 @@ category has its own sub-directory:
   "i2c-dev" kernel driver. They are installed by default.
 
 
+LICENSE
+-------
+
+Check the documentation of individual tools for licensing information.
+The library is released under the LGPL version 2.1 or later, while most
+tools are released under the GPL version 2 or later, but there are a few
+exceptions.
+
+
 INSTALLATION
 ------------
 
