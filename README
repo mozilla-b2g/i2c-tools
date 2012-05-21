@@ -1,10 +1,15 @@
 I2C TOOLS FOR LINUX
 ===================
 
-This package contains an heterogeneous set of I2C tools for the Linux kernel.
-These tools were originally part of the lm-sensors project but were finally
-split into their own package for convenience. They compile, run and have been
-tested on GNU/Linux.
+This package contains an heterogeneous set of I2C tools for the Linux kernel
+as well as an I2C library. The tools were originally part of the lm-sensors
+project but were finally split into their own package for convenience. The
+library is used by some of the tools, but can also be used by third-party
+applications. The tools and library compile, run and have been tested on
+GNU/Linux.
+
+The latest version of the code can be downloaded from:
+  http://www.lm-sensors.org/wiki/I2CTools
 
 
 CONTENTS
@@ -25,6 +30,10 @@ category has its own sub-directory:
   C/C++ header files for I2C and SMBus access over i2c-dev. Installed by
   default.
 
+* lib
+  The I2C library, used by eepromer, py-smbus and tools. Installed by
+  default.
+
 * py-smbus
   Python wrapper for SMBus access over i2c-dev. Not installed by default.
 
@@ -40,16 +49,17 @@ category has its own sub-directory:
 INSTALLATION
 ------------
 
-There's no configure script, so simply run "make" to build the tools, and
-"make install" to install them. You also can use "make uninstall" to remove
-all the files you installed. By default, files are installed in /usr/local
-but you can change this behavior by editing the Makefile file and setting
-prefix to wherever you want. You may change the C compiler and the
-compilation flags as well.
+There's no configure script, so simply run "make" to build the library and
+tools, and "make install" to install them. You also can use "make uninstall"
+to remove all the files you installed. By default, files are installed in
+/usr/local but you can change the location by editing the Makefile file and
+setting prefix to wherever you want. You may change the C compiler and the
+compilation flags as well, and also decide whether to build the static
+library or not.
 
 Optionally, you can run "make strip" prior to "make install" if you want
 smaller binaries. However, be aware that this will prevent any further
-attempt to debug the programs.
+attempt to debug the library and tools.
 
 If you wish to include sub-directories that are not enabled by default, then
 just set them via the EXTRA make variable. For example, to build py-smbus,

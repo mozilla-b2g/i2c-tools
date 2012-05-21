@@ -14,19 +14,25 @@ sbindir	= $(prefix)/sbin
 mandir	= $(prefix)/share/man
 man8dir	= $(mandir)/man8
 incdir	= $(prefix)/include
+libdir	= $(prefix)/lib
 
 INSTALL		:= install
 INSTALL_DATA	:= $(INSTALL) -m 644
 INSTALL_DIR	:= $(INSTALL) -m 755 -d
 INSTALL_PROGRAM	:= $(INSTALL) -m 755
+LN		:= ln -sf
 RM		:= rm -f
 
 CC	?= gcc
+AR	?= ar
 
-CFLAGS	?= -O2
+CFLAGS		?= -O2
 # When debugging, use the following instead
-#CFLAGS	:= -O -g
-CFLAGS	+= -Wall
+#CFLAGS		:= -O -g
+CFLAGS		+= -Wall
+SOCFLAGS	:= -fpic -D_REENTRANT $(CFLAGS)
+
+BUILD_STATIC_LIB ?= 1
 
 KERNELVERSION	:= $(shell uname -r)
 
@@ -36,5 +42,5 @@ all:
 
 EXTRA	:=
 #EXTRA	+= py-smbus
-SRCDIRS	:= include eeprom stub tools $(EXTRA)
+SRCDIRS	:= include lib eeprom stub tools $(EXTRA)
 include $(SRCDIRS:%=%/Module.mk)

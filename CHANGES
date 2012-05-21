@@ -7,6 +7,7 @@ SVN HEAD
   i2c-dev.h: Minimize differences with kernel flavor
              Move SMBus helper functions to include/i2c/smbus.h
   i2c-stub-from-dump: Be more tolerant on input dump format
+  library: New libi2c library
 
 3.1.0 (2011-12-04)
   decode-dimms: Decode module configuration type of DDR SDRAM
