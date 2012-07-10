@@ -151,8 +151,8 @@ __s32 i2c_smbus_write_block_data(int file, __u8 command, __u8 length,
 {
 	union i2c_smbus_data data;
 	int i;
-	if (length > 32)
-		length = 32;
+	if (length > I2C_SMBUS_BLOCK_MAX)
+		length = I2C_SMBUS_BLOCK_MAX;
 	for (i = 1; i <= length; i++)
 		data.block[i] = values[i-1];
 	data.block[0] = length;
@@ -170,8 +170,8 @@ __s32 i2c_smbus_read_i2c_block_data(int file, __u8 command, __u8 length,
 	union i2c_smbus_data data;
 	int i, err;
 
-	if (length > 32)
-		length = 32;
+	if (length > I2C_SMBUS_BLOCK_MAX)
+		length = I2C_SMBUS_BLOCK_MAX;
 	data.block[0] = length;
 
 	err = i2c_smbus_access(file, I2C_SMBUS_READ, command,
@@ -190,8 +190,8 @@ __s32 i2c_smbus_write_i2c_block_data(int file, __u8 command, __u8 length,
 {
 	union i2c_smbus_data data;
 	int i;
-	if (length > 32)
-		length = 32;
+	if (length > I2C_SMBUS_BLOCK_MAX)
+		length = I2C_SMBUS_BLOCK_MAX;
 	for (i = 1; i <= length; i++)
 		data.block[i] = values[i-1];
 	data.block[0] = length;
@@ -206,8 +206,8 @@ __s32 i2c_smbus_block_process_call(int file, __u8 command, __u8 length,
 	union i2c_smbus_data data;
 	int i, err;
 
-	if (length > 32)
-		length = 32;
+	if (length > I2C_SMBUS_BLOCK_MAX)
+		length = I2C_SMBUS_BLOCK_MAX;
 	for (i = 1; i <= length; i++)
 		data.block[i] = values[i-1];
 	data.block[0] = length;
