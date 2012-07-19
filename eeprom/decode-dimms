@@ -1739,7 +1739,7 @@ sub sysfs_device_attribute
 
 sub get_dimm_list
 {
-	my (@dirs, $dir, $file, @files);
+	my (@dirs, $dir, $opened, $file, @files);
 
 	if ($use_sysfs) {
 		@dirs = ('/sys/bus/i2c/drivers/eeprom', '/sys/bus/i2c/drivers/at24');
@@ -1749,6 +1749,7 @@ sub get_dimm_list
 
 	foreach $dir (@dirs) {
 		next unless opendir(local *DIR, $dir);
+		$opened++;
 		while (defined($file = readdir(DIR))) {
 			if ($use_sysfs) {
 				# We look for I2C devices like 0-0050 or 2-0051
@@ -1769,12 +1770,12 @@ sub get_dimm_list
 		close(DIR);
 	}
 
-	if (@files) {
-		return sort { $a->{file} cmp $b->{file} } @files;
-	} elsif (! -d '/sys/module/eeprom') {
-		print "No EEPROM found, are you sure the eeprom module is loaded?\n";
+	if (!$opened) {
+		print STDERR "No EEPROM found, try loading the eeprom or at24 module\n";
 		exit;
 	}
+
+	return sort { $a->{file} cmp $b->{file} } @files;
 }
 
 # @dimm is a list of hashes. There's one hash for each EEPROM we found.
