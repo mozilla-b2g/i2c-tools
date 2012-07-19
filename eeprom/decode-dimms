@@ -1707,20 +1707,6 @@ EOF
 	push @dimm, { eeprom => basename($_), file => $_ } if $use_hexdump;
 }
 
-if ($opt_html && !$opt_bodyonly) {
-	print "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\n",
-	      "<html><head>\n",
-		  "\t<meta HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=iso-8859-1\">\n",
-		  "\t<title>PC DIMM Serial Presence Detect Tester/Decoder Output</title>\n",
-		  "</head><body>\n";
-}
-
-printc("decode-dimms version $revision");
-printh('Memory Serial Presence Detect Decoder',
-'By Philip Edelbrock, Christian Zuckschwerdt, Burkart Lingner,
-Jean Delvare, Trent Piepho and others');
-
-
 # From a sysfs device path and an attribute name, return the attribute
 # value, or undef (stolen from sensors-detect)
 sub sysfs_device_attribute
@@ -1815,6 +1801,20 @@ if (!$opt_igncheck) {
 		}
 	}
 }
+
+
+if ($opt_html && !$opt_bodyonly) {
+	print "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\n",
+	      "<html><head>\n",
+		  "\t<meta HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=iso-8859-1\">\n",
+		  "\t<title>PC DIMM Serial Presence Detect Tester/Decoder Output</title>\n",
+		  "</head><body>\n";
+}
+
+printc("decode-dimms version $revision");
+printh('Memory Serial Presence Detect Decoder',
+'By Philip Edelbrock, Christian Zuckschwerdt, Burkart Lingner,
+Jean Delvare, Trent Piepho and others');
 
 # Process the valid entries
 for $current (0 .. $#dimm) {
