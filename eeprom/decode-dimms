@@ -393,7 +393,7 @@ sub real_printl($$) # print a line w/ label and values
 			splice(@values, 1);
 		}
 
-		my $format = "%-47s".((" %-".$sbs_col_width."s") x (scalar @values - 1))." %s\n";
+		my $format = "%-47s".(("  %-".$sbs_col_width."s") x (scalar @values - 1))."  %s\n";
 		my $maxl = 0; # Keep track of the max number of lines
 
 		# It's a bit tricky because each value may span over more than
@@ -1938,9 +1938,23 @@ if ($opt_side_by_side) {
 	}
 }
 
+# Check if all dimms have the same value for a given line
+sub line_has_same_values($)
+{
+	my $line = shift;
+	my $value = $dimm[0]->{output}->[$line]->[2];
+
+	# Skip lines with no values (headers)
+	return 1 unless defined $value;
+
+	for my $other (1 .. $#dimm) {
+		return 0 unless $value eq $dimm[$other]->{output}->[$line]->[2];
+	}
+
+	return 1;
+}
+
 # Find out the longest value string to adjust the column width
-# Note: this could be improved a bit by not taking into account strings
-# which will end up being merged.
 $sbs_col_width = 15;
 if ($opt_side_by_side && !$opt_html) {
 	for $current (0 .. $#dimm) {
@@ -1949,6 +1963,7 @@ if ($opt_side_by_side && !$opt_html) {
 		my @strings;
 
 		for ($line = 0; $line < @output; $line++) {
+			next if $opt_merge && line_has_same_values($line);
 			my ($func, $label, $value) = @{$output[$line]};
 			push @strings, split("\n", $value) if defined $value;
 		}
