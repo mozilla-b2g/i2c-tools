@@ -1955,8 +1955,12 @@ sub line_has_same_values($)
 }
 
 # Find out the longest value string to adjust the column width
-$sbs_col_width = 15;
-if ($opt_side_by_side && !$opt_html) {
+sub find_col_width($)
+{
+	my $width = shift;
+
+	return $width unless $opt_side_by_side && !$opt_html;
+
 	my $line;
 	my $line_nr = @{$dimm[0]->{output}};
 
@@ -1965,17 +1969,21 @@ if ($opt_side_by_side && !$opt_html) {
 
 		my @strings;
 
-		for $current (0 .. $#dimm) {
+		for my $current (0 .. $#dimm) {
 			my $value = $dimm[$current]->{output}->[$line]->[2];
 			push @strings, split("\n", $value) if defined $value;
 		}
 
 		foreach my $line2 (@strings) {
 			my $len = length($line2);
-			$sbs_col_width = $len if $len > $sbs_col_width;
+			$width = $len if $len > $width;
 		}
 	}
+
+	return $width;
 }
+
+$sbs_col_width = find_col_width(15);
 
 # Print the decoded information for all DIMMs
 for $current (0 .. $#dimm) {
