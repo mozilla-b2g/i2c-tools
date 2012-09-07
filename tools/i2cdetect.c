@@ -47,10 +47,11 @@ static void help(void)
 		"  If provided, FIRST and LAST limit the probing range.\n");
 }
 
-static int scan_i2c_bus(int file, int mode, int first, int last)
+static int scan_i2c_bus(int file, int mode, unsigned long funcs,
+			int first, int last)
 {
 	int i, j;
-	int res;
+	int cmd, res;
 
 	printf("     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f\n");
 
@@ -59,8 +60,26 @@ static int scan_i2c_bus(int file, int mode, int first, int last)
 		for(j = 0; j < 16; j++) {
 			fflush(stdout);
 
+			/* Select detection command for this address */
+			switch (mode) {
+			default:
+				cmd = mode;
+				break;
+			case MODE_AUTO:
+				if ((i+j >= 0x30 && i+j <= 0x37)
+				 || (i+j >= 0x50 && i+j <= 0x5F))
+				 	cmd = MODE_READ;
+				else
+					cmd = MODE_QUICK;
+				break;
+			}
+
 			/* Skip unwanted addresses */
-			if (i+j < first || i+j > last) {
+			if (i+j < first || i+j > last
+			 || (cmd == MODE_READ &&
+			     !(funcs & I2C_FUNC_SMBUS_READ_BYTE))
+			 || (cmd == MODE_QUICK &&
+			     !(funcs & I2C_FUNC_SMBUS_QUICK))) {
 				printf("   ");
 				continue;
 			}
@@ -79,8 +98,8 @@ static int scan_i2c_bus(int file, int mode, int first, int last)
 			}
 
 			/* Probe this address */
-			switch (mode) {
-			case MODE_QUICK:
+			switch (cmd) {
+			default: /* MODE_QUICK */
 				/* This is known to corrupt the Atmel AT24RF08
 				   EEPROM */
 				res = i2c_smbus_write_quick(file,
@@ -91,13 +110,6 @@ static int scan_i2c_bus(int file, int mode, int first, int last)
 				   write-only chips (mainly clock chips) */
 				res = i2c_smbus_read_byte(file);
 				break;
-			default:
-				if ((i+j >= 0x30 && i+j <= 0x37)
-				 || (i+j >= 0x50 && i+j <= 0x5F))
-					res = i2c_smbus_read_byte(file);
-				else
-					res = i2c_smbus_write_quick(file,
-					      I2C_SMBUS_WRITE);
 			}
 
 			if (res < 0)
@@ -318,17 +330,31 @@ int main(int argc, char *argv[])
 		exit(0);
 	}
 
-	if (mode != MODE_READ && !(funcs & I2C_FUNC_SMBUS_QUICK)) {
+	if (!(funcs & (I2C_FUNC_SMBUS_QUICK | I2C_FUNC_SMBUS_READ_BYTE))) {
+		fprintf(stderr,
+			"Error: Bus doesn't support detection commands\n");
+		close(file);
+		exit(1);
+	}
+	if (mode == MODE_QUICK && !(funcs & I2C_FUNC_SMBUS_QUICK)) {
 		fprintf(stderr, "Error: Can't use SMBus Quick Write command "
 			"on this bus\n");
 		close(file);
 		exit(1);
 	}
-	if (mode != MODE_QUICK && !(funcs & I2C_FUNC_SMBUS_READ_BYTE)) {
+	if (mode == MODE_READ && !(funcs & I2C_FUNC_SMBUS_READ_BYTE)) {
 		fprintf(stderr, "Error: Can't use SMBus Read Byte command "
 			"on this bus\n");
 		close(file);
 		exit(1);
+	}
+	if (mode == MODE_AUTO) {
+		if (!(funcs & I2C_FUNC_SMBUS_QUICK))
+			fprintf(stderr, "Warning: Can't use SMBus Quick Write "
+				"command, will skip some addresses\n");
+		if (!(funcs & I2C_FUNC_SMBUS_READ_BYTE))
+			fprintf(stderr, "Warning: Can't use SMBus Read Byte "
+				"command, will skip some addresses\n");
 	}
 
 	if (!yes) {
@@ -352,7 +378,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	res = scan_i2c_bus(file, mode, first, last);
+	res = scan_i2c_bus(file, mode, funcs, first, last);
 
 	close(file);
 
