@@ -343,7 +343,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 	if (mode == MODE_READ && !(funcs & I2C_FUNC_SMBUS_READ_BYTE)) {
-		fprintf(stderr, "Error: Can't use SMBus Read Byte command "
+		fprintf(stderr, "Error: Can't use SMBus Receive Byte command "
 			"on this bus\n");
 		close(file);
 		exit(1);
@@ -353,7 +353,7 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "Warning: Can't use SMBus Quick Write "
 				"command, will skip some addresses\n");
 		if (!(funcs & I2C_FUNC_SMBUS_READ_BYTE))
-			fprintf(stderr, "Warning: Can't use SMBus Read Byte "
+			fprintf(stderr, "Warning: Can't use SMBus Receive Byte "
 				"command, will skip some addresses\n");
 	}
 
@@ -365,7 +365,7 @@ int main(int argc, char *argv[])
 
 		fprintf(stderr, "I will probe file %s%s.\n", filename,
 			mode==MODE_QUICK?" using quick write commands":
-			mode==MODE_READ?" using read byte commands":"");
+			mode==MODE_READ?" using receive byte commands":"");
 		fprintf(stderr, "I will probe address range 0x%02x-0x%02x.\n",
 			first, last);
 
