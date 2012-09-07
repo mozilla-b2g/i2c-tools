@@ -1957,19 +1957,21 @@ sub line_has_same_values($)
 # Find out the longest value string to adjust the column width
 $sbs_col_width = 15;
 if ($opt_side_by_side && !$opt_html) {
-	for $current (0 .. $#dimm) {
-		my @output = @{$dimm[$current]->{output}};
-		my $line;
+	my $line;
+	my $line_nr = @{$dimm[0]->{output}};
+
+	for ($line = 0; $line < $line_nr; $line++) {
+		next if $opt_merge && line_has_same_values($line);
+
 		my @strings;
 
-		for ($line = 0; $line < @output; $line++) {
-			next if $opt_merge && line_has_same_values($line);
-			my ($func, $label, $value) = @{$output[$line]};
+		for $current (0 .. $#dimm) {
+			my $value = $dimm[$current]->{output}->[$line]->[2];
 			push @strings, split("\n", $value) if defined $value;
 		}
 
-		foreach $line (@strings) {
-			my $len = length($line);
+		foreach my $line2 (@strings) {
+			my $len = length($line2);
 			$sbs_col_width = $len if $len > $sbs_col_width;
 		}
 	}
