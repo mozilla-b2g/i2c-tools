@@ -942,12 +942,10 @@ sub decode_ddr_sdram($)
 	printl_cond(defined $access_time, "Maximum Access Time", $access_time);
 
 # module attributes
-	if ($bytes->[47] & 0x03) {
-		if (($bytes->[47] & 0x03) == 0x01) { $temp = "1.125\" to 1.25\""; }
-		elsif (($bytes->[47] & 0x03) == 0x02) { $temp = "1.7\""; }
-		elsif (($bytes->[47] & 0x03) == 0x03) { $temp = "Other"; }
-		printl("Module Height", $temp);
-	}
+	if (($bytes->[47] & 0x03) == 0x01) { $temp = "1.125\" to 1.25\""; }
+	elsif (($bytes->[47] & 0x03) == 0x02) { $temp = "1.7\""; }
+	else { $temp = "Other"; }
+	printl_cond($bytes->[47] & 0x03, "Module Height", $temp);
 }
 
 sub ddr2_sdram_ctime($)
