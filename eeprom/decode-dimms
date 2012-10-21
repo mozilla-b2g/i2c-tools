@@ -864,6 +864,10 @@ sub decode_ddr_sdram($)
 			       $bytes->[5] . ", " . $bytes->[17]);
 	}
 
+	printl("Banks x Rows x Columns x Bits",
+	       join(' x ', $bytes->[17], $bytes->[3], $bytes->[4], $bytes->[6]));
+	printl("Ranks", $bytes->[5]);
+
 	printl("Voltage Interface Level",
 	       sdram_voltage_interface_level($bytes->[8]));
 
