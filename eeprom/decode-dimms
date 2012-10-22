@@ -1021,10 +1021,8 @@ sub decode_ddr2_sdram($)
 	my $ctime;
 
 # SPD revision
-	if ($bytes->[62] != 0xff) {
-		printl("SPD Revision", ($bytes->[62] >> 4) . "." .
-				       ($bytes->[62] & 0xf));
-	}
+	printl_cond($bytes->[62] != 0xff, "SPD Revision",
+		    ($bytes->[62] >> 4) . "." . ($bytes->[62] & 0xf));
 
 # speed
 	prints("Memory Characteristics");
@@ -1161,7 +1159,7 @@ sub decode_ddr2_sdram($)
 				    ($bytes->[40] >> 1) & 7)));
 	printl("Maximum DQS to DQ Skew (tDQSQ)", tns($bytes->[44]/100));
 	printl("Maximum Read Data Hold Skew (tQHS)", tns($bytes->[45]/100));
-	printl("PLL Relock Time", $bytes->[46] . " us") if ($bytes->[46]);
+	printl_cond($bytes->[46], "PLL Relock Time", $bytes->[46] . " us");
 }
 
 # Parameter: EEPROM bytes 0-127 (using 3-76)
