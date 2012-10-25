@@ -10,6 +10,7 @@ SVN HEAD
                 Make side-by-side output more robust
                 Print module organization of DDR SDRAM
                 Merge cells by default in side-by-side output
+                Print extra timing values of DDR SDRAM
   i2cdetect: Do a best effort detection if functionality is missing
   i2c-dev.h: Minimize differences with kernel flavor
              Move SMBus helper functions to include/i2c/smbus.h
