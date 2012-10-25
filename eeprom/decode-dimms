@@ -1696,6 +1696,8 @@ foreach (@ARGV) {
 			"                          (useful for postprocessing the output)\n",
 			"      --side-by-side      Display all DIMMs side-by-side if possible\n",
 			"      --merge-cells       Merge neighbour cells with identical values\n",
+			"                          (side-by-side output only, default)\n",
+			"      --no-merge-cells    Don't merge neighbour cells with identical values\n",
 			"                          (side-by-side output only)\n",
 			"  -c, --checksum          Decode completely even if checksum fails\n",
 			"  -x,                     Read data from hexdump files\n",
@@ -1729,6 +1731,10 @@ EOF
 		$opt_merge = 1;
 		next;
 	}
+	if ($_ eq '--no-merge-cells') {
+		$opt_merge = 0;
+		next;
+	}
 	if ($_ eq '-c' || $_ eq '--checksum') {
 		$opt_igncheck = 1;
 		next;
@@ -1749,6 +1755,9 @@ EOF
 
 	push @dimm, { eeprom => basename($_), file => $_ } if $use_hexdump;
 }
+
+# Default values
+$opt_merge = 1 unless defined $opt_merge;
 
 # From a sysfs device path and an attribute name, return the attribute
 # value, or undef (stolen from sensors-detect)
