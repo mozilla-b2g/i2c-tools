@@ -13,6 +13,7 @@ SVN HEAD
                 Print extra timing values of DDR SDRAM
                 Print DDR core timings for all supported CAS values
                 Print DDR2 equivalent speed of tCK max
+                Don't print undefined DDR2 SDRAM timings
   i2cdetect: Do a best effort detection if functionality is missing
   i2c-dev.h: Minimize differences with kernel flavor
              Move SMBus helper functions to include/i2c/smbus.h
