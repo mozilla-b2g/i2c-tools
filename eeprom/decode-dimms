@@ -1069,6 +1069,14 @@ sub ddr2_refresh_rate($)
 	       ($byte & 0x80 ? " - Self Refresh" : "");
 }
 
+sub ddr2_core_timings($$$$$)
+{
+	my ($cas, $ctime, $trcd, $trp, $tras) = @_;
+
+	return $cas . "-" . ceil($trcd/$ctime) . "-" . ceil($trp/$ctime) .
+		"-" . ceil($tras/$ctime) . " as DDR2-" . int(2000 / $ctime);
+}
+
 # Parameter: EEPROM bytes 0-127 (using 3-62)
 sub decode_ddr2_sdram($)
 {
@@ -1152,38 +1160,44 @@ sub decode_ddr2_sdram($)
 	$trp = ($bytes->[27] >> 2) + (($bytes->[27] & 3) * 0.25);
 	$tras = $bytes->[30];
 
-	printl("tCL-tRCD-tRP-tRAS",
-		$highestCAS . "-" .
-		ceil($trcd/$ctime) . "-" .
-		ceil($trp/$ctime) . "-" .
-		ceil($tras/$ctime));
-
 # latencies
 	printl("Supported CAS Latencies (tCL)", cas_latencies(keys %cas));
 
 # timings
-	my ($cycle_time, $access_time);
+	my ($cycle_time, $access_time, $core_timings);
 
 	if (exists $cas{$highestCAS}) {
+		$core_timings = ddr2_core_timings($highestCAS, $ctime,
+			$trcd, $trp, $tras);
+
 		$cycle_time = tns($ctime) . " at CAS $highestCAS (tCK min)";
 		$access_time = tns(ddr2_sdram_atime($bytes->[10]))
 			     . " at CAS $highestCAS (tAC)";
 	}
 
 	if (exists $cas{$highestCAS-1} && spd_written(@$bytes[23..24])) {
-		$cycle_time .= "\n".tns(ddr2_sdram_ctime($bytes->[23]))
+		$ctime = ddr2_sdram_ctime($bytes->[23]);
+		$core_timings .= "\n".ddr2_core_timings($highestCAS-1, $ctime,
+			$trcd, $trp, $tras);
+
+		$cycle_time .= "\n".tns($ctime)
 			     . " at CAS ".($highestCAS-1);
 		$access_time .= "\n".tns(ddr2_sdram_atime($bytes->[24]))
 			      . " at CAS ".($highestCAS-1);
 	}
 
 	if (exists $cas{$highestCAS-2} && spd_written(@$bytes[25..26])) {
-		$cycle_time .= "\n".tns(ddr2_sdram_ctime($bytes->[25]))
+		$ctime = ddr2_sdram_ctime($bytes->[25]);
+		$core_timings .= "\n".ddr2_core_timings($highestCAS-2, $ctime,
+			$trcd, $trp, $tras);
+
+		$cycle_time .= "\n".tns($ctime)
 			     . " at CAS ".($highestCAS-2);
 		$access_time .= "\n".tns(ddr2_sdram_atime($bytes->[26]))
 			      . " at CAS ".($highestCAS-2);
 	}
 
+	printl_cond(defined $core_timings, "tCL-tRCD-tRP-tRAS", $core_timings);
 	printl_cond(defined $cycle_time, "Minimum Cycle Time", $cycle_time);
 	printl_cond(defined $access_time, "Maximum Access Time", $access_time);
 	$temp = ddr2_sdram_ctime($bytes->[43]);
