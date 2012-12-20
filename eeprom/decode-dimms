@@ -766,6 +766,7 @@ sub decode_sdr_sdram($)
 	printl_cond(defined $cycle_time, "Cycle Time", $cycle_time);
 	printl_cond(defined $access_time, "Access Time", $access_time);
 
+	prints("Attributes");
 	$temp = "";
 	if ($bytes->[21] & 1) { $temp .= "Buffered Address/Control Inputs\n"; }
 	if ($bytes->[21] & 2) { $temp .= "Registered Address/Control Inputs\n"; }
@@ -775,8 +776,7 @@ sub decode_sdr_sdram($)
 	if ($bytes->[21] & 32) { $temp .= "Differential Clock Input\n"; }
 	if ($bytes->[21] & 64) { $temp .= "Redundant Row Address\n"; }
 	if ($bytes->[21] & 128) { $temp .= "Undefined (bit 7)\n"; }
-	if ($bytes->[21] == 0) { $temp .= "(None Reported)\n"; }
-	printl("SDRAM Module Attributes", $temp);
+	printl_cond($bytes->[21], "SDRAM Module Attributes", $temp);
 
 	$temp = "";
 	if ($bytes->[22] & 1) { $temp .= "Supports Early RAS# Recharge\n"; }
@@ -791,6 +791,7 @@ sub decode_sdr_sdram($)
 	if ($bytes->[22] & 128) { $temp .= "Undefined (bit 7)\n"; }
 	printl("SDRAM Device Attributes (General)", $temp);
 
+	prints("Timing Parameters");
 	printl("Minimum Row Precharge Time",
 	       value_or_undefined($bytes->[27], "ns"));
 
