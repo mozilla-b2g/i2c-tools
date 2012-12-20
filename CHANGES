@@ -14,7 +14,7 @@ SVN HEAD
                 Print DDR and DDR2 core timings for all supported CAS values
                 Print DDR2 equivalent speed of tCK max
                 Don't print undefined DDR2 SDRAM timings
-		Print DDR and DDR2 core timings for all standard speeds
+		Print SDR, DDR and DDR2 core timings for all standard speeds
                 Update manufacturer IDs
                 Make DDR3 manufacturer count parity error non-fatal
                 Strip former manufacturer name in side-by-side output mode

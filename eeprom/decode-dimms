@@ -604,6 +604,7 @@ sub decode_sdr_sdram($)
 {
 	my $bytes = shift;
 	my $temp;
+	my ($ctime, $ctime1, $ctime2, $ctime_min);
 
 # SPD revision
 	# Starting with SPD revision 1.2, this byte is encoded in BCD
@@ -637,7 +638,7 @@ sub decode_sdr_sdram($)
 	my $trcd;
 	my $trp;
 	my $tras;
-	my $ctime = ($bytes->[9] >> 4) + ($bytes->[9] & 0xf) * 0.1;
+	$ctime_min = $ctime = ($bytes->[9] >> 4) + ($bytes->[9] & 0xf) * 0.1;
 
 	$trcd = $bytes->[29];
 	$trp = $bytes->[27];
@@ -737,6 +738,7 @@ sub decode_sdr_sdram($)
 		else {
 			$temp += 15 if $temp < 4;
 			$temp += ($bytes->[23] & 0xf) * 0.1;
+			$ctime1 = $temp;
 		}
 		$cycle_time .= "\n$temp ns at CAS ".$cas[$#cas-1];
 
@@ -754,6 +756,7 @@ sub decode_sdr_sdram($)
 		if ($temp == 0) { $temp = "Undefined!"; }
 		else {
 			$temp += ($bytes->[25] & 0x3) * 0.25;
+			$ctime2 = $temp;
 		}
 		$cycle_time .= "\n$temp ns at CAS ".$cas[$#cas-2];
 
@@ -779,6 +782,26 @@ sub decode_sdr_sdram($)
 	if ($bytes->[21] & 64) { $temp .= "Redundant Row Address\n"; }
 	if ($bytes->[21] & 128) { $temp .= "Undefined (bit 7)\n"; }
 	printl_cond($bytes->[21], "SDRAM Module Attributes", $temp);
+
+# standard DDR speeds
+	prints("Timings at Standard Speeds");
+	foreach $ctime (7.5, 10, 15) {
+		my $best_cas;
+
+		# Find min CAS latency at this speed
+		if (defined $ctime2 && $ctime >= $ctime2) {
+			$best_cas = $cas[$#cas-2];
+		} elsif (defined $ctime1 && $ctime >= $ctime1) {
+			$best_cas = $cas[$#cas-1];
+		} else {
+			$best_cas = $cas[$#cas];
+		}
+
+		printl_cond($ctime >= $ctime_min,
+			    "tCL-tRCD-tRP-tRAS as PC" . int(1000 / $ctime),
+			    ddr_core_timings($best_cas, $ctime,
+					     $trcd, $trp, $tras));
+	}
 
 	$temp = "";
 	if ($bytes->[22] & 1) { $temp .= "Supports Early RAS# Recharge\n"; }
