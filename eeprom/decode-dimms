@@ -342,6 +342,7 @@ sub manufacturer_ddr3($$)
 	return "Invalid" if parity($code) != 1;
 	return "Unknown" if ($code & 0x7F) - 1 > $vendors[$count & 0x7F];
 	$manufacturer = $vendors[$count & 0x7F][($code & 0x7F) - 1];
+	$manufacturer =~ s/ \(former .*\)$// if $opt_side_by_side;
 	$manufacturer .= "? (Invalid parity)" if parity($count) != 1;
 	return $manufacturer;
 }
