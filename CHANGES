@@ -18,6 +18,7 @@ SVN HEAD
                 Update manufacturer IDs
                 Make DDR3 manufacturer count parity error non-fatal
                 Strip former manufacturer name in side-by-side output mode
+                Remove duplicate "ns" in SDR timings
   i2cdetect: Do a best effort detection if functionality is missing
   i2c-dev.h: Minimize differences with kernel flavor
              Move SMBus helper functions to include/i2c/smbus.h
