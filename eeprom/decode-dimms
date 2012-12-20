@@ -1091,14 +1091,6 @@ sub ddr2_refresh_rate($)
 	       ($byte & 0x80 ? " - Self Refresh" : "");
 }
 
-sub ddr2_core_timings($$$$$)
-{
-	my ($cas, $ctime, $trcd, $trp, $tras) = @_;
-
-	return $cas . "-" . ceil($trcd/$ctime) . "-" . ceil($trp/$ctime) .
-		"-" . ceil($tras/$ctime);
-}
-
 # Parameter: EEPROM bytes 0-127 (using 3-62)
 sub decode_ddr2_sdram($)
 {
@@ -1189,7 +1181,7 @@ sub decode_ddr2_sdram($)
 	my ($cycle_time, $access_time, $core_timings);
 
 	if (exists $cas{$highestCAS}) {
-		$core_timings = ddr2_core_timings($highestCAS, $ctime,
+		$core_timings = ddr_core_timings($highestCAS, $ctime,
 			$trcd, $trp, $tras) . " as DDR2-" . int(2000 / $ctime);
 
 		$cycle_time = tns($ctime) . " at CAS $highestCAS (tCK min)";
@@ -1199,7 +1191,7 @@ sub decode_ddr2_sdram($)
 
 	if (exists $cas{$highestCAS-1} && spd_written(@$bytes[23..24])) {
 		$ctime1 = ddr2_sdram_ctime($bytes->[23]);
-		$core_timings .= "\n".ddr2_core_timings($highestCAS-1, $ctime1,
+		$core_timings .= "\n".ddr_core_timings($highestCAS-1, $ctime1,
 			$trcd, $trp, $tras) . " as DDR2-" . int(2000 / $ctime1);
 
 		$cycle_time .= "\n".tns($ctime1)
@@ -1210,7 +1202,7 @@ sub decode_ddr2_sdram($)
 
 	if (exists $cas{$highestCAS-2} && spd_written(@$bytes[25..26])) {
 		$ctime2 = ddr2_sdram_ctime($bytes->[25]);
-		$core_timings .= "\n".ddr2_core_timings($highestCAS-2, $ctime2,
+		$core_timings .= "\n".ddr_core_timings($highestCAS-2, $ctime2,
 			$trcd, $trp, $tras) . " as DDR2-" . int(2000 / $ctime2);
 
 		$cycle_time .= "\n".tns($ctime2)
@@ -1245,8 +1237,8 @@ sub decode_ddr2_sdram($)
 
 		printl_cond($ctime >= $ctime_min && $ctime <= $ctime_max,
 			    "tCL-tRCD-tRP-tRAS as DDR2-".int(2000 / $ctime),
-			    ddr2_core_timings($best_cas, $ctime,
-					      $trcd, $trp, $tras));
+			    ddr_core_timings($best_cas, $ctime,
+					     $trcd, $trp, $tras));
 	}
 
 # more timing information
