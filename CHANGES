@@ -2,6 +2,7 @@ i2c-tools CHANGES
 -----------------
 
 SVN HEAD
+  tools: Fix build with recent compilers (gcc 4.6+)
   README: Clarify licenses
   decode-dimms: Decode module configuration type of DDR2 SDRAM
                 Decode bus width extension of DDR3 SDRAM
