@@ -597,7 +597,9 @@ sub decode_sdr_sdram($)
 	my $temp;
 
 # SPD revision
-	printl("SPD Revision", $bytes->[62]);
+	# Starting with SPD revision 1.2, this byte is encoded in BCD
+	printl("SPD Revision", $bytes->[62] < 0x12 ? $bytes->[62] :
+		($bytes->[62] >> 4) . "." . ($bytes->[62] & 0xf));
 
 #size computation
 
