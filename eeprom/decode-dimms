@@ -629,7 +629,7 @@ sub decode_sdr_sdram($)
 	my $ctime = ($bytes->[9] >> 4) + ($bytes->[9] & 0xf) * 0.1;
 
 	$trcd = $bytes->[29];
-	$trp = $bytes->[27];;
+	$trp = $bytes->[27];
 	$tras = $bytes->[30];
 
 	printl("tCL-tRCD-tRP-tRAS",
@@ -726,7 +726,6 @@ sub decode_sdr_sdram($)
 		else {
 			$temp += 15 if $temp < 4;
 			$temp += ($bytes->[23] & 0xf) * 0.1;
-			$temp .= " ns";
 		}
 		$cycle_time .= "\n$temp ns at CAS ".$cas[$#cas-1];
 
@@ -735,7 +734,6 @@ sub decode_sdr_sdram($)
 		else {
 			$temp += 15 if $temp < 4;
 			$temp += ($bytes->[24] & 0xf) * 0.1;
-			$temp .= " ns";
 		}
 		$access_time .= "\n$temp ns at CAS ".$cas[$#cas-1];
 	}
@@ -745,7 +743,6 @@ sub decode_sdr_sdram($)
 		if ($temp == 0) { $temp = "Undefined!"; }
 		else {
 			$temp += ($bytes->[25] & 0x3) * 0.25;
-			$temp .= " ns";
 		}
 		$cycle_time .= "\n$temp ns at CAS ".$cas[$#cas-2];
 
@@ -753,7 +750,6 @@ sub decode_sdr_sdram($)
 		if ($temp == 0) { $temp = "Undefined!"; }
 		else {
 			$temp += ($bytes->[26] & 0x3) * 0.25;
-			$temp .= " ns";
 		}
 		$access_time .= "\n$temp ns at CAS ".$cas[$#cas-2];
 	}

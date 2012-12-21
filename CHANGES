@@ -6,6 +6,7 @@ SVN HEAD
                 Decode bus width extension of DDR3 SDRAM
                 Don't choke when no EEPROM is found
                 Update manufacturer IDs
+                Remove duplicate "ns" in SDR timings
   i2c-dev.h: Minimize differences with kernel flavor
              Move SMBus helper functions to include/i2c/smbus.h
   i2c-stub-from-dump: Be more tolerant on input dump format
