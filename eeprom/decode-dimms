@@ -64,7 +64,7 @@ $revision =~ s/ \([^()]*\)//;
  "Lattice Semi.", "NCR", "Wafer Scale Integration", "IBM",
  "Tristar", "Visic", "Intl. CMOS Technology", "SSSI",
  "MicrochipTechnology", "Ricoh Ltd.", "VLSI", "Micron Technology",
- "Hynix Semiconductor Inc. (former Hyundai Electronics)", "OKI Semiconductor", "ACTEL", "Sharp",
+ "SK Hynix (former Hyundai Electronics)", "OKI Semiconductor", "ACTEL", "Sharp",
  "Catalyst", "Panasonic", "IDT", "Cypress",
  "DEC", "LSI Logic", "Zarlink (former Plessey)", "UTMC",
  "Thinking Machine", "Thomson CSF", "Integrated CMOS (Vertex)", "Honeywell",
@@ -293,7 +293,11 @@ $revision =~ s/ \([^()]*\)//;
  "Accord Software & Systems Pvt. Ltd.", "Active-Semi Inc.", "Denso Corporation", "TLSI Inc.",
  "Shenzhen Daling Electronic Co. Ltd.", "Mustang", "Orca Systems", "Passif Semiconductor",
  "GigaDevice Semiconductor (Beijing) Inc.", "Memphis Electronic", "Beckhoff Automation GmbH",
- "Harmony Semiconductor Corp (former ProPlus Design Solutions)", "Air Computers SRL", "TMT Memory"]
+ "Harmony Semiconductor Corp (former ProPlus Design Solutions)", "Air Computers SRL", "TMT Memory",
+ "Eorex Corporation", "Xingtera", "Netsol", "Bestdon Technology Co. Ltd.", "Baysand Inc.",
+ "Uroad Technology Co. Ltd. (former Triple Grow Industrial Ltd.)", "Wilk Elektronik S.A.",
+ "AAI", "Harman", "Berg Microelectronics Inc.", "ASSIA, Inc.", "Visiontek Products LLC",
+ "OCMEMORY", "Welink Solution Inc."]
 );
 
 $use_sysfs = -d '/sys/bus';
