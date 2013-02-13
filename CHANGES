@@ -22,6 +22,7 @@ SVN HEAD
                 Remove duplicate "ns" in SDR timings
                 Add section headers for SDR modules
                 Fix decoding of SDR SPD revision
+                Prevent hang on reserved DDR3 module type
   i2cdetect: Do a best effort detection if functionality is missing
              Clarify the SMBus commands used for probing by default
   i2c-dev.h: Minimize differences with kernel flavor
