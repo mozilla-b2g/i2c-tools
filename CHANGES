@@ -8,6 +8,7 @@ SVN HEAD
                 Update manufacturer IDs
                 Remove duplicate "ns" in SDR timings
                 Fix decoding of SDR SPD revision
+                Prevent hang on reserved DDR3 module type
   i2cdetect: Clarify the SMBus commands used for probing by default
   i2c-dev.h: Minimize differences with kernel flavor
              Move SMBus helper functions to include/i2c/smbus.h

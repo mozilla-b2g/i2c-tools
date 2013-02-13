@@ -1176,7 +1176,7 @@ sub decode_ddr3_sdram($)
 
 	printl("Module Type", ($bytes->[3] <= $#module_types) ?
 					$module_types[$bytes->[3]] :
-					sprint("Reserved (0x%.2X)", $bytes->[3]));
+					sprintf("Reserved (0x%.2X)", $bytes->[3]));
 
 # speed
 	prints("Memory Characteristics");
