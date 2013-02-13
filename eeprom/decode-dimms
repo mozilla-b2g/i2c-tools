@@ -1172,7 +1172,10 @@ sub decode_ddr3_sdram($)
 	my $ctime;
 
 	my @module_types = ("Undefined", "RDIMM", "UDIMM", "SO-DIMM",
-			    "Micro-DIMM", "Mini-RDIMM", "Mini-UDIMM");
+			    "Micro-DIMM", "Mini-RDIMM", "Mini-UDIMM",
+			    "Mini-CDIMM", "72b-SO-UDIMM", "72b-SO-RDIMM",
+			    "72b-SO-CDIMM", "LRDIMM", "16b-SO-DIMM",
+			    "32b-SO-DIMM");
 
 	printl("Module Type", ($bytes->[3] <= $#module_types) ?
 					$module_types[$bytes->[3]] :
