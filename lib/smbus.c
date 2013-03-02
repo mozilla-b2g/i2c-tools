@@ -22,6 +22,7 @@
 */
 
 #include <errno.h>
+#include <stddef.h>
 #include <i2c/smbus.h>
 #include <sys/ioctl.h>
 #include <linux/types.h>

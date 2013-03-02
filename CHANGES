@@ -32,6 +32,7 @@ SVN HEAD
   library: New libi2c library
            Properly propagate real error codes on read errors
            Use I2C_SMBUS_BLOCK_MAX instead of hard-coding 32
+  lib/smbus.c: Add missing include which was causing a build error
 
 3.1.0 (2011-12-04)
   decode-dimms: Decode module configuration type of DDR SDRAM
