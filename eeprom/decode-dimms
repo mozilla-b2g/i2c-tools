@@ -1436,9 +1436,14 @@ sub decode_ddr3_sdram($)
 # more timing information
 	prints("Timing Parameters");
 
+	printl("Minimum Cycle Time (tCK)", tns3($ctime));
+	printl("Minimum CAS Latency Time (tAA)", tns3($taa));
 	printl("Minimum Write Recovery time (tWR)", tns3($bytes->[17] * $mtb));
+	printl("Minimum RAS# to CAS# Delay (tRCD)", tns3($trcd));
 	printl("Minimum Row Active to Row Active Delay (tRRD)",
 		tns3($bytes->[19] * $mtb));
+	printl("Minimum Row Precharge Delay (tRP)", tns3($trp));
+	printl("Minimum Active to Precharge Delay (tRAS)", tns3($tras));
 	printl("Minimum Active to Auto-Refresh Delay (tRC)",
 		tns3(ddr3_mtb_ftb((($bytes->[21] & 0xf0) << 4) + $bytes->[23], $bytes->[38], $mtb, $ftb)));
 	printl("Minimum Recovery Delay (tRFC)",
