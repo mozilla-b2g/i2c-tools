@@ -1329,6 +1329,17 @@ sub decode_ddr2_sdram($)
 	printl_cond($bytes->[46], "PLL Relock Time", $bytes->[46] . " us");
 }
 
+# Return combined time in ns
+sub ddr3_mtb_ftb($$$$)
+{
+	my ($byte1, $byte2, $mtb, $ftb) = @_;
+
+	# byte1 is unsigned in ns, but byte2 is signed in ps
+	$byte2 -= 0x100 if $byte2 & 0x80;
+
+	return $byte1 * $mtb + $byte2 * $ftb / 1000;
+}
+
 # Parameter: EEPROM bytes 0-127 (using 3-76)
 sub decode_ddr3_sdram($)
 {
@@ -1358,7 +1369,7 @@ sub decode_ddr3_sdram($)
 # speed
 	prints("Memory Characteristics");
 
-	$ctime = $bytes->[12] * $mtb;
+	$ctime = ddr3_mtb_ftb($bytes->[12], $bytes->[34], $mtb, $ftb);
 	my $ddrclk = 2 * (1000 / $ctime);
 	my $tbits = 1 << (($bytes->[8] & 7) + 3);
 	my $pcclk = int ($ddrclk * $tbits / 8);
@@ -1392,12 +1403,12 @@ sub decode_ddr3_sdram($)
 	my $trp;
 	my $tras;
 
-	$taa  = ceil($bytes->[16] / $bytes->[12]);
-	$trcd = ceil($bytes->[18] / $bytes->[12]);
-	$trp  = ceil($bytes->[20] / $bytes->[12]);
-	$tras = ceil(((($bytes->[21] & 0x0f) << 8) + $bytes->[22]) / $bytes->[12]);
+	$taa  = ddr3_mtb_ftb($bytes->[16], $bytes->[35], $mtb, $ftb);
+	$trcd = ddr3_mtb_ftb($bytes->[18], $bytes->[36], $mtb, $ftb);
+	$trp  = ddr3_mtb_ftb($bytes->[20], $bytes->[37], $mtb, $ftb);
+	$tras = ((($bytes->[21] & 0x0f) << 8) + $bytes->[22]) * $mtb;
 
-	printl("tCL-tRCD-tRP-tRAS", join("-", $taa, $trcd, $trp, $tras));
+	printl("tCL-tRCD-tRP-tRAS", ddr_core_timings(ceil($taa / $ctime), $ctime, $trcd, $trp, $tras));
 
 # latencies
 	my $highestCAS = 0;
@@ -1419,7 +1430,7 @@ sub decode_ddr3_sdram($)
 	printl("Minimum Row Active to Row Active Delay (tRRD)",
 		tns3($bytes->[19] * $mtb));
 	printl("Minimum Active to Auto-Refresh Delay (tRC)",
-		tns3((((($bytes->[21] >> 4) & 15) << 8) + $bytes->[23]) * $mtb));
+		tns3(ddr3_mtb_ftb((($bytes->[21] & 0xf0) << 4) + $bytes->[23], $bytes->[38], $mtb, $ftb)));
 	printl("Minimum Recovery Delay (tRFC)",
 		tns3((($bytes->[25] << 8) + $bytes->[24]) * $mtb));
 	printl("Minimum Write to Read CMD Delay (tWTR)",

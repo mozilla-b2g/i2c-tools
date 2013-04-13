@@ -28,6 +28,7 @@ SVN HEAD
                 Fix DDR3 core timings rounding
                 Round down PC3 numbers to comply with Jedec
                 Don't print the DDR3 time bases
+                Decode the FTB fields of DDR3 tCk, tAA, tRCD, tRP and tRC
   i2cdetect: Do a best effort detection if functionality is missing
              Clarify the SMBus commands used for probing by default
   i2c-dev.h: Minimize differences with kernel flavor
