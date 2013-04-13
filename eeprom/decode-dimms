@@ -1335,6 +1335,7 @@ sub decode_ddr3_sdram($)
 	my $bytes = shift;
 	my $temp;
 	my $ctime;
+	my ($ftb, $mtb);
 
 	my @module_types = ("Undefined", "RDIMM", "UDIMM", "SO-DIMM",
 			    "Micro-DIMM", "Mini-RDIMM", "Mini-UDIMM",
@@ -1346,17 +1347,16 @@ sub decode_ddr3_sdram($)
 					$module_types[$bytes->[3]] :
 					sprintf("Reserved (0x%.2X)", $bytes->[3]));
 
+# time bases
+	if (($bytes->[9] & 0x0f) == 0 || $bytes->[11] == 0) {
+		print STDERR "Invalid time base divisor, can't decode\n";
+		return;
+	}
+	$ftb = ($bytes->[9] >> 4) / ($bytes->[9] & 0x0f);
+	$mtb = $bytes->[10] / $bytes->[11];
+
 # speed
 	prints("Memory Characteristics");
-
-	my $dividend = ($bytes->[9] >> 4) & 15;
-	my $divisor  = $bytes->[9] & 15;
-	printl("Fine time base", sprintf("%.3f", $dividend / $divisor) . " ps");
-
-	$dividend = $bytes->[10];
-	$divisor  = $bytes->[11];
-	my $mtb = $dividend / $divisor;
-	printl("Medium time base", tns3($mtb));
 
 	$ctime = $bytes->[12] * $mtb;
 	my $ddrclk = 2 * (1000 / $ctime);
