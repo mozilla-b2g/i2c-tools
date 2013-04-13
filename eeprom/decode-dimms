@@ -1347,6 +1347,7 @@ sub decode_ddr3_sdram($)
 	my $temp;
 	my $ctime;
 	my ($ftb, $mtb);
+	my $ii;
 
 	my @module_types = ("Undefined", "RDIMM", "UDIMM", "SO-DIMM",
 			    "Micro-DIMM", "Mini-RDIMM", "Mini-UDIMM",
@@ -1370,6 +1371,16 @@ sub decode_ddr3_sdram($)
 	prints("Memory Characteristics");
 
 	$ctime = ddr3_mtb_ftb($bytes->[12], $bytes->[34], $mtb, $ftb);
+	# Starting with DDR3-1866, vendors may start approximating the
+	# minimum cycle time. Try to guess what they really meant so
+	# that the reported speed matches the standard.
+	for ($ii = 7; $ii < 15; $ii++) {
+		if ($ctime > 7.5/$ii - $ftb/1000 && $ctime < 7.5/$ii + $ftb/1000) {
+			$ctime = 7.5/$ii;
+			last;
+		}
+	}
+
 	my $ddrclk = 2 * (1000 / $ctime);
 	my $tbits = 1 << (($bytes->[8] & 7) + 3);
 	my $pcclk = int ($ddrclk * $tbits / 8);
@@ -1413,7 +1424,6 @@ sub decode_ddr3_sdram($)
 # latencies
 	my $highestCAS = 0;
 	my %cas;
-	my $ii;
 	my $cas_sup = ($bytes->[15] << 8) + $bytes->[14];
 	for ($ii = 0; $ii < 15; $ii++) {
 		if ($cas_sup & (1 << $ii)) {
