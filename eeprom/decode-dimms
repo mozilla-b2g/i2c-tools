@@ -1433,6 +1433,25 @@ sub decode_ddr3_sdram($)
 	}
 	printl("Supported CAS Latencies (tCL)", cas_latencies(keys %cas));
 
+# standard DDR3 speeds
+	prints("Timings at Standard Speeds");
+	foreach my $ctime_at_speed (7.5/8, 7.5/7, 1.25, 1.5, 1.875, 2.5) {
+		my $best_cas = 0;
+
+		# Find min CAS latency at this speed
+		for ($ii = 14; $ii >= 0; $ii--) {
+			next unless ($cas_sup & (1 << $ii));
+			if (ceil($taa / $ctime_at_speed) <= $ii + 4) {
+				$best_cas = $ii + 4;
+			}
+		}
+
+		printl_cond($best_cas && $ctime_at_speed >= $ctime,
+			    "tCL-tRCD-tRP-tRAS" . as_ddr(3, $ctime_at_speed),
+			    ddr_core_timings($best_cas, $ctime_at_speed,
+					     $trcd, $trp, $tras));
+	}
+
 # more timing information
 	prints("Timing Parameters");
 
