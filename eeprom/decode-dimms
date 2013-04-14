@@ -1340,6 +1340,30 @@ sub ddr3_mtb_ftb($$$$)
 	return $byte1 * $mtb + $byte2 * $ftb / 1000;
 }
 
+sub ddr3_reference_card($)
+{
+	my ($rrc) = @_;
+	my $alphabet = "ABCDEFGHJKLMNPRTUVWY";
+	my $ref = $rrc & 0x1f;
+	my $ref_card;
+
+	return "ZZ" if $ref == 0x1f;
+	$ref += 0x1f if $rrc & 0x80;
+
+	if ($ref < length($alphabet)) {
+		# One letter reference card
+		$ref_card = substr($alphabet, $ref, 1);
+	} else {
+		# Two letter reference card
+		my $ref1 = int($ref / (length($alphabet)));
+		$ref -= length($alphabet) * $ref1;
+		$ref_card = substr($alphabet, $ref1, 1) .
+			    substr($alphabet, $ref, 1);
+	}
+
+	return $ref_card;
+}
+
 # Parameter: EEPROM bytes 0-127 (using 3-76)
 sub decode_ddr3_sdram($)
 {
@@ -1515,27 +1539,9 @@ sub decode_ddr3_sdram($)
 						(($bytes->[61] >> 4) & 15) +1));
 		printl("Module Width (mm)", ($bytes->[3] <= 2) ? 133.5 :
 					($bytes->[3] == 3) ? 67.6 : "TBD");
-
-		my $alphabet = "ABCDEFGHJKLMNPRTUVWY";
-		my $ref = $bytes->[62] & 31;
-		my $ref_card;
-		if ($ref == 31) {
-			$ref_card = "ZZ";
-		} else {
-			if ($bytes->[62] & 128) {
-				$ref += 31;
-			}
-			if ($ref < length $alphabet) {
-				$ref_card = substr $alphabet, $ref, 1;
-			} else {
-				my $ref1 = int($ref / (length $alphabet));
-				$ref -= (length $alphabet) * $ref1;
-				$ref_card = (substr $alphabet, $ref1, 1) .
-					    (substr $alphabet, $ref, 1);
-			}
-		}
-		printl("Module Reference Card", $ref_card);
+		printl("Module Reference Card", ddr3_reference_card($bytes->[62]));
 	}
+
 	if ($bytes->[3] == 1 || $bytes->[3] == 5) {
 		prints("Registered DIMM");
 
