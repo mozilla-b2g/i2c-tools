@@ -1377,19 +1377,19 @@ sub decode_ddr3_sdram($)
 
 	my @module_types = (
 		{ type => "Undefined",		width => "Unknown"	},
-		{ type => "RDIMM",		width => 133.35		},
-		{ type => "UDIMM",		width => 133.35		},
-		{ type => "SO-DIMM",		width => 67.6		},
+		{ type => "RDIMM",		width => "133.35 mm"	},
+		{ type => "UDIMM",		width => "133.35 mm"	},
+		{ type => "SO-DIMM",		width => "67.6 mm"	},
 		{ type => "Micro-DIMM",		width => "TBD"		},
-		{ type => "Mini-RDIMM",		width => 82.0		},
-		{ type => "Mini-UDIMM",		width => 82.0		},
-		{ type => "Mini-CDIMM",		width => 67.6		},
-		{ type => "72b-SO-UDIMM",	width => 67.6		},
-		{ type => "72b-SO-RDIMM",	width => 67.6		},
-		{ type => "72b-SO-CDIMM",	width => 67.6		},
-		{ type => "LRDIMM",		width => 133.35		},
-		{ type => "16b-SO-DIMM",	width => 67.6		},
-		{ type => "32b-SO-DIMM",	width => 67.6		},
+		{ type => "Mini-RDIMM",		width => "82.0 mm"	},
+		{ type => "Mini-UDIMM",		width => "82.0 mm"	},
+		{ type => "Mini-CDIMM",		width => "67.6 mm"	},
+		{ type => "72b-SO-UDIMM",	width => "67.6 mm"	},
+		{ type => "72b-SO-RDIMM",	width => "67.6 mm"	},
+		{ type => "72b-SO-CDIMM",	width => "67.6 mm"	},
+		{ type => "LRDIMM",		width => "133.35 mm"	},
+		{ type => "16b-SO-DIMM",	width => "67.6 mm"	},
+		{ type => "32b-SO-DIMM",	width => "67.6 mm"	},
 	);
 
 	printl("Module Type", ($bytes->[3] <= $#module_types) ?
@@ -1546,11 +1546,11 @@ sub decode_ddr3_sdram($)
 	if ($bytes->[3] >= 1 && $bytes->[3] <= 6) {
 
 		prints("Physical Characteristics");
-		printl("Module Height (mm)", ($bytes->[60] & 31) + 15);
-		printl("Module Thickness (mm)", sprintf("%d front, %d back",
+		printl("Module Height", (($bytes->[60] & 31) + 15) . " mm");
+		printl("Module Thickness", sprintf("%d mm front, %d mm back",
 						($bytes->[61] & 15) + 1,
 						(($bytes->[61] >> 4) & 15) +1));
-		printl("Module Width (mm)", $bytes->[3] <= $#module_types ?
+		printl("Module Width", $bytes->[3] <= $#module_types ?
 					    $module_types[$bytes->[3]]->{width} : "TBD");
 		printl("Module Reference Card", ddr3_reference_card($bytes->[62], $bytes->[60]));
 	}
