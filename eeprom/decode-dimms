@@ -1340,15 +1340,17 @@ sub ddr3_mtb_ftb($$$$)
 	return $byte1 * $mtb + $byte2 * $ftb / 1000;
 }
 
-sub ddr3_reference_card($)
+sub ddr3_reference_card($$)
 {
-	my ($rrc) = @_;
+	my ($rrc, $ext) = @_;
 	my $alphabet = "ABCDEFGHJKLMNPRTUVWY";
 	my $ref = $rrc & 0x1f;
+	my $revision = $ext >> 5;
 	my $ref_card;
 
 	return "ZZ" if $ref == 0x1f;
 	$ref += 0x1f if $rrc & 0x80;
+	$revision = (($rrc >> 5) & 0x03) if $revision == 0;
 
 	if ($ref < length($alphabet)) {
 		# One letter reference card
@@ -1361,7 +1363,7 @@ sub ddr3_reference_card($)
 			    substr($alphabet, $ref, 1);
 	}
 
-	return $ref_card;
+	return "$ref_card revision $revision";
 }
 
 # Parameter: EEPROM bytes 0-127 (using 3-76)
@@ -1539,7 +1541,7 @@ sub decode_ddr3_sdram($)
 						(($bytes->[61] >> 4) & 15) +1));
 		printl("Module Width (mm)", ($bytes->[3] <= 2) ? 133.5 :
 					($bytes->[3] == 3) ? 67.6 : "TBD");
-		printl("Module Reference Card", ddr3_reference_card($bytes->[62]));
+		printl("Module Reference Card", ddr3_reference_card($bytes->[62], $bytes->[60]));
 	}
 
 	if ($bytes->[3] == 1 || $bytes->[3] == 5) {
