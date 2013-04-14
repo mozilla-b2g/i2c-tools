@@ -1375,14 +1375,25 @@ sub decode_ddr3_sdram($)
 	my ($ftb, $mtb);
 	my $ii;
 
-	my @module_types = ("Undefined", "RDIMM", "UDIMM", "SO-DIMM",
-			    "Micro-DIMM", "Mini-RDIMM", "Mini-UDIMM",
-			    "Mini-CDIMM", "72b-SO-UDIMM", "72b-SO-RDIMM",
-			    "72b-SO-CDIMM", "LRDIMM", "16b-SO-DIMM",
-			    "32b-SO-DIMM");
+	my @module_types = (
+		{ type => "Undefined",		width => "Unknown"	},
+		{ type => "RDIMM",		width => 133.35		},
+		{ type => "UDIMM",		width => 133.35		},
+		{ type => "SO-DIMM",		width => 67.6		},
+		{ type => "Micro-DIMM",		width => "TBD"		},
+		{ type => "Mini-RDIMM",		width => 82.0		},
+		{ type => "Mini-UDIMM",		width => 82.0		},
+		{ type => "Mini-CDIMM",		width => 67.6		},
+		{ type => "72b-SO-UDIMM",	width => 67.6		},
+		{ type => "72b-SO-RDIMM",	width => 67.6		},
+		{ type => "72b-SO-CDIMM",	width => 67.6		},
+		{ type => "LRDIMM",		width => 133.35		},
+		{ type => "16b-SO-DIMM",	width => 67.6		},
+		{ type => "32b-SO-DIMM",	width => 67.6		},
+	);
 
 	printl("Module Type", ($bytes->[3] <= $#module_types) ?
-					$module_types[$bytes->[3]] :
+					$module_types[$bytes->[3]]->{type} :
 					sprintf("Reserved (0x%.2X)", $bytes->[3]));
 
 # time bases
@@ -1539,8 +1550,8 @@ sub decode_ddr3_sdram($)
 		printl("Module Thickness (mm)", sprintf("%d front, %d back",
 						($bytes->[61] & 15) + 1,
 						(($bytes->[61] >> 4) & 15) +1));
-		printl("Module Width (mm)", ($bytes->[3] <= 2) ? 133.5 :
-					($bytes->[3] == 3) ? 67.6 : "TBD");
+		printl("Module Width (mm)", $bytes->[3] <= $#module_types ?
+					    $module_types[$bytes->[3]]->{width} : "TBD");
 		printl("Module Reference Card", ddr3_reference_card($bytes->[62], $bytes->[60]));
 	}
 
