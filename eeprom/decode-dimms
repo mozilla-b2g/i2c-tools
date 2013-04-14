@@ -1564,6 +1564,9 @@ sub decode_ddr3_sdram($)
 						(($bytes->[61] >> 4) & 15) +1));
 		printl("Module Width", $module_types[$bytes->[3]]->{width});
 		printl("Module Reference Card", ddr3_reference_card($bytes->[62], $bytes->[60]));
+
+		printl_cond($module_types[$bytes->[3]]->{family} == DDR3_UNBUFFERED,
+			    "Rank 1 Mapping", $bytes->[63] & 0x01 ? "Mirrored" : "Standard");
 	}
 
 	if ($module_types[$bytes->[3]]->{family} == DDR3_REGISTERED) {
