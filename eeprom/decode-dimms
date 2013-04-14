@@ -1366,6 +1366,11 @@ sub ddr3_reference_card($$)
 	return "$ref_card revision $revision";
 }
 
+use constant DDR3_UNBUFFERED	=> 1;
+use constant DDR3_REGISTERED	=> 2;
+use constant DDR3_CLOCKED	=> 3;
+use constant DDR3_LOAD_REDUCED	=> 4;
+
 # Parameter: EEPROM bytes 0-127 (using 3-76)
 sub decode_ddr3_sdram($)
 {
@@ -1377,19 +1382,19 @@ sub decode_ddr3_sdram($)
 
 	my @module_types = (
 		{ type => "Undefined",		width => "Unknown"	},
-		{ type => "RDIMM",		width => "133.35 mm"	},
-		{ type => "UDIMM",		width => "133.35 mm"	},
-		{ type => "SO-DIMM",		width => "67.6 mm"	},
-		{ type => "Micro-DIMM",		width => "TBD"		},
-		{ type => "Mini-RDIMM",		width => "82.0 mm"	},
-		{ type => "Mini-UDIMM",		width => "82.0 mm"	},
-		{ type => "Mini-CDIMM",		width => "67.6 mm"	},
-		{ type => "72b-SO-UDIMM",	width => "67.6 mm"	},
-		{ type => "72b-SO-RDIMM",	width => "67.6 mm"	},
-		{ type => "72b-SO-CDIMM",	width => "67.6 mm"	},
-		{ type => "LRDIMM",		width => "133.35 mm"	},
-		{ type => "16b-SO-DIMM",	width => "67.6 mm"	},
-		{ type => "32b-SO-DIMM",	width => "67.6 mm"	},
+		{ type => "RDIMM",		width => "133.35 mm",	family => DDR3_REGISTERED },
+		{ type => "UDIMM",		width => "133.35 mm",	family => DDR3_UNBUFFERED },
+		{ type => "SO-DIMM",		width => "67.6 mm",	family => DDR3_UNBUFFERED },
+		{ type => "Micro-DIMM",		width => "TBD",		family => DDR3_UNBUFFERED },
+		{ type => "Mini-RDIMM",		width => "82.0 mm",	family => DDR3_REGISTERED },
+		{ type => "Mini-UDIMM",		width => "82.0 mm",	family => DDR3_UNBUFFERED },
+		{ type => "Mini-CDIMM",		width => "67.6 mm",	family => DDR3_CLOCKED },
+		{ type => "72b-SO-UDIMM",	width => "67.6 mm",	family => DDR3_UNBUFFERED },
+		{ type => "72b-SO-RDIMM",	width => "67.6 mm",	family => DDR3_REGISTERED },
+		{ type => "72b-SO-CDIMM",	width => "67.6 mm",	family => DDR3_CLOCKED },
+		{ type => "LRDIMM",		width => "133.35 mm",	family => DDR3_LOAD_REDUCED },
+		{ type => "16b-SO-DIMM",	width => "67.6 mm",	family => DDR3_UNBUFFERED },
+		{ type => "32b-SO-DIMM",	width => "67.6 mm",	family => DDR3_UNBUFFERED },
 	);
 
 	printl("Module Type", ($bytes->[3] <= $#module_types) ?
@@ -1543,19 +1548,25 @@ sub decode_ddr3_sdram($)
 	printl("SDRAM Device Type",
 		($bytes->[33] & 128) ? sprintf($bytes->[33] & 127) :
 					"Standard Monolithic");
-	if ($bytes->[3] >= 1 && $bytes->[3] <= 6) {
 
+	# Following bytes are type-specific, so don't continue if type
+	# isn't known.
+	return if $bytes->[3] == 0 || $bytes->[3] > $#module_types;
+
+	if ($module_types[$bytes->[3]]->{family} == DDR3_UNBUFFERED ||
+	    $module_types[$bytes->[3]]->{family} == DDR3_REGISTERED ||
+	    $module_types[$bytes->[3]]->{family} == DDR3_CLOCKED ||
+	    $module_types[$bytes->[3]]->{family} == DDR3_LOAD_REDUCED) {
 		prints("Physical Characteristics");
 		printl("Module Height", (($bytes->[60] & 31) + 15) . " mm");
 		printl("Module Thickness", sprintf("%d mm front, %d mm back",
 						($bytes->[61] & 15) + 1,
 						(($bytes->[61] >> 4) & 15) +1));
-		printl("Module Width", $bytes->[3] <= $#module_types ?
-					    $module_types[$bytes->[3]]->{width} : "TBD");
+		printl("Module Width", $module_types[$bytes->[3]]->{width});
 		printl("Module Reference Card", ddr3_reference_card($bytes->[62], $bytes->[60]));
 	}
 
-	if ($bytes->[3] == 1 || $bytes->[3] == 5) {
+	if ($module_types[$bytes->[3]]->{family} == DDR3_REGISTERED) {
 		prints("Registered DIMM");
 
 		my @rows = ("Undefined", 1, 2, 4);

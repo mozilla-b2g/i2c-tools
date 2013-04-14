@@ -32,6 +32,7 @@ SVN HEAD
                 Fix speed and PC3 number of high-speed DDR3 modules
                 Decode DDR3 reference card revision
                 Print width of all known DDR3 module types
+                Print physical characteristics for all DDR3 module types
   i2cdetect: Do a best effort detection if functionality is missing
              Clarify the SMBus commands used for probing by default
   i2c-dev.h: Minimize differences with kernel flavor
