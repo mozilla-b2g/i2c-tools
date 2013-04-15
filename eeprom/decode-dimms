@@ -1197,6 +1197,8 @@ sub decode_ddr3_sdram($)
 	my $ddrclk = 2 * (1000 / $ctime);
 	my $tbits = 1 << (($bytes->[8] & 7) + 3);
 	my $pcclk = int ($ddrclk * $tbits / 8);
+	# Round down to comply with Jedec
+	$pcclk = $pcclk - ($pcclk % 100);
 	$ddrclk = int ($ddrclk);
 	printl("Maximum module speed", "$ddrclk MHz (PC3-${pcclk})");
 
