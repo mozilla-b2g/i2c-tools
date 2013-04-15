@@ -1228,7 +1228,7 @@ sub decode_ddr3_sdram($)
 	$taa  = int($bytes->[16] / $bytes->[12]);
 	$trcd = int($bytes->[18] / $bytes->[12]);
 	$trp  = int($bytes->[20] / $bytes->[12]);
-	$tras = int((($bytes->[21] >> 4) * 256 + $bytes->[22]) / $bytes->[12]);
+	$tras = int(((($bytes->[21] & 0x0f) << 8) + $bytes->[22]) / $bytes->[12]);
 
 	printl("tCL-tRCD-tRP-tRAS", join("-", $taa, $trcd, $trp, $tras));
 
