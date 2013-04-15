@@ -848,7 +848,7 @@ sub decode_ddr_sdram($)
 	$pcclk += 100 if ($pcclk % 100) >= 50; # Round properly
 	$pcclk = $pcclk - ($pcclk % 100);
 	$ddrclk = int ($ddrclk);
-	printl("Maximum module speed", "${ddrclk}MHz (PC${pcclk})");
+	printl("Maximum module speed", "$ddrclk MHz (PC${pcclk})");
 
 #size computation
 	my $k = 0;
@@ -1037,7 +1037,7 @@ sub decode_ddr2_sdram($)
 	# Round down to comply with Jedec
 	$pcclk = $pcclk - ($pcclk % 100);
 	$ddrclk = int ($ddrclk);
-	printl("Maximum module speed", "${ddrclk}MHz (PC2-${pcclk})");
+	printl("Maximum module speed", "$ddrclk MHz (PC2-${pcclk})");
 
 #size computation
 	my $k = 0;
@@ -1198,7 +1198,7 @@ sub decode_ddr3_sdram($)
 	my $tbits = 1 << (($bytes->[8] & 7) + 3);
 	my $pcclk = int ($ddrclk * $tbits / 8);
 	$ddrclk = int ($ddrclk);
-	printl("Maximum module speed", "${ddrclk}MHz (PC3-${pcclk})");
+	printl("Maximum module speed", "$ddrclk MHz (PC3-${pcclk})");
 
 # Size computation
 
@@ -1505,9 +1505,9 @@ sub decode_intel_spec_freq($)
 
 	prints("Intel Specification");
 
-	if ($bytes->[126] == 0x66) { $temp = "66MHz"; }
-	elsif ($bytes->[126] == 100) { $temp = "100MHz or 133MHz"; }
-	elsif ($bytes->[126] == 133) { $temp = "133MHz"; }
+	if ($bytes->[126] == 0x66) { $temp = "66 MHz"; }
+	elsif ($bytes->[126] == 100) { $temp = "100 MHz or 133 MHz"; }
+	elsif ($bytes->[126] == 133) { $temp = "133 MHz"; }
 	else { $temp = "Undefined!"; }
 	printl("Frequency", $temp);
 
@@ -1523,7 +1523,7 @@ sub decode_intel_spec_freq($)
 	if ($bytes->[127] & 128) { $temp .= "CLK 0 Connected\n"; }
 	if (($bytes->[127] & 192) == 192) { $temp .= "Double-sided DIMM\n"; }
 	elsif (($bytes->[127] & 192) != 0) { $temp .= "Single-sided DIMM\n"; }
-	printl("Details for 100MHz Support", $temp);
+	printl("Details for 100 MHz Support", $temp);
 }
 
 # Read various hex dump style formats: hexdump, hexdump -C, i2cdump, eeprog
