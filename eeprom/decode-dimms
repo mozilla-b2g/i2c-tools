@@ -1593,9 +1593,7 @@ sub decode_ddr3_sdram($)
 					"Undefined");
 		printl_cond($bytes->[67] != 0xff,
 			    "Register revision", ddr3_revision_number($bytes->[67]));
-		printl("Heat spreader characteristics",
-				($bytes->[64] < 128) ? "Not incorporated" :
-					sprintf("%.2X", ($bytes->[64] & 127)));
+		printl("Heat spreader", $bytes->[64] & 0x80 ? "Yes" : "No");
 		my $regs;
 		for (my $i = 0; $i < 8; $i++) {
 			$regs = sprintf("SSTE32882 RC%d/RC%d",
