@@ -5,7 +5,7 @@
 # Copyright 1998, 1999 Philip Edelbrock <phil@netroedge.com>
 # modified by Christian Zuckschwerdt <zany@triq.net>
 # modified by Burkart Lingner <burkart@bollchen.de>
-# Copyright (C) 2005-2012  Jean Delvare <khali@linux-fr.org>
+# Copyright (C) 2005-2013  Jean Delvare <khali@linux-fr.org>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -1595,6 +1595,23 @@ sub decode_ddr3_sdram($)
 			    "Register revision", ddr3_revision_number($bytes->[67]));
 		printl("Heat spreader", $bytes->[64] & 0x80 ? "Yes" : "No");
 	}
+
+	if ($module_types[$bytes->[3]]->{family} == DDR3_LOAD_REDUCED) {
+		prints("Load Reduced DIMM");
+
+		my @rows = ("Undefined", 1, 2, "Reserved");
+		printl("# DRAM Rows", $rows[($bytes->[63] >> 2) & 3]);
+		my @mirroring = ("None", "Odd ranks", "Reserved", "Reserved");
+		printl("Mirroring", $mirroring[$bytes->[63] & 3]);
+		printl("Rank Numbering", $bytes->[63] & 0x20 ? "Even only" : "Contiguous");
+		printl("Buffer Orientation", $bytes->[63] & 0x10 ? "Horizontal" : "Vertical");
+		printl("Register manufacturer",
+			manufacturer_ddr3($bytes->[65], $bytes->[66]));
+		printl_cond($bytes->[64] != 0xff,
+			    "Buffer Revision", ddr3_revision_number($bytes->[64]));
+		printl("Heat spreader", $bytes->[63] & 0x80 ? "Yes" : "No");
+	}
+
 }
 
 # Parameter: EEPROM bytes 0-127 (using 4-5)
