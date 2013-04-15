@@ -1366,6 +1366,17 @@ sub ddr3_reference_card($$)
 	return "$ref_card revision $revision";
 }
 
+sub ddr3_revision_number($)
+{
+	my $h = $_[0] >> 4;
+	my $l = $_[0] & 0x0f;
+
+	# Decode as suggested by JEDEC Standard 21-C
+	return sprintf("%d", $l) if $h == 0;
+	return sprintf("%d.%d", $h, $l) if $h < 0xa;
+	return sprintf("%c%d", ord('A') + $h - 0xa, $l);
+}
+
 use constant DDR3_UNBUFFERED	=> 1;
 use constant DDR3_REGISTERED	=> 2;
 use constant DDR3_CLOCKED	=> 3;
@@ -1580,7 +1591,8 @@ sub decode_ddr3_sdram($)
 		printl("Register device type",
 				(($bytes->[68] & 7) == 0) ? "SSTE32882" :
 					"Undefined");
-		printl("Register revision", sprintf("0x%.2X", $bytes->[67]));
+		printl_cond($bytes->[67] != 0xff,
+			    "Register revision", ddr3_revision_number($bytes->[67]));
 		printl("Heat spreader characteristics",
 				($bytes->[64] < 128) ? "Not incorporated" :
 					sprintf("%.2X", ($bytes->[64] & 127)));
