@@ -1377,6 +1377,32 @@ sub ddr3_revision_number($)
 	return sprintf("%c%d", ord('A') + $h - 0xa, $l);
 }
 
+sub ddr3_device_type($)
+{
+	my $byte = shift;
+	my $type = $byte & 0x80 ? "Non-Standard" : "Standard Monolithic";
+	my $die_count = ($byte >> 4) & 0x07;
+	my $loading = ($byte >> 2) & 0x03;
+
+	if ($die_count == 1) {
+		$type .= "\nSingle die";
+	} elsif ($die_count == 2) {
+		$type .= "\n2 die";
+	} elsif ($die_count == 3) {
+		$type .= "\n4 die";
+	} elsif ($die_count == 4) {
+		$type .= "\n8 die";
+	}
+
+	if ($loading == 1) {
+		$type .= "\nMulti load stack";
+	} elsif ($loading == 2) {
+		$type .= "\nSingle load stack";
+	}
+
+	return $type;
+}
+
 use constant DDR3_UNBUFFERED	=> 1;
 use constant DDR3_REGISTERED	=> 2;
 use constant DDR3_CLOCKED	=> 3;
@@ -1555,9 +1581,7 @@ sub decode_ddr3_sdram($)
 		($bytes->[31] & 128) ? "Yes" : "No");
 	printl("Module Thermal Sensor",
 		($bytes->[32] & 128) ? "Yes" : "No");
-	printl("SDRAM Device Type",
-		($bytes->[33] & 128) ? sprintf($bytes->[33] & 127) :
-					"Standard Monolithic");
+	printl("SDRAM Device Type", ddr3_device_type($bytes->[33]));
 
 	# Following bytes are type-specific, so don't continue if type
 	# isn't known.

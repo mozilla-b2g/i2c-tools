@@ -35,6 +35,7 @@ SVN HEAD
                 Print physical characteristics for all DDR3 module types
                 Don't print raw SSTE32882 register values
                 Add support for Load Reduced DIMM (LRDIMM) DDR3 modules
+                Fully decode the DDR3 SDRAM Device Type field
   i2cdetect: Do a best effort detection if functionality is missing
              Clarify the SMBus commands used for probing by default
   i2c-dev.h: Minimize differences with kernel flavor
