@@ -297,7 +297,12 @@ $revision =~ s/ \([^()]*\)//;
  "Eorex Corporation", "Xingtera", "Netsol", "Bestdon Technology Co. Ltd.", "Baysand Inc.",
  "Uroad Technology Co. Ltd. (former Triple Grow Industrial Ltd.)", "Wilk Elektronik S.A.",
  "AAI", "Harman", "Berg Microelectronics Inc.", "ASSIA, Inc.", "Visiontek Products LLC",
- "OCMEMORY", "Welink Solution Inc."]
+ "OCMEMORY", "Welink Solution Inc.", "Shark Gaming", "Avalanche Technology",
+ "R&D Center ELVEES OJSC", "KingboMars Technology Co. Ltd.",
+ "High Bridge Solutions Industria Eletronica", "Transcend Technology Co. Ltd.",
+ "Everspin Technologies", "Hon-Hai Precision", "Smart Stotage Systems", "Toumaz Group",
+ "Zentel Electronics Corporation", "Panram International Corporation",
+ "Silicon Space Technology"]
 );
 
 $use_sysfs = -d '/sys/bus';
