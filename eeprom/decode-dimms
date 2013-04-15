@@ -178,7 +178,7 @@ $revision =~ s/ \([^()]*\)//;
  "Mitac International", "Layer N Networks", "MtekVision", "Allegro Networks",
  "Marvell Semiconductors", "Netergy Microelectronic", "NVIDIA", "Internet Machines",
  "Peak Electronics", "Litchfield Communication", "Accton Technology", "Teradiant Networks",
- "Scaleo Chip (former Europe Technlogies)", "Cortina Systems", "RAM Components", "Raqia Networks",
+ "Scaleo Chip (former Europe Technologies)", "Cortina Systems", "RAM Components", "Raqia Networks",
  "ClearSpeed", "Matsushita Battery", "Xelerated", "SimpleTech",
  "Utron Technology", "Astec International", "AVM gmbH", "Redux Communications",
  "Dot Hill Systems", "TeraChip"],
