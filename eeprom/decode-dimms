@@ -1553,9 +1553,8 @@ sub decode_ddr3_sdram($)
 		($bytes->[31] & 8) ? "Yes" : "No");
 	printl("Partial Array Self-Refresh?",
 		($bytes->[31] & 128) ? "Yes" : "No");
-	printl("Thermal Sensor Accuracy",
-		($bytes->[32] & 128) ? sprintf($bytes->[32] & 127) :
-					"Not implemented");
+	printl("Module Thermal Sensor",
+		($bytes->[32] & 128) ? "Yes" : "No");
 	printl("SDRAM Device Type",
 		($bytes->[33] & 128) ? sprintf($bytes->[33] & 127) :
 					"Standard Monolithic");
