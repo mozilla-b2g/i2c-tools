@@ -1691,26 +1691,23 @@ sub decode_ddr3_mfg_data($)
 	printl("Module Manufacturer",
 	       manufacturer_ddr3($bytes->[117], $bytes->[118]));
 
-	if (spd_written(@{$bytes}[148..149])) {
-		printl("DRAM Manufacturer",
-		       manufacturer_ddr3($bytes->[148], $bytes->[149]));
-	}
+	printl_cond(spd_written(@{$bytes}[148..149]),
+		    "DRAM Manufacturer",
+		    manufacturer_ddr3($bytes->[148], $bytes->[149]));
 
 	printl_mfg_location_code($bytes->[119]);
 
-	if (spd_written(@{$bytes}[120..121])) {
-		printl("Manufacturing Date",
-		       manufacture_date($bytes->[120], $bytes->[121]));
-	}
+	printl_cond(spd_written(@{$bytes}[120..121]),
+		    "Manufacturing Date",
+		    manufacture_date($bytes->[120], $bytes->[121]));
 
 	printl_mfg_assembly_serial(@{$bytes}[122..125]);
 
 	printl("Part Number", part_number(@{$bytes}[128..145]));
 
-	if (spd_written(@{$bytes}[146..147])) {
-		printl("Revision Code",
-		       sprintf("0x%02X%02X", $bytes->[146], $bytes->[147]));
-	}
+	printl_cond(spd_written(@{$bytes}[146..147]),
+		    "Revision Code",
+		    sprintf("0x%02X%02X", $bytes->[146], $bytes->[147]));
 }
 
 # Parameter: EEPROM bytes 0-127 (using 64-98)
