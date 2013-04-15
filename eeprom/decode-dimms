@@ -300,7 +300,7 @@ $revision =~ s/ \([^()]*\)//;
  "OCMEMORY", "Welink Solution Inc.", "Shark Gaming", "Avalanche Technology",
  "R&D Center ELVEES OJSC", "KingboMars Technology Co. Ltd.",
  "High Bridge Solutions Industria Eletronica", "Transcend Technology Co. Ltd.",
- "Everspin Technologies", "Hon-Hai Precision", "Smart Stotage Systems", "Toumaz Group",
+ "Everspin Technologies", "Hon-Hai Precision", "Smart Storage Systems", "Toumaz Group",
  "Zentel Electronics Corporation", "Panram International Corporation",
  "Silicon Space Technology"]
 );
