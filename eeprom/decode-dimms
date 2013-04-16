@@ -438,10 +438,21 @@ sub real_printl($$) # print a line w/ label and values
 		$label = html_encode($label);
 		@values = map { html_encode($_) } @values;
 		print "<tr><td valign=top>$label</td>";
-		if ($opt_merge && $same_values) {
+		if (!$opt_merge) {
+			print "<td>$_</td>" foreach @values;
+		} elsif ($same_values) {
 			print "<td colspan=".(scalar @values).">$values[0]</td>";
 		} else {
-			print "<td>$_</td>" foreach @values;
+			# For HTML output, merge adjacent cells even if
+			# the whole line cannot be merged.
+			my $colcnt = 0;
+			while (@values) {
+				$colcnt++;
+				my $value = shift @values;
+				next if (@values && $value eq $values[0]);
+				print "<td" . ($colcnt > 1 ? " colspan=$colcnt" : "") .">$value</td>";
+				$colcnt = 0;
+			}
 		}
 		print "</tr>\n";
 	} else {
