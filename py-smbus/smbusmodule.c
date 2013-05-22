@@ -639,7 +639,7 @@ static PyGetSetDef SMBus_getset[] = {
 static PyTypeObject SMBus_type = {
 	PyObject_HEAD_INIT(NULL)
 	0,				/* ob_size */
-	"SMBus",			/* tp_name */
+	"smbus.SMBus",			/* tp_name */
 	sizeof(SMBus),			/* tp_basicsize */
 	0,				/* tp_itemsize */
 	(destructor)SMBus_dealloc,	/* tp_dealloc */
