@@ -413,7 +413,7 @@ sub html_encode($)
 	$text =~ s/</\&lt;/sg;
 	$text =~ s/>/\&gt;/sg;
 	$text =~ s/ degrees C/\&deg;C/sg;
-	$text =~ s/\n/<br>\n/sg;
+	$text =~ s/\n/<br\/>\n/sg;
 	return $text;
 }
 
@@ -438,11 +438,11 @@ sub real_printl($$) # print a line w/ label and values
 	if ($opt_html) {
 		$label = html_encode($label);
 		@values = map { html_encode($_) } @values;
-		print "<tr><td valign=top>$label</td>";
+		print "<tr><td style=\"vertical-align: top;\">$label</td>";
 		if (!$opt_merge) {
 			print "<td>$_</td>" foreach @values;
 		} elsif ($same_values) {
-			print "<td colspan=".(scalar @values).">$values[0]</td>";
+			print "<td colspan=\"".(scalar @values)."\">$values[0]</td>";
 		} else {
 			# For HTML output, merge adjacent cells even if
 			# the whole line cannot be merged.
@@ -451,7 +451,7 @@ sub real_printl($$) # print a line w/ label and values
 				$colcnt++;
 				my $value = shift @values;
 				next if (@values && $value eq $values[0]);
-				print "<td" . ($colcnt > 1 ? " colspan=$colcnt" : "") .">$value</td>";
+				print "<td" . ($colcnt > 1 ? " colspan=\"$colcnt\"" : "") .">$value</td>";
 				$colcnt = 0;
 			}
 		}
@@ -508,7 +508,7 @@ sub real_prints($) # print separator w/ given text
 	$ncol = 1 unless $ncol;
 	if ($opt_html) {
 		$label = html_encode($label);
-		print "<tr><td align=center colspan=".(1+$ncol)."><b>$label</b></td></tr>\n";
+		print "<tr><td style=\"font-weight: bold; text-align: center;\" colspan=\"".(1+$ncol)."\">$label</td></tr>\n";
 	} else {
 		print "\n---=== $label ===---\n";
 	}
@@ -2167,11 +2167,13 @@ if (!$opt_igncheck) {
 
 
 if ($opt_html && !$opt_bodyonly) {
-	print "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\">\n",
-	      "<html><head>\n",
-		  "\t<meta HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=iso-8859-1\">\n",
-		  "\t<title>PC DIMM Serial Presence Detect Tester/Decoder Output</title>\n",
-		  "</head><body>\n";
+	print "<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.1//EN' \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n\n",
+	      "<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\">\n",
+	      "<head>\n",
+	      "\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\" />\n",
+	      "\t<title>PC DIMM Serial Presence Detect Tester/Decoder Output</title>\n",
+	      "</head>\n\n",
+	      "<body>\n";
 }
 
 printc("decode-dimms version $revision");
@@ -2355,7 +2357,7 @@ for $current (0 .. $#dimm) {
 		printl2("\n\nDecoding EEPROM", $dimm[$current]->{file},
 			"text-decoration: underline; font-weight: bold;");
 	}
-	print "<table border=1>\n" if $opt_html;
+	print "<table border=\"1\">\n" if $opt_html;
 
 	my @output = @{$dimm[$current]->{output}};
 	for (my $line = 0; $line < @output; $line++) {

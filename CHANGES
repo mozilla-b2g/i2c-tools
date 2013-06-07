@@ -37,7 +37,7 @@ SVN HEAD
                 Add support for Load Reduced DIMM (LRDIMM) DDR3 modules
                 Fully decode the DDR3 SDRAM Device Type field
                 Encode "degrees" to HTML degree symbol
-                Generate HTML 4.01 compliant markup
+                Generate XHTML 1.1 compliant markup
   i2cdetect: Do a best effort detection if functionality is missing
              Clarify the SMBus commands used for probing by default
   i2c-dev.h: Minimize differences with kernel flavor
