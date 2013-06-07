@@ -490,14 +490,16 @@ sub real_printl($$) # print a line w/ label and values
 	}
 }
 
-sub printl2($$) # print a line w/ label and value (outside a table)
+sub printl2 # print a line w/ label and value (outside a table)
 {
-	my ($label, $value) = @_;
+	my ($label, $value, $style) = @_;
 	if ($opt_html) {
 		$label = html_encode($label);
 		$value = html_encode($value);
+		print "<p", (defined $style ? " style=\"$style\"" : ""), ">";
 	}
 	print "$label: $value\n";
+	print "</p>\n" if $opt_html;
 }
 
 sub real_prints($) # print separator w/ given text
@@ -2165,7 +2167,7 @@ if (!$opt_igncheck) {
 
 
 if ($opt_html && !$opt_bodyonly) {
-	print "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\n",
+	print "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\">\n",
 	      "<html><head>\n",
 		  "\t<meta HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=iso-8859-1\">\n",
 		  "\t<title>PC DIMM Serial Presence Detect Tester/Decoder Output</title>\n",
@@ -2350,9 +2352,8 @@ for $current (0 .. $#dimm) {
 	if ($opt_side_by_side) {
 		print "\n\n";
 	} else {
-		print "<b><u>" if $opt_html;
-		printl2("\n\nDecoding EEPROM", $dimm[$current]->{file});
-		print "</u></b>" if $opt_html;
+		printl2("\n\nDecoding EEPROM", $dimm[$current]->{file},
+			"text-decoration: underline; font-weight: bold;");
 	}
 	print "<table border=1>\n" if $opt_html;
 
