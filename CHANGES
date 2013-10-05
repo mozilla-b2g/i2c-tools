@@ -38,6 +38,8 @@ SVN HEAD
                 Fully decode the DDR3 SDRAM Device Type field
                 Encode "degrees" to HTML degree symbol
                 Generate XHTML 1.1 compliant markup
+                Add a manual page
+  decode-vaio: Add a manual page
   i2cdetect: Do a best effort detection if functionality is missing
              Clarify the SMBus commands used for probing by default
   i2c-dev.h: Minimize differences with kernel flavor
