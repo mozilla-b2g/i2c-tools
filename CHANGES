@@ -40,6 +40,9 @@ SVN HEAD
                 Generate XHTML 1.1 compliant markup
                 Add a manual page
   decode-vaio: Add a manual page
+  eeprog: Add a manual page
+  eeprom: Add a manual page
+  eepromer: Add a manual page
   i2cdetect: Do a best effort detection if functionality is missing
              Clarify the SMBus commands used for probing by default
   i2c-dev.h: Minimize differences with kernel flavor
