@@ -66,6 +66,10 @@ setting prefix to wherever you want. You may change the C compiler and the
 compilation flags as well, and also decide whether to build the static
 library or not.
 
+By default these tools link to the library dynamically but "make install" does 
+not install the library.  To do that, use "make install-lib" (with root 
+priveledge, of course).
+
 Optionally, you can run "make strip" prior to "make install" if you want
 smaller binaries. However, be aware that this will prevent any further
 attempt to debug the library and tools.
